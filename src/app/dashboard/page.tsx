@@ -3,28 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-
-type Task = {
-  id: string;
-  user_id: string;
-  title: string;
-  notes: string | null;
-  due_at: string | null; // ISO string from Supabase
-  is_done: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
-function toLocalDatetimeValue(date: Date) {
-  // YYYY-MM-DDTHH:mm for <input type="datetime-local">
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const yyyy = date.getFullYear();
-  const mm = pad(date.getMonth() + 1);
-  const dd = pad(date.getDate());
-  const hh = pad(date.getHours());
-  const mi = pad(date.getMinutes());
-  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-}
+import type { Task } from "@/types/task";
+import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -42,6 +22,7 @@ export default function DashboardPage() {
   const [dueLocal, setDueLocal] = useState<string>(""); // datetime-local string
   const [creating, setCreating] = useState(false);
 
+  // 1) Load current user (protected route)
   useEffect(() => {
     let mounted = true;
 
@@ -72,21 +53,15 @@ export default function DashboardPage() {
     };
   }, [router]);
 
-  async function fetchTasks(uid: string) {
+  // 2) Fetch tasks (RLS ensures only the current user's rows are returned)
+  async function fetchTasks() {
     setTaskError(null);
     setLoadingTasks(true);
+
     try {
-      const supabase = supabaseBrowser();
-
-      // Fetch your tasks (RLS ensures only your rows come back)
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*")
-        .order("is_done", { ascending: true })
-        .order("due_at", { ascending: true, nullsFirst: false })
-        .order("created_at", { ascending: false });
-
+      const { data, error } = await listTasks();
       if (error) throw error;
+
       setTasks((data ?? []) as Task[]);
     } catch (e: any) {
       setTaskError(e?.message ?? "Failed to load tasks");
@@ -95,9 +70,10 @@ export default function DashboardPage() {
     }
   }
 
+  // Fetch tasks after user is known
   useEffect(() => {
     if (!userId) return;
-    fetchTasks(userId);
+    fetchTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
@@ -115,14 +91,11 @@ export default function DashboardPage() {
     setTaskError(null);
 
     try {
-      const supabase = supabaseBrowser();
-
-      // Convert datetime-local (local time) into a real Date → ISO string.
-      // Supabase timestamptz expects an ISO timestamp.
+      // Convert datetime-local (local time) into ISO (UTC) for timestamptz.
       const dueAtIso =
         dueLocal.trim() === "" ? null : new Date(dueLocal).toISOString();
 
-      const { error } = await supabase.from("tasks").insert({
+      const { error } = await addTask({
         user_id: userId,
         title: title.trim(),
         due_at: dueAtIso,
@@ -132,7 +105,7 @@ export default function DashboardPage() {
 
       setTitle("");
       setDueLocal("");
-      await fetchTasks(userId);
+      await fetchTasks();
     } catch (e: any) {
       setTaskError(e?.message ?? "Failed to create task");
     } finally {
@@ -141,38 +114,39 @@ export default function DashboardPage() {
   }
 
   async function toggleDone(task: Task) {
-    if (!userId) return;
-
     setTaskError(null);
+
+    // Optimistic update
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, is_done: !t.is_done } : t)),
+    );
+
     try {
-      const supabase = supabaseBrowser();
-      const { error } = await supabase
-        .from("tasks")
-        .update({ is_done: !task.is_done })
-        .eq("id", task.id);
-
+      const { error } = await setTaskDone(task.id, !task.is_done);
       if (error) throw error;
-
-      // Optimistic update
-      setTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? { ...t, is_done: !t.is_done } : t))
-      );
     } catch (e: any) {
+      // Revert optimistic update if it fails
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === task.id ? { ...t, is_done: task.is_done } : t,
+        ),
+      );
       setTaskError(e?.message ?? "Failed to update task");
     }
   }
 
   async function deleteTask(task: Task) {
-    if (!userId) return;
-
     setTaskError(null);
-    try {
-      const supabase = supabaseBrowser();
-      const { error } = await supabase.from("tasks").delete().eq("id", task.id);
-      if (error) throw error;
 
-      setTasks((prev) => prev.filter((t) => t.id !== task.id));
+    // Optimistic remove
+    setTasks((prev) => prev.filter((t) => t.id !== task.id));
+
+    try {
+      const { error } = await removeTask(task.id);
+      if (error) throw error;
     } catch (e: any) {
+      // Re-fetch to restore truth if delete fails
+      await fetchTasks();
       setTaskError(e?.message ?? "Failed to delete task");
     }
   }
@@ -186,7 +160,7 @@ export default function DashboardPage() {
 
     return tasks.filter((t) => {
       if (t.is_done) return false;
-      if (!t.due_at) return true; // no due date → show in Today as “floating”
+      if (!t.due_at) return true; // floating tasks show in Today
       const due = new Date(t.due_at);
       return due >= start && due <= end;
     });
@@ -249,7 +223,7 @@ export default function DashboardPage() {
             <h2 className="font-semibold">Today</h2>
             <button
               className="text-sm underline"
-              onClick={() => userId && fetchTasks(userId)}
+              onClick={() => fetchTasks()}
               type="button"
               disabled={loadingTasks}
             >

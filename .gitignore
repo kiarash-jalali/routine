@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+#just making sure this is ignored, even though it should be in the root
+node_modules
+.next
+.env.local
+.env
+.DS_Store
