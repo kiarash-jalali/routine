@@ -176,9 +176,23 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-semibold">Dashboard</h1>
             <p className="mt-1 text-sm text-gray-600">Logged in as: {email}</p>
           </div>
-          <button onClick={logout} className="rounded-xl border px-3 py-2">
-            Log out
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push("/routines")}
+              className="rounded-xl border px-3 py-2"
+              type="button"
+            >
+              Routines
+            </button>
+
+            <button
+              onClick={logout}
+              className="rounded-xl border px-3 py-2"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {/* Create task */}
