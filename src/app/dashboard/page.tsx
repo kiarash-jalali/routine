@@ -1,5 +1,8 @@
 "use client";
 
+import type { Routine } from "@/types/routine";
+import { listTodaysRoutines } from "@/lib/db/today";
+
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
@@ -53,6 +56,25 @@ export default function DashboardPage() {
     };
   }, [router]);
 
+  const [todaysRoutines, setTodaysRoutines] = useState<Routine[]>([]);
+  const [loadingRoutines, setLoadingRoutines] = useState(false);
+  const [routineError, setRoutineError] = useState<string | null>(null);
+
+  async function fetchTodaysRoutines() {
+    setRoutineError(null);
+    setLoadingRoutines(true);
+
+    try {
+      const { data, error } = await listTodaysRoutines();
+      if (error) throw error;
+      setTodaysRoutines(data ?? []);
+    } catch (e: any) {
+      setRoutineError(e?.message ?? "Failed to load routines");
+    } finally {
+      setLoadingRoutines(false);
+    }
+  }
+
   // 2) Fetch tasks (RLS ensures only the current user's rows are returned)
   async function fetchTasks() {
     setTaskError(null);
@@ -74,6 +96,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!userId) return;
     fetchTasks();
+    fetchTodaysRoutines();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
@@ -230,6 +253,57 @@ export default function DashboardPage() {
 
         {/* Errors */}
         {taskError && <p className="mt-4 text-sm text-red-600">{taskError}</p>}
+        {/* routine */}
+        <section className="mt-6 rounded-2xl border p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Today’s routines</h2>
+            <button
+              className="text-sm underline"
+              onClick={() => fetchTodaysRoutines()}
+              type="button"
+              disabled={loadingRoutines}
+            >
+              {loadingRoutines ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
+
+          {routineError && (
+            <p className="mt-3 text-sm text-red-600">{routineError}</p>
+          )}
+
+          {todaysRoutines.length === 0 ? (
+            <p className="mt-3 text-sm text-gray-600">
+              No routines for today. Add some in{" "}
+              <span className="font-medium">Routines</span>.
+            </p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {todaysRoutines.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-start justify-between gap-3 rounded-xl border p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium break-words">{r.title}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {r.preferred_time
+                        ? `Time: ${r.preferred_time.slice(0, 5)}`
+                        : ""}
+                    </p>
+                  </div>
+
+                  <button
+                    className="rounded-lg border px-3 py-1 text-sm"
+                    onClick={() => router.push("/routines")}
+                    type="button"
+                  >
+                    Edit
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         {/* Today */}
         <section className="mt-6 rounded-2xl border p-4">
