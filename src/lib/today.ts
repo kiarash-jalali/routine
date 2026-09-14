@@ -9,6 +9,15 @@ export function getLocalDateKey(date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
+
+export function formatFriendlyDate(date = new Date()): string {
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+}
+
 // ISO weekday numbering matches the database: Monday=1 through Sunday=7.
 export function getIsoWeekday(date = new Date()): number {
   const javascriptDay = date.getDay();

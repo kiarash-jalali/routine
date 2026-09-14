@@ -61,7 +61,7 @@ export function RoutineForm({
   }
 
   return (
-    <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+    <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
       <label className="grid gap-1.5">
         <span className="text-sm font-medium text-foreground">Name</span>
         <Input
@@ -116,7 +116,7 @@ export function RoutineForm({
           <p className="mb-2 text-sm font-medium text-foreground">
             Days of week
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-7 lg:grid-cols-4 xl:grid-cols-7">
             {ROUTINE_DAYS.map((day) => {
               const active = values.daysOfWeek.includes(day.value);
 
@@ -125,10 +125,10 @@ export function RoutineForm({
                   key={day.value}
                   type="button"
                   onClick={() => toggleDay(day.value)}
-                  className={`rounded-full border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring ${
+                  className={`min-h-10 rounded-xl border px-2.5 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring ${
                     active
-                      ? "border-primary bg-primary text-white"
-                      : "border-border-strong bg-surface text-muted hover:bg-surface-soft hover:text-foreground"
+                      ? "border-primary bg-primary text-white shadow-button"
+                      : "border-border-strong bg-surface text-muted hover:border-primary/25 hover:bg-primary-soft/40 hover:text-foreground"
                   }`}
                 >
                   {day.label}

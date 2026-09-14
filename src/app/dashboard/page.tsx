@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AppNav } from "@/components/AppNav";
 import {
   Button,
   Card,
@@ -10,14 +11,14 @@ import {
   Input,
   PageHeader,
   PageShell,
-  Pill,
   SectionHeading,
+  Stat,
 } from "@/components/ui";
 import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import { filterTasksForToday } from "@/lib/today";
+import { filterTasksForToday, formatFriendlyDate } from "@/lib/today";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
 
@@ -35,11 +36,10 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const [loadingUser, setLoadingUser] = useState(true);
-  const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loadingTasks, setLoadingTasks] = useState(false);
+  const [loadingTasks, setLoadingTasks] = useState(true);
   const [taskError, setTaskError] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
@@ -47,7 +47,7 @@ export default function DashboardPage() {
   const [creating, setCreating] = useState(false);
 
   const [todaysRoutines, setTodaysRoutines] = useState<Routine[]>([]);
-  const [loadingRoutines, setLoadingRoutines] = useState(false);
+  const [loadingRoutines, setLoadingRoutines] = useState(true);
   const [routineError, setRoutineError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,7 +65,6 @@ export default function DashboardPage() {
         }
 
         if (mounted) {
-          setEmail(data.user.email ?? null);
           setUserId(data.user.id);
           setLoadingUser(false);
         }
@@ -111,12 +110,6 @@ export default function DashboardPage() {
     fetchTasks();
     fetchTodaysRoutines();
   }, [userId]);
-
-  async function logout() {
-    const supabase = supabaseBrowser();
-    await supabase.auth.signOut();
-    router.push("/login");
-  }
 
   async function createTask() {
     if (!userId || !title.trim()) return;
@@ -181,15 +174,7 @@ export default function DashboardPage() {
     () => tasks.filter((task) => task.is_done).length,
     [tasks],
   );
-  const todayLabel = useMemo(
-    () =>
-      new Intl.DateTimeFormat(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      }).format(new Date()),
-    [],
-  );
+  const todayLabel = useMemo(() => formatFriendlyDate(), []);
 
   if (loadingUser) {
     return (
@@ -201,44 +186,37 @@ export default function DashboardPage() {
 
   return (
     <PageShell>
+      <AppNav />
+
       <PageHeader
         eyebrow={todayLabel}
         title="Shape today, gently."
-        description={
-          <>
-            Your routines come first. Tasks are here when you need them.
-            {email && <span className="ml-1 text-muted-soft">· {email}</span>}
-          </>
-        }
+        description="Your routines come first. Tasks are here when you need them."
         actions={
-          <>
-            <Button variant="primary" onClick={() => router.push("/checkin")}>
-              Daily check-in
-            </Button>
-            <Button onClick={() => router.push("/routines")}>Routines</Button>
-            <Button variant="ghost" onClick={logout}>
-              Log out
-            </Button>
-          </>
+          <Button variant="primary" onClick={() => router.push("/checkin")}>
+            Check in today
+          </Button>
         }
       />
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.8fr)]">
+      <div className="mt-5 inline-grid w-full max-w-2xl grid-cols-3 divide-x divide-primary/10 rounded-2xl border border-primary/15 bg-primary-soft/40 px-2 py-3 shadow-sm sm:px-3">
+        <div className="px-2 sm:px-4">
+          <Stat value={todaysRoutines.length} label="routines today" />
+        </div>
+        <div className="px-3 sm:px-5">
+          <Stat value={todayTasks.length} label="open tasks today" />
+        </div>
+        <div className="px-3 sm:px-5">
+          <Stat value={completedTaskCount} label="completed tasks" />
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.7fr)] lg:items-start">
         <div className="space-y-6">
           <Card>
             <SectionHeading
               title="Today's routines"
               description="The repeating things that give your day some shape."
-              action={
-                <Button
-                  variant="ghost"
-                  className="min-h-8 px-2.5 py-1"
-                  onClick={fetchTodaysRoutines}
-                  disabled={loadingRoutines}
-                >
-                  {loadingRoutines ? "Refreshing…" : "Refresh"}
-                </Button>
-              }
             />
 
             {routineError && (
@@ -247,7 +225,9 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {todaysRoutines.length === 0 ? (
+            {loadingRoutines ? (
+              <p className="mt-4 text-sm text-muted">Loading routines…</p>
+            ) : todaysRoutines.length === 0 ? (
               <div className="mt-4">
                 <EmptyState>
                   No routines are planned for today. Add one from the Routines
@@ -255,28 +235,34 @@ export default function DashboardPage() {
                 </EmptyState>
               </div>
             ) : (
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 divide-y divide-border">
                 {todaysRoutines.map((routine) => (
                   <li
                     key={routine.id}
-                    className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface-soft px-4 py-3"
+                    className="flex items-center justify-between gap-4 py-3.5 first:pt-1 last:pb-0"
                   >
-                    <div className="min-w-0">
-                      <p className="break-words font-medium text-foreground">
-                        {routine.title}
-                      </p>
-                      <p className="mt-1 text-xs text-muted">
-                        {routine.preferred_time
-                          ? `Preferred at ${routine.preferred_time.slice(0, 5)}`
-                          : "No preferred time"}
-                      </p>
+                    <div className="flex min-w-0 items-start gap-3">
+                      <span
+                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary"
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0">
+                        <p className="wrap-break-word font-medium text-foreground">
+                          {routine.title}
+                        </p>
+                        <p className="mt-1 text-xs text-muted">
+                          {routine.preferred_time
+                            ? `Preferred at ${routine.preferred_time.slice(0, 5)}`
+                            : "No preferred time"}
+                        </p>
+                      </div>
                     </div>
                     <Button
                       variant="ghost"
                       className="min-h-8 shrink-0 px-2.5 py-1"
                       onClick={() => router.push("/routines")}
                     >
-                      Edit
+                      Manage
                     </Button>
                   </li>
                 ))}
@@ -288,31 +274,23 @@ export default function DashboardPage() {
             <SectionHeading
               title="Today's tasks"
               description="One-off things that need your attention today."
-              action={
-                <Button
-                  variant="ghost"
-                  className="min-h-8 px-2.5 py-1"
-                  onClick={fetchTasks}
-                  disabled={loadingTasks}
-                >
-                  {loadingTasks ? "Refreshing…" : "Refresh"}
-                </Button>
-              }
             />
 
-            {todayTasks.length === 0 ? (
+            {loadingTasks ? (
+              <p className="mt-4 text-sm text-muted">Loading tasks…</p>
+            ) : todayTasks.length === 0 ? (
               <div className="mt-4">
                 <EmptyState>Nothing urgent is waiting for you today.</EmptyState>
               </div>
             ) : (
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 divide-y divide-border">
                 {todayTasks.map((task) => (
                   <li
                     key={task.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 py-3.5 first:pt-1 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="min-w-0">
-                      <p className="break-words font-medium text-foreground">
+                      <p className="wrap-break-word font-medium text-foreground">
                         {task.title}
                       </p>
                       <p className="mt-1 text-xs text-muted">
@@ -341,47 +319,37 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        <div className="space-y-6">
-          <Card>
-            <SectionHeading
-              title="Add a task"
-              description="Keep it lightweight. A due time is optional."
-            />
-            <div className="mt-4 space-y-3">
+        <Card tone="soft" className="self-start lg:sticky lg:top-8">
+          <SectionHeading
+            title="Quick task"
+            description="Capture one-off work without turning it into a routine."
+          />
+          <div className="mt-5 space-y-3">
+            <label className="grid gap-1.5">
+              <span className="text-xs font-medium text-muted">Task</span>
               <Input
                 placeholder="What needs doing?"
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
               />
+            </label>
+            <label className="grid gap-1.5">
+              <span className="text-xs font-medium text-muted">Due time</span>
               <Input
                 type="datetime-local"
                 value={dueLocal}
                 onChange={(event) => setDueLocal(event.target.value)}
               />
-              <Button
-                variant="primary"
-                className="w-full"
-                disabled={creating || !title.trim()}
-                onClick={createTask}
-              >
-                {creating ? "Adding…" : "Add task"}
-              </Button>
-            </div>
-          </Card>
-
-          <Card className="bg-primary-soft/60">
-            <p className="text-sm font-semibold text-foreground">Today at a glance</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Pill>{todaysRoutines.length} routines</Pill>
-              <Pill>{todayTasks.length} open tasks</Pill>
-              <Pill>{completedTaskCount} completed</Pill>
-            </div>
-            <p className="mt-4 text-sm leading-6 text-muted">
-              You do not need a perfect day. The goal is to keep showing up to
-              the system.
-            </p>
-          </Card>
-        </div>
+            </label>
+            <Button
+              className="w-full"
+              disabled={creating || !title.trim()}
+              onClick={createTask}
+            >
+              {creating ? "Adding…" : "Add task"}
+            </Button>
+          </div>
+        </Card>
       </div>
 
       {taskError && (
@@ -393,7 +361,7 @@ export default function DashboardPage() {
       <Card className="mt-6">
         <SectionHeading
           title="All tasks"
-          description="A quieter overview of everything you have captured."
+          description="Everything you have captured, including completed tasks."
         />
 
         {tasks.length === 0 ? (
@@ -405,19 +373,27 @@ export default function DashboardPage() {
             {tasks.map((task) => (
               <li
                 key={task.id}
-                className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p
-                    className={`break-words font-medium ${
-                      task.is_done
-                        ? "text-muted-soft line-through"
-                        : "text-foreground"
-                    }`}
-                  >
-                    {task.title}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`h-2 w-2 shrink-0 rounded-full ${
+                        task.is_done ? "bg-border-strong" : "bg-primary"
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <p
+                      className={`wrap-break-word font-medium ${
+                        task.is_done
+                          ? "text-muted-soft line-through"
+                          : "text-foreground"
+                      }`}
+                    >
+                      {task.title}
+                    </p>
+                  </div>
+                  <p className="mt-1 pl-4 text-xs text-muted">
                     {formatDueTime(task)}
                   </p>
                 </div>

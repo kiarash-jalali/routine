@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AppNav } from "@/components/AppNav";
 import {
   Button,
   Card,
@@ -9,6 +10,7 @@ import {
   ErrorNotice,
   PageHeader,
   PageShell,
+  ProgressBar,
   SectionHeading,
 } from "@/components/ui";
 import {
@@ -21,7 +23,11 @@ import { listTasks } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import { filterTasksForToday, getLocalDateKey } from "@/lib/today";
+import {
+  filterTasksForToday,
+  formatFriendlyDate,
+  getLocalDateKey,
+} from "@/lib/today";
 import type {
   CheckinCompletionMap,
   CheckinItem,
@@ -35,7 +41,7 @@ type CheckinChoiceProps = {
   title: string;
   detail?: string;
   completed: boolean;
-  disabled: boolean;
+  locked: boolean;
   onToggle: () => void;
 };
 
@@ -43,19 +49,19 @@ function CheckinChoice({
   title,
   detail,
   completed,
-  disabled,
+  locked,
   onToggle,
 }: CheckinChoiceProps) {
   return (
     <button
       type="button"
-      className={`flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring disabled:cursor-not-allowed disabled:opacity-60 ${
+      className={`flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring disabled:cursor-default ${
         completed
           ? "border-primary bg-primary-soft"
           : "border-border bg-surface-soft hover:border-border-strong hover:bg-surface"
       }`}
       aria-pressed={completed}
-      disabled={disabled}
+      disabled={locked}
       onClick={onToggle}
     >
       <span className="min-w-0">
@@ -111,6 +117,7 @@ function formatTaskTime(task: Task): string {
 export default function CheckinPage() {
   const router = useRouter();
   const [today] = useState(() => getLocalDateKey());
+  const [todayLabel] = useState(() => formatFriendlyDate());
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -122,6 +129,10 @@ export default function CheckinPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completionByItem, setCompletionByItem] =
     useState<CheckinCompletionMap>({});
+  const [savedCompletionByItem, setSavedCompletionByItem] =
+    useState<CheckinCompletionMap>({});
+  const [hasFinishedToday, setHasFinishedToday] = useState(false);
+  const [editingFinishedCheckin, setEditingFinishedCheckin] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,6 +163,7 @@ export default function CheckinPage() {
         const existingItems = existingCheckin
           ? await listCheckinItems(existingCheckin.id)
           : [];
+        const existingCompletionMap = createCompletionMap(existingItems);
 
         if (cancelled) return;
 
@@ -159,7 +171,10 @@ export default function CheckinPage() {
         setDailyCheckinId(existingCheckin?.id ?? null);
         setRoutines(todaysRoutines);
         setTasks(filterTasksForToday(allTasks));
-        setCompletionByItem(createCompletionMap(existingItems));
+        setCompletionByItem(existingCompletionMap);
+        setSavedCompletionByItem(existingCompletionMap);
+        setHasFinishedToday(Boolean(existingCheckin));
+        setEditingFinishedCheckin(false);
       } catch (error: unknown) {
         if (!cancelled) {
           setErrorMessage(
@@ -190,6 +205,12 @@ export default function CheckinPage() {
     return Boolean(completionByItem[createItemKey(itemType, itemId)]);
   }
 
+  function cancelFinishedCheckinEdit() {
+    setCompletionByItem(savedCompletionByItem);
+    setEditingFinishedCheckin(false);
+    setErrorMessage(null);
+  }
+
   async function finishDay() {
     if (!userId) return;
 
@@ -218,7 +239,9 @@ export default function CheckinPage() {
 
       await saveCheckinItems([...routineItems, ...taskItems]);
       setDailyCheckinId(checkinId);
-      router.push("/dashboard");
+      setSavedCompletionByItem({ ...completionByItem });
+      setHasFinishedToday(true);
+      setEditingFinishedCheckin(false);
     } catch (error: unknown) {
       setErrorMessage(
         getErrorMessage(error, "Today's check-in could not be saved."),
@@ -233,26 +256,27 @@ export default function CheckinPage() {
     ...tasks.map((task) => isItemCompleted("task", task.id)),
   ].filter(Boolean).length;
   const totalCount = routines.length + tasks.length;
+  const completionPercent =
+    totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const checkinLocked =
+    saving || (hasFinishedToday && !editingFinishedCheckin);
 
   if (loading) {
     return (
-      <PageShell className="max-w-3xl">
+      <PageShell className="max-w-4xl">
         <p className="text-sm text-muted">Loading today&apos;s check-in…</p>
       </PageShell>
     );
   }
 
   return (
-    <PageShell className="max-w-3xl">
+    <PageShell className="max-w-4xl">
+      <AppNav />
+
       <PageHeader
-        eyebrow={today}
+        eyebrow={todayLabel}
         title="Daily check-in"
         description="Notice what you managed today. This is a ritual, not a test."
-        actions={
-          <Button onClick={() => router.push("/dashboard")} disabled={saving}>
-            Back
-          </Button>
-        }
       />
 
       {errorMessage && (
@@ -261,7 +285,34 @@ export default function CheckinPage() {
         </div>
       )}
 
-      <div className="mt-8 space-y-6">
+      {hasFinishedToday && !editingFinishedCheckin && (
+        <Card tone="accent" className="mt-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <span
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-base font-semibold text-white"
+                aria-hidden="true"
+              >
+                ✓
+              </span>
+              <div>
+                <p className="font-semibold text-foreground">
+                  Today is checked in.
+                </p>
+                <p className="mt-1 text-sm leading-5 text-muted">
+                  {completedCount} of {totalCount} items marked complete. You can
+                  still edit today if something changes.
+                </p>
+              </div>
+            </div>
+            <Button onClick={() => setEditingFinishedCheckin(true)}>
+              Edit check-in
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      <div className="mt-6 space-y-6">
         <Card>
           <SectionHeading
             title="Today's routines"
@@ -280,7 +331,7 @@ export default function CheckinPage() {
                   title={routine.title}
                   detail={formatRoutineTime(routine)}
                   completed={isItemCompleted("routine", routine.id)}
-                  disabled={saving}
+                  locked={checkinLocked}
                   onToggle={() => toggleItem("routine", routine.id)}
                 />
               ))}
@@ -306,7 +357,7 @@ export default function CheckinPage() {
                   title={task.title}
                   detail={formatTaskTime(task)}
                   completed={isItemCompleted("task", task.id)}
-                  disabled={saving}
+                  locked={checkinLocked}
                   onToggle={() => toggleItem("task", task.id)}
                 />
               ))}
@@ -314,20 +365,58 @@ export default function CheckinPage() {
           )}
         </Card>
 
-        <div className="sticky bottom-4 rounded-2xl border border-border bg-surface/95 p-3 shadow-card backdrop-blur">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="px-1 text-sm text-muted">
-              <span className="font-semibold text-foreground">{completedCount}</span>
-              {` of ${totalCount} marked complete`}
-            </p>
-            <Button
-              variant="primary"
-              className="sm:min-w-36"
-              disabled={saving || !userId}
-              onClick={finishDay}
-            >
-              {saving ? "Saving…" : "Finish day"}
-            </Button>
+        <div
+          className={`rounded-[1.4rem] border p-4 shadow-card sm:p-5 ${
+            hasFinishedToday && !editingFinishedCheckin
+              ? "border-primary/15 bg-primary-soft/45"
+              : "sticky bottom-4 border-primary/15 bg-surface/95 backdrop-blur"
+          }`}
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <p className="text-sm text-muted">
+                  <span className="font-semibold text-foreground">
+                    {completedCount}
+                  </span>
+                  {` of ${totalCount} marked complete`}
+                </p>
+                <span className="text-xs font-medium text-primary">
+                  {completionPercent}%
+                </span>
+              </div>
+              <ProgressBar value={completedCount} max={totalCount} />
+            </div>
+
+            {hasFinishedToday && !editingFinishedCheckin ? (
+              <Button onClick={() => router.push("/dashboard")}>
+                Back to today
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                {editingFinishedCheckin && (
+                  <Button
+                    variant="ghost"
+                    disabled={saving}
+                    onClick={cancelFinishedCheckinEdit}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  variant="primary"
+                  className="sm:min-w-36"
+                  disabled={saving || !userId}
+                  onClick={finishDay}
+                >
+                  {saving
+                    ? "Saving…"
+                    : editingFinishedCheckin
+                      ? "Save changes"
+                      : "Finish day"}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

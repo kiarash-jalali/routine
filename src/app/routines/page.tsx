@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AppNav } from "@/components/AppNav";
 import { RoutineForm } from "@/components/routines/RoutineForm";
 import {
   Button,
@@ -10,6 +11,7 @@ import {
   ErrorNotice,
   PageHeader,
   PageShell,
+  Pill,
   SectionHeading,
 } from "@/components/ui";
 import {
@@ -33,11 +35,10 @@ export default function RoutinesPage() {
   const router = useRouter();
 
   const [loadingUser, setLoadingUser] = useState(true);
-  const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
   const [routines, setRoutines] = useState<Routine[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingRoutines, setLoadingRoutines] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
   const [editingRoutine, setEditingRoutine] = useState<Routine | null>(null);
@@ -59,7 +60,6 @@ export default function RoutinesPage() {
         }
 
         if (mounted) {
-          setEmail(data.user.email ?? null);
           setUserId(data.user.id);
           setLoadingUser(false);
         }
@@ -76,14 +76,14 @@ export default function RoutinesPage() {
 
   async function fetchRoutines() {
     setErr(null);
-    setLoading(true);
+    setLoadingRoutines(true);
 
     try {
       setRoutines(await listRoutines());
     } catch (error: unknown) {
       setErr(getErrorMessage(error, "Failed to load routines"));
     } finally {
-      setLoading(false);
+      setLoadingRoutines(false);
     }
   }
 
@@ -204,27 +204,18 @@ export default function RoutinesPage() {
   const formValues = editingRoutine
     ? routineToFormValues(editingRoutine)
     : getDefaultRoutineFormValues();
+  const activeRoutineCount = routines.filter(
+    (routine) => routine.is_active,
+  ).length;
 
   return (
     <PageShell>
+      <AppNav />
+
       <PageHeader
         eyebrow="Routine library"
         title="Build the rhythm you want."
-        description={
-          <>
-            Keep routines simple and forgiving. You can pause them without
-            deleting them.
-            {email && <span className="ml-1 text-muted-soft">· {email}</span>}
-          </>
-        }
-        actions={
-          <>
-            <Button onClick={() => router.push("/dashboard")}>Dashboard</Button>
-            <Button variant="ghost" onClick={fetchRoutines} disabled={loading}>
-              {loading ? "Refreshing…" : "Refresh"}
-            </Button>
-          </>
-        }
+        description="Keep routines simple and forgiving. Pause them when life changes; edit them when your rhythm changes."
       />
 
       {err && (
@@ -233,16 +224,23 @@ export default function RoutinesPage() {
         </div>
       )}
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]">
-        <Card id="routine-editor" className="self-start scroll-mt-6">
-          <SectionHeading
-            title={isEditing ? "Edit routine" : "Create a routine"}
-            description={
-              isEditing
-                ? `Update ${editingRoutine.title}'s name, rhythm, days, or time.`
-                : "Give it a name, rhythm, and a preferred time."
-            }
-          />
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(310px,0.8fr)_minmax(0,1.3fr)]">
+        <Card
+          id="routine-editor"
+          className="self-start scroll-mt-6 lg:sticky lg:top-8"
+          tone={isEditing ? "accent" : "default"}
+        >
+          <div className="mb-1 flex items-center justify-between gap-3">
+            <SectionHeading
+              title={isEditing ? "Edit routine" : "Create a routine"}
+              description={
+                isEditing
+                  ? `Update ${editingRoutine.title}'s rhythm without losing the routine.`
+                  : "Give it a name, rhythm, and a preferred time."
+              }
+            />
+            {isEditing && <Pill>Editing</Pill>}
+          </div>
 
           <RoutineForm
             key={
@@ -259,20 +257,28 @@ export default function RoutinesPage() {
           />
         </Card>
 
-        <Card>
-          <SectionHeading
-            title="Your routines"
-            description={`${routines.filter((routine) => routine.is_active).length} active · ${routines.length} total`}
-          />
+        <Card className="self-start">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <SectionHeading
+              title="Your routines"
+              description="A small library you can adjust as your week changes."
+            />
+            <div className="flex gap-2">
+              <Pill>{activeRoutineCount} active</Pill>
+              <Pill muted>{routines.length} total</Pill>
+            </div>
+          </div>
 
-          {routines.length === 0 ? (
-            <div className="mt-4">
+          {loadingRoutines ? (
+            <p className="mt-5 text-sm text-muted">Loading routines…</p>
+          ) : routines.length === 0 ? (
+            <div className="mt-5">
               <EmptyState>
                 No routines yet. Your first one can be something tiny.
               </EmptyState>
             </div>
           ) : (
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-5 space-y-3">
               {routines.map((routine) => {
                 const selectedForEditing = editingRoutine?.id === routine.id;
 
@@ -281,41 +287,44 @@ export default function RoutinesPage() {
                     key={routine.id}
                     className={`rounded-2xl border px-4 py-4 transition ${
                       selectedForEditing
-                        ? "border-primary bg-primary-soft"
+                        ? "border-primary/40 bg-primary-soft/70"
                         : routine.is_active
-                          ? "border-border bg-surface-soft"
-                          : "border-border bg-surface-soft/60"
+                          ? "border-border bg-surface-soft/65 hover:border-border-strong"
+                          : "border-border bg-surface-soft/40"
                     }`}
                   >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p
-                            className={`break-words font-medium ${
-                              routine.is_active
-                                ? "text-foreground"
-                                : "text-muted line-through"
-                            }`}
-                          >
-                            {routine.title}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <span
+                          className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
+                            routine.is_active ? "bg-primary" : "bg-border-strong"
+                          }`}
+                          aria-hidden="true"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p
+                              className={`wrap-break-word font-medium ${
+                                routine.is_active
+                                  ? "text-foreground"
+                                  : "text-muted line-through"
+                              }`}
+                            >
+                              {routine.title}
+                            </p>
+                            <Pill muted>
+                              {routine.frequency === "daily" ? "Daily" : "Weekly"}
+                            </Pill>
+                            {!routine.is_active && <Pill muted>Paused</Pill>}
+                            {selectedForEditing && <Pill>Editing</Pill>}
+                          </div>
+                          <p className="mt-1.5 text-xs leading-5 text-muted">
+                            {describeRoutine(routine)}
                           </p>
-                          {!routine.is_active && (
-                            <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-muted">
-                              Paused
-                            </span>
-                          )}
-                          {selectedForEditing && (
-                            <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-primary-strong">
-                              Editing
-                            </span>
-                          )}
                         </div>
-                        <p className="mt-1 text-xs text-muted">
-                          {describeRoutine(routine)}
-                        </p>
                       </div>
 
-                      <div className="flex shrink-0 flex-wrap gap-2">
+                      <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
                         <Button
                           className="min-h-8 px-3 py-1"
                           onClick={() => startEditing(routine)}
@@ -324,6 +333,7 @@ export default function RoutinesPage() {
                           Edit
                         </Button>
                         <Button
+                          variant="ghost"
                           className="min-h-8 px-3 py-1"
                           onClick={() => onToggleActive(routine)}
                           disabled={savingMode !== null}

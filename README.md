@@ -61,7 +61,7 @@ npm run build     # Production build check
 | --- | --- |
 | `/login` | Email/password login and signup |
 | `/dashboard` | Task management and today's overview |
-| `/routines` | Create, edit, pause, resume, and delete daily or weekly routines |
+| `/routines` | Create, edit, pause, resume, and delete daily/weekly routines |
 | `/checkin` | Daily completion ritual for today's items |
 
 ## Source structure
@@ -69,10 +69,9 @@ npm run build     # Production build check
 ```text
 src/
 ├── app/             Pages and page-level state
-├── components/      Shared UI plus small feature-specific components
+├── components/      Small reusable UI building blocks
 ├── lib/db/          Supabase queries and mutations
 ├── lib/errors.ts    Safe conversion of unknown errors into messages
-├── lib/routineSchedule.ts  Routine form/schedule helpers
 ├── lib/today.ts     Shared local-date and "today" rules
 └── types/           Reusable application data types
 ```
@@ -80,8 +79,8 @@ src/
 Pages should not duplicate database queries or domain rules. Database access
 belongs in `src/lib/db`, reusable rules belong in `src/lib`, and shared data
 shapes belong in `src/types`. Reusable visual primitives live in
-`src/components/ui.tsx`; theme colours and global visual tokens live in
-`src/app/globals.css`. This keeps page code readable without adding a large UI
+`src/components/ui.tsx`; authenticated pages share `src/components/AppNav.tsx`;
+theme colours and global visual tokens live in `src/app/globals.css`. This keeps page code readable without adding a large UI
 framework.
 
 ## Data model
@@ -95,9 +94,20 @@ Supabase Row Level Security restricts every user to their own rows. Database
 schema migrations are not yet versioned in this repository and should be added
 before the project has multiple deployment environments.
 
+## Current milestone
+
+The core routine/task/check-in flow is implemented, routine editing is supported,
+and the shared UI foundation is in place. Dashboard, check-in, and routines now
+use one consistent navigation pattern, friendly date formatting, and automatic
+refresh after mutations instead of manual Refresh controls. Finishing a daily
+check-in now leaves a clear completed state and can be reopened for edits. The
+current visual system intentionally uses a single controlled light theme so
+contrast stays predictable; a deliberate dark theme can be added later without
+relying on browser/system defaults.
+
 ## Roadmap
 
-1. Keep testing and polishing the current task, routine, and daily check-in flows.
+1. Test the polished core flow with real daily use.
 2. Add check-in history and forgiving streaks.
 3. Design an anti-farming points system.
 4. Add earned personalisation and optional notifications.
