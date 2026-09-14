@@ -61,7 +61,7 @@ npm run build     # Production build check
 | --- | --- |
 | `/login` | Email/password login and signup |
 | `/dashboard` | Task management and today's overview |
-| `/routines` | Daily and weekly routine management |
+| `/routines` | Create, edit, pause, resume, and delete daily or weekly routines |
 | `/checkin` | Daily completion ritual for today's items |
 
 ## Source structure
@@ -69,9 +69,10 @@ npm run build     # Production build check
 ```text
 src/
 ├── app/             Pages and page-level state
-├── components/      Small reusable UI building blocks
+├── components/      Shared UI plus small feature-specific components
 ├── lib/db/          Supabase queries and mutations
 ├── lib/errors.ts    Safe conversion of unknown errors into messages
+├── lib/routineSchedule.ts  Routine form/schedule helpers
 ├── lib/today.ts     Shared local-date and "today" rules
 └── types/           Reusable application data types
 ```
@@ -96,7 +97,7 @@ before the project has multiple deployment environments.
 
 ## Roadmap
 
-1. Finish and test the daily check-in flow.
+1. Keep testing and polishing the current task, routine, and daily check-in flows.
 2. Add check-in history and forgiving streaks.
 3. Design an anti-farming points system.
 4. Add earned personalisation and optional notifications.

@@ -59,7 +59,7 @@ function CheckinChoice({
       onClick={onToggle}
     >
       <span className="min-w-0">
-        <span className="block break-words font-medium text-foreground">
+        <span className="block wrap-break-word font-medium text-foreground">
           {title}
         </span>
         {detail && (

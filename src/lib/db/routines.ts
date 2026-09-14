@@ -1,10 +1,13 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { Routine } from "@/types/routine";
 
-type CreateRoutineInput = Pick<
+type RoutineWriteFields = Pick<
   Routine,
-  "user_id" | "title" | "frequency" | "days_of_week" | "preferred_time"
+  "title" | "frequency" | "days_of_week" | "preferred_time"
 >;
+
+type CreateRoutineInput = RoutineWriteFields & Pick<Routine, "user_id">;
+type UpdateRoutineInput = RoutineWriteFields;
 
 export async function listRoutines(): Promise<Routine[]> {
   const supabase = supabaseBrowser();
@@ -21,6 +24,19 @@ export async function listRoutines(): Promise<Routine[]> {
 export async function addRoutine(input: CreateRoutineInput): Promise<void> {
   const supabase = supabaseBrowser();
   const { error } = await supabase.from("routines").insert(input);
+
+  if (error) throw error;
+}
+
+export async function updateRoutine(
+  routineId: string,
+  input: UpdateRoutineInput,
+): Promise<void> {
+  const supabase = supabaseBrowser();
+  const { error } = await supabase
+    .from("routines")
+    .update(input)
+    .eq("id", routineId);
 
   if (error) throw error;
 }

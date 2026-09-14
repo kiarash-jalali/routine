@@ -1,51 +1,33 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RoutineForm } from "@/components/routines/RoutineForm";
 import {
   Button,
   Card,
   EmptyState,
   ErrorNotice,
-  Input,
   PageHeader,
   PageShell,
   SectionHeading,
-  Select,
 } from "@/components/ui";
 import {
   addRoutine,
   listRoutines,
   removeRoutine,
   toggleRoutineActive,
+  updateRoutine,
 } from "@/lib/db/routines";
 import { getErrorMessage } from "@/lib/errors";
+import {
+  describeRoutine,
+  formatPreferredTimeForDatabase,
+  getDefaultRoutineFormValues,
+  routineToFormValues,
+} from "@/lib/routineSchedule";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import type { Routine } from "@/types/routine";
-
-const DAYS = [
-  { label: "Mon", value: 1 },
-  { label: "Tue", value: 2 },
-  { label: "Wed", value: 3 },
-  { label: "Thu", value: 4 },
-  { label: "Fri", value: 5 },
-  { label: "Sat", value: 6 },
-  { label: "Sun", value: 7 },
-];
-
-function describeRoutine(routine: Routine) {
-  const time = routine.preferred_time?.slice(0, 5) ?? "No time";
-
-  if (routine.frequency === "daily") {
-    return `Every day · ${time}`;
-  }
-
-  const dayLabels = DAYS.filter((day) =>
-    (routine.days_of_week ?? []).includes(day.value),
-  ).map((day) => day.label);
-
-  return `${dayLabels.join(", ") || "No days selected"} · ${time}`;
-}
+import type { Routine, RoutineFormValues } from "@/types/routine";
 
 export default function RoutinesPage() {
   const router = useRouter();
@@ -58,11 +40,9 @@ export default function RoutinesPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const [title, setTitle] = useState("");
-  const [frequency, setFrequency] = useState<"daily" | "weekly">("daily");
-  const [daysOfWeek, setDaysOfWeek] = useState<number[]>([1, 2, 3, 4, 5]);
-  const [preferredTime, setPreferredTime] = useState("09:00");
-  const [creating, setCreating] = useState(false);
+  const [editingRoutine, setEditingRoutine] = useState<Routine | null>(null);
+  const [savingMode, setSavingMode] = useState<"create" | "edit" | null>(null);
+  const [createFormVersion, setCreateFormVersion] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -112,45 +92,62 @@ export default function RoutinesPage() {
     fetchRoutines();
   }, [userId]);
 
-  function toggleDay(day: number) {
-    setDaysOfWeek((current) => {
-      const next = current.includes(day)
-        ? current.filter((value) => value !== day)
-        : [...current, day];
+  async function onCreate(values: RoutineFormValues) {
+    if (!userId) return;
 
-      return next.sort((a, b) => a - b);
-    });
-  }
-
-  const canCreate = useMemo(() => {
-    if (!userId || !title.trim() || !preferredTime.trim()) return false;
-    if (frequency === "weekly" && daysOfWeek.length === 0) return false;
-    return true;
-  }, [userId, title, preferredTime, frequency, daysOfWeek]);
-
-  async function onCreate() {
-    if (!userId || !canCreate) return;
-
-    setCreating(true);
+    setSavingMode("create");
     setErr(null);
 
     try {
       await addRoutine({
         user_id: userId,
-        title: title.trim(),
-        frequency,
-        days_of_week: frequency === "weekly" ? daysOfWeek : null,
-        preferred_time:
-          preferredTime.length === 5 ? `${preferredTime}:00` : preferredTime,
+        title: values.title,
+        frequency: values.frequency,
+        days_of_week: values.frequency === "weekly" ? values.daysOfWeek : null,
+        preferred_time: formatPreferredTimeForDatabase(values.preferredTime),
       });
 
-      setTitle("");
       await fetchRoutines();
+      setCreateFormVersion((current) => current + 1);
     } catch (error: unknown) {
       setErr(getErrorMessage(error, "Failed to create routine"));
     } finally {
-      setCreating(false);
+      setSavingMode(null);
     }
+  }
+
+  async function onSaveEdit(values: RoutineFormValues) {
+    if (!editingRoutine) return;
+
+    setSavingMode("edit");
+    setErr(null);
+
+    try {
+      await updateRoutine(editingRoutine.id, {
+        title: values.title,
+        frequency: values.frequency,
+        days_of_week: values.frequency === "weekly" ? values.daysOfWeek : null,
+        preferred_time: formatPreferredTimeForDatabase(values.preferredTime),
+      });
+
+      await fetchRoutines();
+      setEditingRoutine(null);
+    } catch (error: unknown) {
+      setErr(getErrorMessage(error, "Failed to update routine"));
+    } finally {
+      setSavingMode(null);
+    }
+  }
+
+  function startEditing(routine: Routine) {
+    setEditingRoutine(routine);
+    setErr(null);
+
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById("routine-editor")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   async function onToggleActive(routine: Routine) {
@@ -183,6 +180,10 @@ export default function RoutinesPage() {
       current.filter((item) => item.id !== routine.id),
     );
 
+    if (editingRoutine?.id === routine.id) {
+      setEditingRoutine(null);
+    }
+
     try {
       await removeRoutine(routine.id);
     } catch (error: unknown) {
@@ -198,6 +199,11 @@ export default function RoutinesPage() {
       </PageShell>
     );
   }
+
+  const isEditing = editingRoutine !== null;
+  const formValues = editingRoutine
+    ? routineToFormValues(editingRoutine)
+    : getDefaultRoutineFormValues();
 
   return (
     <PageShell>
@@ -228,90 +234,29 @@ export default function RoutinesPage() {
       )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]">
-        <Card className="self-start">
+        <Card id="routine-editor" className="self-start scroll-mt-6">
           <SectionHeading
-            title="Create a routine"
-            description="Give it a name, rhythm, and a preferred time."
+            title={isEditing ? "Edit routine" : "Create a routine"}
+            description={
+              isEditing
+                ? `Update ${editingRoutine.title}'s name, rhythm, days, or time.`
+                : "Give it a name, rhythm, and a preferred time."
+            }
           />
 
-          <div className="mt-5 space-y-4">
-            <label className="grid gap-1.5">
-              <span className="text-sm font-medium text-foreground">Name</span>
-              <Input
-                placeholder="Reading, vitamins, stretching…"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-              />
-            </label>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-              <label className="grid gap-1.5">
-                <span className="text-sm font-medium text-foreground">
-                  Frequency
-                </span>
-                <Select
-                  value={frequency}
-                  onChange={(event) =>
-                    setFrequency(event.target.value as "daily" | "weekly")
-                  }
-                >
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                </Select>
-              </label>
-
-              <label className="grid gap-1.5">
-                <span className="text-sm font-medium text-foreground">
-                  Preferred time
-                </span>
-                <Input
-                  type="time"
-                  value={preferredTime}
-                  onChange={(event) => setPreferredTime(event.target.value)}
-                  required
-                />
-              </label>
-            </div>
-
-            {frequency === "weekly" && (
-              <div>
-                <p className="mb-2 text-sm font-medium text-foreground">
-                  Days of week
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {DAYS.map((day) => {
-                    const active = daysOfWeek.includes(day.value);
-                    return (
-                      <button
-                        key={day.value}
-                        type="button"
-                        onClick={() => toggleDay(day.value)}
-                        className={`rounded-full border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring ${
-                          active
-                            ? "border-primary bg-primary text-white"
-                            : "border-border-strong bg-surface text-muted hover:bg-surface-soft hover:text-foreground"
-                        }`}
-                      >
-                        {day.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="mt-2 text-xs text-muted">
-                  Pick at least one day for a weekly routine.
-                </p>
-              </div>
-            )}
-
-            <Button
-              variant="primary"
-              className="w-full"
-              disabled={!canCreate || creating}
-              onClick={onCreate}
-            >
-              {creating ? "Creating…" : "Create routine"}
-            </Button>
-          </div>
+          <RoutineForm
+            key={
+              editingRoutine
+                ? `edit-${editingRoutine.id}`
+                : `create-${createFormVersion}`
+            }
+            initialValues={formValues}
+            submitLabel={isEditing ? "Save changes" : "Create routine"}
+            submittingLabel={isEditing ? "Saving…" : "Creating…"}
+            isSubmitting={savingMode !== null}
+            onSubmit={isEditing ? onSaveEdit : onCreate}
+            onCancel={isEditing ? () => setEditingRoutine(null) : undefined}
+          />
         </Card>
 
         <Card>
@@ -328,56 +273,76 @@ export default function RoutinesPage() {
             </div>
           ) : (
             <ul className="mt-4 space-y-3">
-              {routines.map((routine) => (
-                <li
-                  key={routine.id}
-                  className={`rounded-2xl border px-4 py-4 transition ${
-                    routine.is_active
-                      ? "border-border bg-surface-soft"
-                      : "border-border bg-surface-soft/60"
-                  }`}
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p
-                          className={`break-words font-medium ${
-                            routine.is_active
-                              ? "text-foreground"
-                              : "text-muted line-through"
-                          }`}
-                        >
-                          {routine.title}
-                        </p>
-                        {!routine.is_active && (
-                          <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-muted">
-                            Paused
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-1 text-xs text-muted">
-                        {describeRoutine(routine)}
-                      </p>
-                    </div>
+              {routines.map((routine) => {
+                const selectedForEditing = editingRoutine?.id === routine.id;
 
-                    <div className="flex shrink-0 gap-2">
-                      <Button
-                        className="min-h-8 px-3 py-1"
-                        onClick={() => onToggleActive(routine)}
-                      >
-                        {routine.is_active ? "Pause" : "Resume"}
-                      </Button>
-                      <Button
-                        variant="danger"
-                        className="min-h-8 px-3 py-1"
-                        onClick={() => onDelete(routine)}
-                      >
-                        Delete
-                      </Button>
+                return (
+                  <li
+                    key={routine.id}
+                    className={`rounded-2xl border px-4 py-4 transition ${
+                      selectedForEditing
+                        ? "border-primary bg-primary-soft"
+                        : routine.is_active
+                          ? "border-border bg-surface-soft"
+                          : "border-border bg-surface-soft/60"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p
+                            className={`break-words font-medium ${
+                              routine.is_active
+                                ? "text-foreground"
+                                : "text-muted line-through"
+                            }`}
+                          >
+                            {routine.title}
+                          </p>
+                          {!routine.is_active && (
+                            <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-muted">
+                              Paused
+                            </span>
+                          )}
+                          {selectedForEditing && (
+                            <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-primary-strong">
+                              Editing
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs text-muted">
+                          {describeRoutine(routine)}
+                        </p>
+                      </div>
+
+                      <div className="flex shrink-0 flex-wrap gap-2">
+                        <Button
+                          className="min-h-8 px-3 py-1"
+                          onClick={() => startEditing(routine)}
+                          disabled={savingMode !== null}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          className="min-h-8 px-3 py-1"
+                          onClick={() => onToggleActive(routine)}
+                          disabled={savingMode !== null}
+                        >
+                          {routine.is_active ? "Pause" : "Resume"}
+                        </Button>
+                        <Button
+                          variant="danger"
+                          className="min-h-8 px-3 py-1"
+                          onClick={() => onDelete(routine)}
+                          disabled={savingMode !== null}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Card>
