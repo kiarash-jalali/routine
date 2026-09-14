@@ -1,13 +1,35 @@
 "use client";
 
-import type { Routine } from "@/types/routine";
-import { listTodaysRoutines } from "@/lib/db/today";
-
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabaseBrowser } from "@/lib/supabaseClient";
-import type { Task } from "@/types/task";
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorNotice,
+  Input,
+  PageHeader,
+  PageShell,
+  Pill,
+  SectionHeading,
+} from "@/components/ui";
 import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
+import { listTodaysRoutines } from "@/lib/db/today";
+import { getErrorMessage } from "@/lib/errors";
+import { supabaseBrowser } from "@/lib/supabaseClient";
+import { filterTasksForToday } from "@/lib/today";
+import type { Routine } from "@/types/routine";
+import type { Task } from "@/types/task";
+
+function formatDueTime(task: Task) {
+  if (!task.due_at) return "Flexible — no due time";
+
+  return new Date(task.due_at).toLocaleString([], {
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -20,12 +42,14 @@ export default function DashboardPage() {
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [taskError, setTaskError] = useState<string | null>(null);
 
-  // Create task form state
   const [title, setTitle] = useState("");
-  const [dueLocal, setDueLocal] = useState<string>(""); // datetime-local string
+  const [dueLocal, setDueLocal] = useState("");
   const [creating, setCreating] = useState(false);
 
-  // 1) Load current user (protected route)
+  const [todaysRoutines, setTodaysRoutines] = useState<Routine[]>([]);
+  const [loadingRoutines, setLoadingRoutines] = useState(false);
+  const [routineError, setRoutineError] = useState<string | null>(null);
+
   useEffect(() => {
     let mounted = true;
 
@@ -56,48 +80,36 @@ export default function DashboardPage() {
     };
   }, [router]);
 
-  const [todaysRoutines, setTodaysRoutines] = useState<Routine[]>([]);
-  const [loadingRoutines, setLoadingRoutines] = useState(false);
-  const [routineError, setRoutineError] = useState<string | null>(null);
-
   async function fetchTodaysRoutines() {
     setRoutineError(null);
     setLoadingRoutines(true);
 
     try {
-      const { data, error } = await listTodaysRoutines();
-      if (error) throw error;
-      setTodaysRoutines(data ?? []);
-    } catch (e: any) {
-      setRoutineError(e?.message ?? "Failed to load routines");
+      setTodaysRoutines(await listTodaysRoutines());
+    } catch (error: unknown) {
+      setRoutineError(getErrorMessage(error, "Failed to load routines"));
     } finally {
       setLoadingRoutines(false);
     }
   }
 
-  // 2) Fetch tasks (RLS ensures only the current user's rows are returned)
   async function fetchTasks() {
     setTaskError(null);
     setLoadingTasks(true);
 
     try {
-      const { data, error } = await listTasks();
-      if (error) throw error;
-
-      setTasks((data ?? []) as Task[]);
-    } catch (e: any) {
-      setTaskError(e?.message ?? "Failed to load tasks");
+      setTasks(await listTasks());
+    } catch (error: unknown) {
+      setTaskError(getErrorMessage(error, "Failed to load tasks"));
     } finally {
       setLoadingTasks(false);
     }
   }
 
-  // Fetch tasks after user is known
   useEffect(() => {
     if (!userId) return;
     fetchTasks();
     fetchTodaysRoutines();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   async function logout() {
@@ -107,30 +119,26 @@ export default function DashboardPage() {
   }
 
   async function createTask() {
-    if (!userId) return;
-    if (!title.trim()) return;
+    if (!userId || !title.trim()) return;
 
     setCreating(true);
     setTaskError(null);
 
     try {
-      // Convert datetime-local (local time) into ISO (UTC) for timestamptz.
       const dueAtIso =
         dueLocal.trim() === "" ? null : new Date(dueLocal).toISOString();
 
-      const { error } = await addTask({
+      await addTask({
         user_id: userId,
         title: title.trim(),
         due_at: dueAtIso,
       });
 
-      if (error) throw error;
-
       setTitle("");
       setDueLocal("");
       await fetchTasks();
-    } catch (e: any) {
-      setTaskError(e?.message ?? "Failed to create task");
+    } catch (error: unknown) {
+      setTaskError(getErrorMessage(error, "Failed to create task"));
     } finally {
       setCreating(false);
     }
@@ -138,279 +146,301 @@ export default function DashboardPage() {
 
   async function toggleDone(task: Task) {
     setTaskError(null);
-
-    // Optimistic update
-    setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, is_done: !t.is_done } : t)),
+    setTasks((current) =>
+      current.map((item) =>
+        item.id === task.id ? { ...item, is_done: !item.is_done } : item,
+      ),
     );
 
     try {
-      const { error } = await setTaskDone(task.id, !task.is_done);
-      if (error) throw error;
-    } catch (e: any) {
-      // Revert optimistic update if it fails
-      setTasks((prev) =>
-        prev.map((t) =>
-          t.id === task.id ? { ...t, is_done: task.is_done } : t,
+      await setTaskDone(task.id, !task.is_done);
+    } catch (error: unknown) {
+      setTasks((current) =>
+        current.map((item) =>
+          item.id === task.id ? { ...item, is_done: task.is_done } : item,
         ),
       );
-      setTaskError(e?.message ?? "Failed to update task");
+      setTaskError(getErrorMessage(error, "Failed to update task"));
     }
   }
 
   async function deleteTask(task: Task) {
     setTaskError(null);
-
-    // Optimistic remove
-    setTasks((prev) => prev.filter((t) => t.id !== task.id));
+    setTasks((current) => current.filter((item) => item.id !== task.id));
 
     try {
-      const { error } = await removeTask(task.id);
-      if (error) throw error;
-    } catch (e: any) {
-      // Re-fetch to restore truth if delete fails
+      await removeTask(task.id);
+    } catch (error: unknown) {
       await fetchTasks();
-      setTaskError(e?.message ?? "Failed to delete task");
+      setTaskError(getErrorMessage(error, "Failed to delete task"));
     }
   }
 
-  const todayTasks = useMemo(() => {
-    const now = new Date();
-    const start = new Date(now);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(now);
-    end.setHours(23, 59, 59, 999);
+  const todayTasks = useMemo(() => filterTasksForToday(tasks), [tasks]);
+  const completedTaskCount = useMemo(
+    () => tasks.filter((task) => task.is_done).length,
+    [tasks],
+  );
+  const todayLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      }).format(new Date()),
+    [],
+  );
 
-    return tasks.filter((t) => {
-      if (t.is_done) return false;
-      if (!t.due_at) return true; // floating tasks show in Today
-      const due = new Date(t.due_at);
-      return due >= start && due <= end;
-    });
-  }, [tasks]);
-
-  if (loadingUser) return <main className="p-6">Loading...</main>;
+  if (loadingUser) {
+    return (
+      <PageShell>
+        <p className="text-sm text-muted">Loading your day…</p>
+      </PageShell>
+    );
+  }
 
   return (
-    <main className="min-h-screen p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p className="mt-1 text-sm text-gray-600">Logged in as: {email}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.push("/routines")}
-              className="rounded-xl border px-3 py-2"
-              type="button"
-            >
-              Routines
-            </button>
-
-            <button
-              onClick={logout}
-              className="rounded-xl border px-3 py-2"
-              type="button"
-            >
+    <PageShell>
+      <PageHeader
+        eyebrow={todayLabel}
+        title="Shape today, gently."
+        description={
+          <>
+            Your routines come first. Tasks are here when you need them.
+            {email && <span className="ml-1 text-muted-soft">· {email}</span>}
+          </>
+        }
+        actions={
+          <>
+            <Button variant="primary" onClick={() => router.push("/checkin")}>
+              Daily check-in
+            </Button>
+            <Button onClick={() => router.push("/routines")}>Routines</Button>
+            <Button variant="ghost" onClick={logout}>
               Log out
-            </button>
-          </div>
+            </Button>
+          </>
+        }
+      />
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.8fr)]">
+        <div className="space-y-6">
+          <Card>
+            <SectionHeading
+              title="Today's routines"
+              description="The repeating things that give your day some shape."
+              action={
+                <Button
+                  variant="ghost"
+                  className="min-h-8 px-2.5 py-1"
+                  onClick={fetchTodaysRoutines}
+                  disabled={loadingRoutines}
+                >
+                  {loadingRoutines ? "Refreshing…" : "Refresh"}
+                </Button>
+              }
+            />
+
+            {routineError && (
+              <div className="mt-4">
+                <ErrorNotice>{routineError}</ErrorNotice>
+              </div>
+            )}
+
+            {todaysRoutines.length === 0 ? (
+              <div className="mt-4">
+                <EmptyState>
+                  No routines are planned for today. Add one from the Routines
+                  page when you are ready.
+                </EmptyState>
+              </div>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {todaysRoutines.map((routine) => (
+                  <li
+                    key={routine.id}
+                    className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface-soft px-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="break-words font-medium text-foreground">
+                        {routine.title}
+                      </p>
+                      <p className="mt-1 text-xs text-muted">
+                        {routine.preferred_time
+                          ? `Preferred at ${routine.preferred_time.slice(0, 5)}`
+                          : "No preferred time"}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      className="min-h-8 shrink-0 px-2.5 py-1"
+                      onClick={() => router.push("/routines")}
+                    >
+                      Edit
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <Card>
+            <SectionHeading
+              title="Today's tasks"
+              description="One-off things that need your attention today."
+              action={
+                <Button
+                  variant="ghost"
+                  className="min-h-8 px-2.5 py-1"
+                  onClick={fetchTasks}
+                  disabled={loadingTasks}
+                >
+                  {loadingTasks ? "Refreshing…" : "Refresh"}
+                </Button>
+              }
+            />
+
+            {todayTasks.length === 0 ? (
+              <div className="mt-4">
+                <EmptyState>Nothing urgent is waiting for you today.</EmptyState>
+              </div>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {todayTasks.map((task) => (
+                  <li
+                    key={task.id}
+                    className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0">
+                      <p className="break-words font-medium text-foreground">
+                        {task.title}
+                      </p>
+                      <p className="mt-1 text-xs text-muted">
+                        {formatDueTime(task)}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      <Button
+                        className="min-h-8 px-3 py-1"
+                        onClick={() => toggleDone(task)}
+                      >
+                        Done
+                      </Button>
+                      <Button
+                        variant="danger"
+                        className="min-h-8 px-3 py-1"
+                        onClick={() => deleteTask(task)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
         </div>
 
-        {/* Create task */}
-        <section className="mt-6 rounded-2xl border p-4">
-          <h2 className="font-semibold">Add a task</h2>
-          <div className="mt-3 grid gap-3">
-            <input
-              className="w-full rounded-xl border px-3 py-2"
-              placeholder="Task title (e.g., Bank, meeting, gym)"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+        <div className="space-y-6">
+          <Card>
+            <SectionHeading
+              title="Add a task"
+              description="Keep it lightweight. A due time is optional."
             />
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                className="w-full rounded-xl border px-3 py-2"
+            <div className="mt-4 space-y-3">
+              <Input
+                placeholder="What needs doing?"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+              />
+              <Input
                 type="datetime-local"
                 value={dueLocal}
-                onChange={(e) => setDueLocal(e.target.value)}
+                onChange={(event) => setDueLocal(event.target.value)}
               />
-              <button
-                className="rounded-xl bg-black text-white px-4 py-2 disabled:opacity-60"
+              <Button
+                variant="primary"
+                className="w-full"
                 disabled={creating || !title.trim()}
                 onClick={createTask}
-                type="button"
               >
-                {creating ? "Adding..." : "Add"}
-              </button>
+                {creating ? "Adding…" : "Add task"}
+              </Button>
             </div>
-            <p className="text-xs text-gray-500">
-              Tip: Leave the date/time empty to keep it as a “floating” task for
-              Today.
+          </Card>
+
+          <Card className="bg-primary-soft/60">
+            <p className="text-sm font-semibold text-foreground">Today at a glance</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Pill>{todaysRoutines.length} routines</Pill>
+              <Pill>{todayTasks.length} open tasks</Pill>
+              <Pill>{completedTaskCount} completed</Pill>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-muted">
+              You do not need a perfect day. The goal is to keep showing up to
+              the system.
             </p>
-          </div>
-        </section>
-
-        {/* Errors */}
-        {taskError && <p className="mt-4 text-sm text-red-600">{taskError}</p>}
-        {/* routine */}
-        <section className="mt-6 rounded-2xl border p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Today’s routines</h2>
-            <button
-              className="text-sm underline"
-              onClick={() => fetchTodaysRoutines()}
-              type="button"
-              disabled={loadingRoutines}
-            >
-              {loadingRoutines ? "Refreshing..." : "Refresh"}
-            </button>
-          </div>
-
-          {routineError && (
-            <p className="mt-3 text-sm text-red-600">{routineError}</p>
-          )}
-
-          {todaysRoutines.length === 0 ? (
-            <p className="mt-3 text-sm text-gray-600">
-              No routines for today. Add some in{" "}
-              <span className="font-medium">Routines</span>.
-            </p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {todaysRoutines.map((r) => (
-                <li
-                  key={r.id}
-                  className="flex items-start justify-between gap-3 rounded-xl border p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium break-words">{r.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {r.preferred_time
-                        ? `Time: ${r.preferred_time.slice(0, 5)}`
-                        : ""}
-                    </p>
-                  </div>
-
-                  <button
-                    className="rounded-lg border px-3 py-1 text-sm"
-                    onClick={() => router.push("/routines")}
-                    type="button"
-                  >
-                    Edit
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        {/* Today */}
-        <section className="mt-6 rounded-2xl border p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Today</h2>
-            <button
-              className="text-sm underline"
-              onClick={() => fetchTasks()}
-              type="button"
-              disabled={loadingTasks}
-            >
-              {loadingTasks ? "Refreshing..." : "Refresh"}
-            </button>
-          </div>
-
-          {todayTasks.length === 0 ? (
-            <p className="mt-3 text-sm text-gray-600">No tasks for Today 🎉</p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {todayTasks.map((t) => (
-                <li
-                  key={t.id}
-                  className="flex items-start justify-between gap-3 rounded-xl border p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium break-words">{t.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {t.due_at
-                        ? `Due: ${new Date(t.due_at).toLocaleString()}`
-                        : "No due time"}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="rounded-lg border px-3 py-1 text-sm"
-                      onClick={() => toggleDone(t)}
-                      type="button"
-                    >
-                      Done
-                    </button>
-                    <button
-                      className="rounded-lg border px-3 py-1 text-sm"
-                      onClick={() => deleteTask(t)}
-                      type="button"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        {/* All tasks (including done) */}
-        <section className="mt-6 rounded-2xl border p-4">
-          <h2 className="font-semibold">All tasks</h2>
-
-          {tasks.length === 0 ? (
-            <p className="mt-3 text-sm text-gray-600">
-              No tasks yet. Add your first one above.
-            </p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {tasks.map((t) => (
-                <li
-                  key={t.id}
-                  className="flex items-start justify-between gap-3 rounded-xl border p-3"
-                >
-                  <div className="min-w-0">
-                    <p
-                      className={`font-medium break-words ${
-                        t.is_done ? "line-through text-gray-500" : ""
-                      }`}
-                    >
-                      {t.title}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {t.due_at
-                        ? `Due: ${new Date(t.due_at).toLocaleString()}`
-                        : "No due time"}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="rounded-lg border px-3 py-1 text-sm"
-                      onClick={() => toggleDone(t)}
-                      type="button"
-                    >
-                      {t.is_done ? "Undo" : "Done"}
-                    </button>
-                    <button
-                      className="rounded-lg border px-3 py-1 text-sm"
-                      onClick={() => deleteTask(t)}
-                      type="button"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+          </Card>
+        </div>
       </div>
-    </main>
+
+      {taskError && (
+        <div className="mt-6">
+          <ErrorNotice>{taskError}</ErrorNotice>
+        </div>
+      )}
+
+      <Card className="mt-6">
+        <SectionHeading
+          title="All tasks"
+          description="A quieter overview of everything you have captured."
+        />
+
+        {tasks.length === 0 ? (
+          <div className="mt-4">
+            <EmptyState>No tasks yet.</EmptyState>
+          </div>
+        ) : (
+          <ul className="mt-4 divide-y divide-border">
+            {tasks.map((task) => (
+              <li
+                key={task.id}
+                className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p
+                    className={`break-words font-medium ${
+                      task.is_done
+                        ? "text-muted-soft line-through"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {task.title}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">
+                    {formatDueTime(task)}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <Button
+                    className="min-h-8 px-3 py-1"
+                    onClick={() => toggleDone(task)}
+                  >
+                    {task.is_done ? "Undo" : "Done"}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    className="min-h-8 px-3 py-1"
+                    onClick={() => deleteTask(task)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+    </PageShell>
   );
 }

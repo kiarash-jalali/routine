@@ -1,38 +1,49 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { Routine } from "@/types/routine";
 
-export async function listRoutines() {
+type CreateRoutineInput = Pick<
+  Routine,
+  "user_id" | "title" | "frequency" | "days_of_week" | "preferred_time"
+>;
+
+export async function listRoutines(): Promise<Routine[]> {
   const supabase = supabaseBrowser();
-  return await supabase
+  const { data, error } = await supabase
     .from("routines")
     .select("*")
     .order("is_active", { ascending: false })
     .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as Routine[];
 }
 
-export async function addRoutine(input: {
-  user_id: string;
-  title: string;
-  frequency: "daily" | "weekly";
-  days_of_week: number[] | null;
-  preferred_time: string | null;
-}) {
+export async function addRoutine(input: CreateRoutineInput): Promise<void> {
   const supabase = supabaseBrowser();
-  return await supabase.from("routines").insert(input);
+  const { error } = await supabase.from("routines").insert(input);
+
+  if (error) throw error;
 }
 
 export async function toggleRoutineActive(
   routineId: string,
   isActive: boolean,
-) {
+): Promise<void> {
   const supabase = supabaseBrowser();
-  return await supabase
+  const { error } = await supabase
     .from("routines")
     .update({ is_active: isActive })
     .eq("id", routineId);
+
+  if (error) throw error;
 }
 
-export async function removeRoutine(routineId: string) {
+export async function removeRoutine(routineId: string): Promise<void> {
   const supabase = supabaseBrowser();
-  return await supabase.from("routines").delete().eq("id", routineId);
+  const { error } = await supabase
+    .from("routines")
+    .delete()
+    .eq("id", routineId);
+
+  if (error) throw error;
 }

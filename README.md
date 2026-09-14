@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Routine Helper
 
-## Getting Started
+Routine Helper is a calm, routine-first productivity app. It is designed around
+daily shaping rather than strict scheduling: routines provide structure, tasks
+capture one-time work, and the daily check-in records what actually happened.
 
-First, run the development server:
+The project prioritises:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- discipline without pressure;
+- progress compared with your own history;
+- forgiving, anti-overwhelm interactions;
+- code that remains understandable and easy to change.
+
+## Technology
+
+- Next.js App Router
+- React and TypeScript
+- Tailwind CSS
+- Supabase authentication and PostgreSQL database
+
+Next.js 16 requires Node.js 20.9 or newer.
+
+## Local setup
+
+Create `.env.local` in the project root with your Supabase public credentials:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Install the locked dependency versions and start the development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm ci
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+On Windows PowerShell, if script execution blocks `npm.ps1`, use:
 
-## Learn More
+```powershell
+npm.cmd ci
+npm.cmd run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Then open [http://localhost:3000](http://localhost:3000). Stop the server with
+`Ctrl+C`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Useful commands
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev       # Development server with live reload
+npm run lint      # ESLint code-quality checks
+npx tsc --noEmit  # TypeScript type check
+npm run build     # Production build check
+```
 
-## Deploy on Vercel
+## Routes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Route | Responsibility |
+| --- | --- |
+| `/login` | Email/password login and signup |
+| `/dashboard` | Task management and today's overview |
+| `/routines` | Daily and weekly routine management |
+| `/checkin` | Daily completion ritual for today's items |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Source structure
+
+```text
+src/
+├── app/             Pages and page-level state
+├── components/      Small reusable UI building blocks
+├── lib/db/          Supabase queries and mutations
+├── lib/errors.ts    Safe conversion of unknown errors into messages
+├── lib/today.ts     Shared local-date and "today" rules
+└── types/           Reusable application data types
+```
+
+Pages should not duplicate database queries or domain rules. Database access
+belongs in `src/lib/db`, reusable rules belong in `src/lib`, and shared data
+shapes belong in `src/types`. Reusable visual primitives live in
+`src/components/ui.tsx`; theme colours and global visual tokens live in
+`src/app/globals.css`. This keeps page code readable without adding a large UI
+framework.
+
+## Data model
+
+- `tasks`: one-time items that may have a due time;
+- `routines`: reusable daily or weekly plans;
+- `daily_checkins`: one row per user and local calendar day;
+- `checkin_items`: completion state for each task or routine in a check-in.
+
+Supabase Row Level Security restricts every user to their own rows. Database
+schema migrations are not yet versioned in this repository and should be added
+before the project has multiple deployment environments.
+
+## Roadmap
+
+1. Finish and test the daily check-in flow.
+2. Add check-in history and forgiving streaks.
+3. Design an anti-farming points system.
+4. Add earned personalisation and optional notifications.
+5. Prepare the web app as a PWA before considering native mobile clients.

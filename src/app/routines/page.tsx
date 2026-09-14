@@ -2,14 +2,26 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabaseBrowser } from "@/lib/supabaseClient";
-import type { Routine } from "@/types/routine";
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorNotice,
+  Input,
+  PageHeader,
+  PageShell,
+  SectionHeading,
+  Select,
+} from "@/components/ui";
 import {
   addRoutine,
   listRoutines,
   removeRoutine,
   toggleRoutineActive,
 } from "@/lib/db/routines";
+import { getErrorMessage } from "@/lib/errors";
+import { supabaseBrowser } from "@/lib/supabaseClient";
+import type { Routine } from "@/types/routine";
 
 const DAYS = [
   { label: "Mon", value: 1 },
@@ -20,6 +32,20 @@ const DAYS = [
   { label: "Sat", value: 6 },
   { label: "Sun", value: 7 },
 ];
+
+function describeRoutine(routine: Routine) {
+  const time = routine.preferred_time?.slice(0, 5) ?? "No time";
+
+  if (routine.frequency === "daily") {
+    return `Every day · ${time}`;
+  }
+
+  const dayLabels = DAYS.filter((day) =>
+    (routine.days_of_week ?? []).includes(day.value),
+  ).map((day) => day.label);
+
+  return `${dayLabels.join(", ") || "No days selected"} · ${time}`;
+}
 
 export default function RoutinesPage() {
   const router = useRouter();
@@ -71,12 +97,11 @@ export default function RoutinesPage() {
   async function fetchRoutines() {
     setErr(null);
     setLoading(true);
+
     try {
-      const { data, error } = await listRoutines();
-      if (error) throw error;
-      setRoutines((data ?? []) as Routine[]);
-    } catch (e: any) {
-      setErr(e?.message ?? "Failed to load routines");
+      setRoutines(await listRoutines());
+    } catch (error: unknown) {
+      setErr(getErrorMessage(error, "Failed to load routines"));
     } finally {
       setLoading(false);
     }
@@ -85,22 +110,20 @@ export default function RoutinesPage() {
   useEffect(() => {
     if (!userId) return;
     fetchRoutines();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   function toggleDay(day: number) {
-    setDaysOfWeek((prev) => {
-      const has = prev.includes(day);
-      const next = has ? prev.filter((d) => d !== day) : [...prev, day];
-      next.sort((a, b) => a - b);
-      return next;
+    setDaysOfWeek((current) => {
+      const next = current.includes(day)
+        ? current.filter((value) => value !== day)
+        : [...current, day];
+
+      return next.sort((a, b) => a - b);
     });
   }
 
   const canCreate = useMemo(() => {
-    if (!userId) return false;
-    if (!title.trim()) return false;
-    if (!preferredTime.trim()) return false;
+    if (!userId || !title.trim() || !preferredTime.trim()) return false;
     if (frequency === "weekly" && daysOfWeek.length === 0) return false;
     return true;
   }, [userId, title, preferredTime, frequency, daysOfWeek]);
@@ -112,125 +135,139 @@ export default function RoutinesPage() {
     setErr(null);
 
     try {
-      const days = frequency === "weekly" ? daysOfWeek : null;
-
-      const { error } = await addRoutine({
+      await addRoutine({
         user_id: userId,
         title: title.trim(),
         frequency,
-        days_of_week: days,
+        days_of_week: frequency === "weekly" ? daysOfWeek : null,
         preferred_time:
-          preferredTime.length === 5 ? preferredTime + ":00" : preferredTime,
+          preferredTime.length === 5 ? `${preferredTime}:00` : preferredTime,
       });
-
-      if (error) throw error;
 
       setTitle("");
       await fetchRoutines();
-    } catch (e: any) {
-      setErr(e?.message ?? "Failed to create routine");
+    } catch (error: unknown) {
+      setErr(getErrorMessage(error, "Failed to create routine"));
     } finally {
       setCreating(false);
     }
   }
 
-  async function onToggleActive(r: Routine) {
+  async function onToggleActive(routine: Routine) {
     setErr(null);
-    setRoutines((prev) =>
-      prev.map((x) => (x.id === r.id ? { ...x, is_active: !x.is_active } : x)),
+    setRoutines((current) =>
+      current.map((item) =>
+        item.id === routine.id
+          ? { ...item, is_active: !item.is_active }
+          : item,
+      ),
     );
 
     try {
-      const { error } = await toggleRoutineActive(r.id, !r.is_active);
-      if (error) throw error;
-    } catch (e: any) {
-      setRoutines((prev) =>
-        prev.map((x) => (x.id === r.id ? { ...x, is_active: r.is_active } : x)),
+      await toggleRoutineActive(routine.id, !routine.is_active);
+    } catch (error: unknown) {
+      setRoutines((current) =>
+        current.map((item) =>
+          item.id === routine.id
+            ? { ...item, is_active: routine.is_active }
+            : item,
+        ),
       );
-      setErr(e?.message ?? "Failed to update routine");
+      setErr(getErrorMessage(error, "Failed to update routine"));
     }
   }
 
-  async function onDelete(r: Routine) {
+  async function onDelete(routine: Routine) {
     setErr(null);
-    setRoutines((prev) => prev.filter((x) => x.id !== r.id));
+    setRoutines((current) =>
+      current.filter((item) => item.id !== routine.id),
+    );
 
     try {
-      const { error } = await removeRoutine(r.id);
-      if (error) throw error;
-    } catch (e: any) {
+      await removeRoutine(routine.id);
+    } catch (error: unknown) {
       await fetchRoutines();
-      setErr(e?.message ?? "Failed to delete routine");
+      setErr(getErrorMessage(error, "Failed to delete routine"));
     }
   }
 
   if (loadingUser) {
-    return <main className="p-6">Loading...</main>;
+    return (
+      <PageShell>
+        <p className="text-sm text-muted">Loading routines…</p>
+      </PageShell>
+    );
   }
 
   return (
-    <main className="min-h-screen p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold">Routines</h1>
-            <p className="mt-1 text-sm text-gray-600">Logged in as: {email}</p>
-          </div>
+    <PageShell>
+      <PageHeader
+        eyebrow="Routine library"
+        title="Build the rhythm you want."
+        description={
+          <>
+            Keep routines simple and forgiving. You can pause them without
+            deleting them.
+            {email && <span className="ml-1 text-muted-soft">· {email}</span>}
+          </>
+        }
+        actions={
+          <>
+            <Button onClick={() => router.push("/dashboard")}>Dashboard</Button>
+            <Button variant="ghost" onClick={fetchRoutines} disabled={loading}>
+              {loading ? "Refreshing…" : "Refresh"}
+            </Button>
+          </>
+        }
+      />
 
-          <div className="flex items-center gap-2">
-            <button
-              className="rounded-xl border px-3 py-2"
-              onClick={() => router.push("/dashboard")}
-              type="button"
-            >
-              Dashboard
-            </button>
-            <button
-              className="rounded-xl border px-3 py-2"
-              onClick={fetchRoutines}
-              type="button"
-              disabled={loading}
-            >
-              {loading ? "Refreshing..." : "Refresh"}
-            </button>
-          </div>
+      {err && (
+        <div className="mt-6">
+          <ErrorNotice>{err}</ErrorNotice>
         </div>
+      )}
 
-        <section className="mt-6 rounded-2xl border p-4">
-          <h2 className="font-semibold">Create routine</h2>
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]">
+        <Card className="self-start">
+          <SectionHeading
+            title="Create a routine"
+            description="Give it a name, rhythm, and a preferred time."
+          />
 
-          <div className="mt-3 grid gap-3">
-            <input
-              className="w-full rounded-xl border px-3 py-2"
-              placeholder="Routine title (e.g., Vitamins, Gym, Reading)"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+          <div className="mt-5 space-y-4">
+            <label className="grid gap-1.5">
+              <span className="text-sm font-medium text-foreground">Name</span>
+              <Input
+                placeholder="Reading, vitamins, stretching…"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+              />
+            </label>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="grid gap-1">
-                <span className="text-sm text-gray-600">Frequency</span>
-                <select
-                  className="w-full rounded-xl border px-3 py-2"
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <label className="grid gap-1.5">
+                <span className="text-sm font-medium text-foreground">
+                  Frequency
+                </span>
+                <Select
                   value={frequency}
-                  onChange={(e) =>
-                    setFrequency(e.target.value as "daily" | "weekly")
+                  onChange={(event) =>
+                    setFrequency(event.target.value as "daily" | "weekly")
                   }
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
-                </select>
+                </Select>
               </label>
 
-              <label className="grid gap-1">
-                <span className="text-sm text-gray-600">
-                  Preferred time (required)
+              <label className="grid gap-1.5">
+                <span className="text-sm font-medium text-foreground">
+                  Preferred time
                 </span>
-                <input
-                  className="w-full rounded-xl border px-3 py-2"
+                <Input
                   type="time"
                   value={preferredTime}
-                  onChange={(e) => setPreferredTime(e.target.value)}
+                  onChange={(event) => setPreferredTime(event.target.value)}
                   required
                 />
               </label>
@@ -238,95 +275,113 @@ export default function RoutinesPage() {
 
             {frequency === "weekly" && (
               <div>
-                <p className="text-sm text-gray-600 mb-2">Days of week</p>
+                <p className="mb-2 text-sm font-medium text-foreground">
+                  Days of week
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {DAYS.map((d) => {
-                    const active = daysOfWeek.includes(d.value);
+                  {DAYS.map((day) => {
+                    const active = daysOfWeek.includes(day.value);
                     return (
                       <button
-                        key={d.value}
+                        key={day.value}
                         type="button"
-                        onClick={() => toggleDay(d.value)}
-                        className={
-                          "rounded-full border px-3 py-1 text-sm " +
-                          (active ? "bg-black text-white" : "")
-                        }
+                        onClick={() => toggleDay(day.value)}
+                        className={`rounded-full border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring ${
+                          active
+                            ? "border-primary bg-primary text-white"
+                            : "border-border-strong bg-surface text-muted hover:bg-surface-soft hover:text-foreground"
+                        }`}
                       >
-                        {d.label}
+                        {day.label}
                       </button>
                     );
                   })}
                 </div>
-                <p className="mt-2 text-xs text-gray-500">
-                  Pick at least one day for weekly routines.
+                <p className="mt-2 text-xs text-muted">
+                  Pick at least one day for a weekly routine.
                 </p>
               </div>
             )}
 
-            <button
-              className="rounded-xl bg-black text-white px-4 py-2 disabled:opacity-60"
+            <Button
+              variant="primary"
+              className="w-full"
               disabled={!canCreate || creating}
               onClick={onCreate}
-              type="button"
             >
-              {creating ? "Creating..." : "Create routine"}
-            </button>
+              {creating ? "Creating…" : "Create routine"}
+            </Button>
           </div>
-        </section>
+        </Card>
 
-        {err && <p className="mt-4 text-sm text-red-600">{err}</p>}
-
-        <section className="mt-6 rounded-2xl border p-4">
-          <h2 className="font-semibold">Your routines</h2>
+        <Card>
+          <SectionHeading
+            title="Your routines"
+            description={`${routines.filter((routine) => routine.is_active).length} active · ${routines.length} total`}
+          />
 
           {routines.length === 0 ? (
-            <p className="mt-3 text-sm text-gray-600">
-              No routines yet. Create your first one above.
-            </p>
+            <div className="mt-4">
+              <EmptyState>
+                No routines yet. Your first one can be something tiny.
+              </EmptyState>
+            </div>
           ) : (
-            <ul className="mt-3 space-y-2">
-              {routines.map((r) => (
+            <ul className="mt-4 space-y-3">
+              {routines.map((routine) => (
                 <li
-                  key={r.id}
-                  className="flex items-start justify-between gap-3 rounded-xl border p-3"
+                  key={routine.id}
+                  className={`rounded-2xl border px-4 py-4 transition ${
+                    routine.is_active
+                      ? "border-border bg-surface-soft"
+                      : "border-border bg-surface-soft/60"
+                  }`}
                 >
-                  <div className="min-w-0">
-                    <p
-                      className={
-                        "font-medium break-words " +
-                        (!r.is_active ? "text-gray-500 line-through" : "")
-                      }
-                    >
-                      {r.title}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {r.frequency} •{" "}
-                      {r.preferred_time ? r.preferred_time.slice(0, 5) : ""}
-                    </p>
-                  </div>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p
+                          className={`break-words font-medium ${
+                            routine.is_active
+                              ? "text-foreground"
+                              : "text-muted line-through"
+                          }`}
+                        >
+                          {routine.title}
+                        </p>
+                        {!routine.is_active && (
+                          <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-muted">
+                            Paused
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-muted">
+                        {describeRoutine(routine)}
+                      </p>
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="rounded-lg border px-3 py-1 text-sm"
-                      onClick={() => onToggleActive(r)}
-                      type="button"
-                    >
-                      {r.is_active ? "Pause" : "Resume"}
-                    </button>
-                    <button
-                      className="rounded-lg border px-3 py-1 text-sm"
-                      onClick={() => onDelete(r)}
-                      type="button"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex shrink-0 gap-2">
+                      <Button
+                        className="min-h-8 px-3 py-1"
+                        onClick={() => onToggleActive(routine)}
+                      >
+                        {routine.is_active ? "Pause" : "Resume"}
+                      </Button>
+                      <Button
+                        variant="danger"
+                        className="min-h-8 px-3 py-1"
+                        onClick={() => onDelete(routine)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </li>
               ))}
             </ul>
           )}
-        </section>
+        </Card>
       </div>
-    </main>
+    </PageShell>
   );
 }

@@ -1,31 +1,44 @@
 import type { Task } from "@/types/task";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
-export async function listTasks() {
+type CreateTaskInput = Pick<Task, "user_id" | "title" | "due_at">;
+
+export async function listTasks(): Promise<Task[]> {
   const supabase = supabaseBrowser();
-  return await supabase
+  const { data, error } = await supabase
     .from("tasks")
     .select("*")
     .order("is_done", { ascending: true })
     .order("due_at", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as Task[];
 }
 
-export async function addTask(input: {
-  user_id: string;
-  title: string;
-  due_at: string | null;
-}) {
+export async function addTask(input: CreateTaskInput): Promise<void> {
   const supabase = supabaseBrowser();
-  return await supabase.from("tasks").insert(input);
+  const { error } = await supabase.from("tasks").insert(input);
+
+  if (error) throw error;
 }
 
-export async function setTaskDone(taskId: string, isDone: boolean) {
+export async function setTaskDone(
+  taskId: string,
+  isDone: boolean,
+): Promise<void> {
   const supabase = supabaseBrowser();
-  return await supabase.from("tasks").update({ is_done: isDone }).eq("id", taskId);
+  const { error } = await supabase
+    .from("tasks")
+    .update({ is_done: isDone })
+    .eq("id", taskId);
+
+  if (error) throw error;
 }
 
-export async function removeTask(taskId: string) {
+export async function removeTask(taskId: string): Promise<void> {
   const supabase = supabaseBrowser();
-  return await supabase.from("tasks").delete().eq("id", taskId);
+  const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+
+  if (error) throw error;
 }
