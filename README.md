@@ -63,6 +63,7 @@ npm run build     # Production build check
 | `/dashboard` | Task management and today's overview |
 | `/routines` | Create, edit, pause, resume, and delete daily/weekly routines |
 | `/checkin` | Daily completion ritual for today's items |
+| `/history` | Recent check-in history and 14-day rhythm view |
 
 ## Source structure
 
@@ -97,18 +98,17 @@ before the project has multiple deployment environments.
 ## Current milestone
 
 The core routine/task/check-in flow is implemented, routine editing is supported,
-and the shared UI foundation is in place. Dashboard, check-in, and routines now
-use one consistent navigation pattern, friendly date formatting, and automatic
-refresh after mutations instead of manual Refresh controls. Finishing a daily
-check-in now leaves a clear completed state and can be reopened for edits. The
-current visual system intentionally uses a single controlled light theme so
-contrast stays predictable; a deliberate dark theme can be added later without
-relying on browser/system defaults.
+and the shared UI foundation is in place. Dashboard, check-in, routines, and
+history use one consistent navigation pattern. The history layer reads the most
+recent 30 daily check-ins, provides completion summaries, and builds a 14-day
+rhythm view from the same data. This gives future forgiving streaks and points a
+clean data foundation without introducing a punitive strict-streak rule early.
+No database migration is required for this milestone.
 
 ## Roadmap
 
-1. Test the polished core flow with real daily use.
-2. Add check-in history and forgiving streaks.
-3. Design an anti-farming points system.
+1. Test the history view with several real check-in days.
+2. Define the forgiving-streak rules using the history layer.
+3. Design an anti-farming points system around those rules.
 4. Add earned personalisation and optional notifications.
 5. Prepare the web app as a PWA before considering native mobile clients.

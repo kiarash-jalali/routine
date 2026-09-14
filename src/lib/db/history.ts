@@ -1,0 +1,48 @@
+import { supabaseBrowser } from "@/lib/supabaseClient";
+import type { DailyCheckinSummary } from "@/types/checkin";
+import type {
+  CheckinHistoryEntry,
+  HistoricalCheckinItem,
+} from "@/types/history";
+
+const CHECKIN_COLUMNS = "id,user_id,day";
+
+export async function listRecentCheckinHistory(
+  userId: string,
+  limit = 30,
+): Promise<CheckinHistoryEntry[]> {
+  const supabase = supabaseBrowser();
+  const { data: checkins, error: checkinsError } = await supabase
+    .from("daily_checkins")
+    .select(CHECKIN_COLUMNS)
+    .eq("user_id", userId)
+    .order("day", { ascending: false })
+    .limit(limit);
+
+  if (checkinsError) throw checkinsError;
+
+  const checkinRows = (checkins ?? []) as DailyCheckinSummary[];
+  if (checkinRows.length === 0) return [];
+
+  const checkinIds = checkinRows.map((checkin) => checkin.id);
+  const { data: items, error: itemsError } = await supabase
+    .from("checkin_items")
+    .select("checkin_id,item_type,item_id,completed")
+    .in("checkin_id", checkinIds);
+
+  if (itemsError) throw itemsError;
+
+  const itemsByCheckin = new Map<string, HistoricalCheckinItem[]>();
+  for (const item of (items ?? []) as HistoricalCheckinItem[]) {
+    const currentItems = itemsByCheckin.get(item.checkin_id) ?? [];
+    currentItems.push(item);
+    itemsByCheckin.set(item.checkin_id, currentItems);
+  }
+
+  return checkinRows.map((checkin) => ({
+    id: checkin.id,
+    user_id: checkin.user_id,
+    day: checkin.day,
+    items: itemsByCheckin.get(checkin.id) ?? [],
+  }));
+}

@@ -8,6 +8,7 @@ const navItems = [
   { href: "/dashboard", label: "Today" },
   { href: "/checkin", label: "Check-in" },
   { href: "/routines", label: "Routines" },
+  { href: "/history", label: "History" },
 ] as const;
 
 function linkClassName(active: boolean) {
