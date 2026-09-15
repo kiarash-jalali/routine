@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, ErrorNotice, Input } from "@/components/ui";
+import { getProfile } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
@@ -23,13 +24,15 @@ export default function LoginPage() {
       const supabase = supabaseBrowser();
 
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
-        router.push("/dashboard");
+
+        const profile = await getProfile(data.user.id);
+        router.push(profile?.onboarding_completed ? "/dashboard" : "/onboarding");
         return;
       }
 
