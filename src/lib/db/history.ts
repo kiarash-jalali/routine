@@ -7,6 +7,32 @@ import type {
 
 const CHECKIN_COLUMNS = "id,user_id,day";
 
+export async function listCheckinDays(userId: string): Promise<string[]> {
+  const supabase = supabaseBrowser();
+  const pageSize = 500;
+  const days: string[] = [];
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("daily_checkins")
+      .select("day")
+      .eq("user_id", userId)
+      .order("day", { ascending: true })
+      .range(from, from + pageSize - 1);
+
+    if (error) throw error;
+
+    const rows = (data ?? []) as Array<{ day: string }>;
+    days.push(...rows.map((row) => row.day));
+
+    if (rows.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return days;
+}
+
 export async function listRecentCheckinHistory(
   userId: string,
   limit = 30,

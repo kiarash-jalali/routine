@@ -14,10 +14,12 @@ import {
   SectionHeading,
   Stat,
 } from "@/components/ui";
+import { listCheckinDays } from "@/lib/db/history";
 import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
+import { calculateStreakMetrics } from "@/lib/streak";
 import { filterTasksForToday, formatFriendlyDate } from "@/lib/today";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
@@ -49,6 +51,7 @@ export default function DashboardPage() {
   const [todaysRoutines, setTodaysRoutines] = useState<Routine[]>([]);
   const [loadingRoutines, setLoadingRoutines] = useState(true);
   const [routineError, setRoutineError] = useState<string | null>(null);
+  const [checkinDays, setCheckinDays] = useState<string[] | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -107,8 +110,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!userId) return;
+
     fetchTasks();
     fetchTodaysRoutines();
+
+    listCheckinDays(userId)
+      .then(setCheckinDays)
+      .catch(() => setCheckinDays(null));
   }, [userId]);
 
   async function createTask() {
@@ -170,9 +178,9 @@ export default function DashboardPage() {
   }
 
   const todayTasks = useMemo(() => filterTasksForToday(tasks), [tasks]);
-  const completedTaskCount = useMemo(
-    () => tasks.filter((task) => task.is_done).length,
-    [tasks],
+  const streak = useMemo(
+    () => calculateStreakMetrics(checkinDays ?? []),
+    [checkinDays],
   );
   const todayLabel = useMemo(() => formatFriendlyDate(), []);
 
@@ -207,7 +215,14 @@ export default function DashboardPage() {
           <Stat value={todayTasks.length} label="open tasks today" />
         </div>
         <div className="px-3 sm:px-5">
-          <Stat value={completedTaskCount} label="completed tasks" />
+          <Stat
+            value={checkinDays ? streak.currentDays : "—"}
+            label={
+              streak.currentDays === 1
+                ? "day in your rhythm"
+                : "days in your rhythm"
+            }
+          />
         </div>
       </div>
 

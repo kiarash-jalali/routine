@@ -13,7 +13,10 @@ import {
   SectionHeading,
   Stat,
 } from "@/components/ui";
-import { listRecentCheckinHistory } from "@/lib/db/history";
+import {
+  listCheckinDays,
+  listRecentCheckinHistory,
+} from "@/lib/db/history";
 import { getErrorMessage } from "@/lib/errors";
 import {
   averageCompletionPercent,
@@ -23,6 +26,11 @@ import {
   summarizeCheckin,
 } from "@/lib/history";
 import { supabaseBrowser } from "@/lib/supabaseClient";
+import {
+  calculateStreakMetrics,
+  formatDayCount,
+  streakMessage,
+} from "@/lib/streak";
 import type { CheckinHistoryEntry } from "@/types/history";
 
 function RhythmCell({
@@ -51,6 +59,7 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [history, setHistory] = useState<CheckinHistoryEntry[]>([]);
+  const [checkinDays, setCheckinDays] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,8 +81,15 @@ export default function HistoryPage() {
           return;
         }
 
-        const recentHistory = await listRecentCheckinHistory(user.id, 30);
-        if (!cancelled) setHistory(recentHistory);
+        const [recentHistory, recentCheckinDays] = await Promise.all([
+          listRecentCheckinHistory(user.id, 30),
+          listCheckinDays(user.id),
+        ]);
+
+        if (!cancelled) {
+          setHistory(recentHistory);
+          setCheckinDays(recentCheckinDays);
+        }
       } catch (error: unknown) {
         if (!cancelled) {
           setErrorMessage(
@@ -100,6 +116,10 @@ export default function HistoryPage() {
   const averageCompletion = useMemo(
     () => averageCompletionPercent(history),
     [history],
+  );
+  const streak = useMemo(
+    () => calculateStreakMetrics(checkinDays),
+    [checkinDays],
   );
 
   return (
@@ -129,15 +149,40 @@ export default function HistoryPage() {
         </div>
       ) : (
         <div className="mt-6 space-y-6">
+          <Card tone="accent">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+                  Current rhythm
+                </p>
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-foreground">
+                  {formatDayCount(streak.currentDays)}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  {streakMessage(streak)}
+                </p>
+              </div>
+              <div className="shrink-0 rounded-2xl border border-primary/15 bg-surface/70 px-4 py-3">
+                <Stat
+                  value={formatDayCount(streak.bestDays)}
+                  label="best rhythm so far"
+                />
+              </div>
+            </div>
+          </Card>
+
           <div className="grid gap-3 sm:grid-cols-3">
-            <Card tone="accent" className="p-4 sm:p-5">
-              <Stat value={`${checkedInLastSeven}/7`} label="days checked in lately" />
+            <Card tone="soft" className="p-4 sm:p-5">
+              <Stat
+                value={`${checkedInLastSeven}/7`}
+                label="days checked in lately"
+              />
             </Card>
             <Card tone="soft" className="p-4 sm:p-5">
               <Stat value={`${averageCompletion}%`} label="average completion" />
             </Card>
             <Card tone="soft" className="p-4 sm:p-5">
-              <Stat value={history.length} label="recent check-ins recorded" />
+              <Stat value={history.length} label="recent check-ins shown" />
             </Card>
           </div>
 

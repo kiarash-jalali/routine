@@ -99,16 +99,18 @@ before the project has multiple deployment environments.
 
 The core routine/task/check-in flow is implemented, routine editing is supported,
 and the shared UI foundation is in place. Dashboard, check-in, routines, and
-history use one consistent navigation pattern. The history layer reads the most
-recent 30 daily check-ins, provides completion summaries, and builds a 14-day
-rhythm view from the same data. This gives future forgiving streaks and points a
-clean data foundation without introducing a punitive strict-streak rule early.
-No database migration is required for this milestone.
+history use one consistent navigation pattern. The history layer shows recent
+check-ins and a 14-day rhythm view. A forgiving streak foundation is now derived
+from finished daily check-ins: showing up counts even when completion is not
+100%, and a streak that was active yesterday remains alive during the current
+day until the user has had a chance to check in. The dashboard shows the current
+rhythm and History shows both the current and best rhythm. No database migration
+is required for this milestone.
 
 ## Roadmap
 
-1. Test the history view with several real check-in days.
-2. Define the forgiving-streak rules using the history layer.
-3. Design an anti-farming points system around those rules.
+1. Test the streak calculation across several real check-in days.
+2. Design an anti-farming points system and the rules for repairing a missed day.
+3. Add streak repair without changing the meaning of historical completion data.
 4. Add earned personalisation and optional notifications.
 5. Prepare the web app as a PWA before considering native mobile clients.
