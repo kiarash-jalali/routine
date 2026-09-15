@@ -63,7 +63,7 @@ npm run build     # Production build check
 | `/dashboard` | Task management and today's overview |
 | `/routines` | Create, edit, pause, resume, and delete daily/weekly routines |
 | `/checkin` | Daily completion ritual for today's items |
-| `/history` | Recent check-in history and 14-day rhythm view |
+| `/history` | Recent check-ins, rhythm, points, and missed-day recovery |
 
 ## Source structure
 
@@ -73,6 +73,9 @@ src/
 ├── components/      Small reusable UI building blocks
 ├── lib/db/          Supabase queries and mutations
 ├── lib/errors.ts    Safe conversion of unknown errors into messages
+├── lib/history.ts   Check-in history calculations
+├── lib/points.ts    Point and recovery domain rules
+├── lib/streak.ts    Forgiving streak calculations
 ├── lib/today.ts     Shared local-date and "today" rules
 └── types/           Reusable application data types
 ```
@@ -81,36 +84,58 @@ Pages should not duplicate database queries or domain rules. Database access
 belongs in `src/lib/db`, reusable rules belong in `src/lib`, and shared data
 shapes belong in `src/types`. Reusable visual primitives live in
 `src/components/ui.tsx`; authenticated pages share `src/components/AppNav.tsx`;
-theme colours and global visual tokens live in `src/app/globals.css`. This keeps page code readable without adding a large UI
-framework.
+theme colours and global visual tokens live in `src/app/globals.css`.
 
 ## Data model
 
 - `tasks`: one-time items that may have a due time;
 - `routines`: reusable daily or weekly plans;
 - `daily_checkins`: one row per user and local calendar day;
-- `checkin_items`: completion state for each task or routine in a check-in.
+- `checkin_items`: completion state for each task or routine in a check-in;
+- `point_transactions`: append-only rewards and recovery spending;
+- `streak_repairs`: missed calendar days whose rhythm continuity was repaired.
 
-Supabase Row Level Security restricts every user to their own rows. Database
-schema migrations are not yet versioned in this repository and should be added
-before the project has multiple deployment environments.
+Supabase Row Level Security restricts users to their own readable rows. Point
+transactions and repairs cannot be written directly by the browser: rewards are
+created by a database trigger and repairs go through a protected database
+function.
+
+## Database migrations
+
+Database changes are versioned under `supabase/migrations`.
+
+For the points/recovery milestone, run this migration once in the Supabase SQL
+Editor before testing the updated History page:
+
+```text
+supabase/migrations/202609151100_add_points_and_streak_recovery.sql
+```
+
+The migration also backfills existing finished check-ins with 10 points each, so
+old check-ins participate in the same economy without needing to be recreated.
 
 ## Current milestone
 
 The core routine/task/check-in flow is implemented, routine editing is supported,
-and the shared UI foundation is in place. Dashboard, check-in, routines, and
-history use one consistent navigation pattern. The history layer shows recent
-check-ins and a 14-day rhythm view. A forgiving streak foundation is now derived
-from finished daily check-ins: showing up counts even when completion is not
-100%, and a streak that was active yesterday remains alive during the current
-day until the user has had a chance to check in. The dashboard shows the current
-rhythm and History shows both the current and best rhythm. No database migration
-is required for this milestone.
+and the shared UI foundation is in place. History shows recent check-ins and a
+14-day rhythm view. The forgiving streak is derived from finished daily check-ins:
+showing up counts even when completion is not 100%, and a streak that was active
+yesterday remains alive during the current day until the user has had a chance to
+check in.
+
+Points + missed-day recovery v1 adds these rules:
+
+- the first finished check-in for a calendar day earns 10 points;
+- editing the same day never awards points again;
+- one missed rhythm day costs 30 points to repair;
+- a day can only be repaired after a real check-in exists both before and after it;
+- a repair restores streak continuity only and never creates fake completion data;
+- repaired days are visually distinct from real check-ins in History.
 
 ## Roadmap
 
-1. Test the streak calculation across several real check-in days.
-2. Design an anti-farming points system and the rules for repairing a missed day.
-3. Add streak repair without changing the meaning of historical completion data.
-4. Add earned personalisation and optional notifications.
+1. Test points and recovery with several real days and one intentional gap.
+2. Adjust reward/cost numbers only after observing real use.
+3. Add earned personalisation without turning the app into a high-pressure game.
+4. Add optional notifications.
 5. Prepare the web app as a PWA before considering native mobile clients.
