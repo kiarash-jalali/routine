@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
 import {
+  Button,
   Card,
   EmptyState,
   ErrorNotice,
@@ -17,6 +18,11 @@ import {
   listCheckinDays,
   listRecentCheckinHistory,
 } from "@/lib/db/history";
+import {
+  getPointBalance,
+  listStreakRepairs,
+  repairStreakDay,
+} from "@/lib/db/points";
 import { getErrorMessage } from "@/lib/errors";
 import {
   averageCompletionPercent,
@@ -25,6 +31,11 @@ import {
   formatHistoryDate,
   summarizeCheckin,
 } from "@/lib/history";
+import {
+  CHECKIN_REWARD_POINTS,
+  findRepairableDays,
+  STREAK_REPAIR_COST_POINTS,
+} from "@/lib/points";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import {
   calculateStreakMetrics,
@@ -32,19 +43,24 @@ import {
   streakMessage,
 } from "@/lib/streak";
 import type { CheckinHistoryEntry } from "@/types/history";
+import type { StreakRepair } from "@/types/points";
 
 function RhythmCell({
   checkedIn,
+  repaired,
   completionPercent,
 }: {
   checkedIn: boolean;
+  repaired: boolean;
   completionPercent: number;
 }) {
-  const className = checkedIn
-    ? completionPercent === 100
-      ? "border-primary bg-primary"
-      : "border-primary/30 bg-primary-soft"
-    : "border-border bg-surface-soft";
+  const className = repaired
+    ? "border-dashed border-primary/55 bg-primary-soft/35"
+    : checkedIn
+      ? completionPercent === 100
+        ? "border-primary bg-primary"
+        : "border-primary/30 bg-primary-soft"
+      : "border-border bg-surface-soft";
 
   return (
     <span
@@ -60,6 +76,9 @@ export default function HistoryPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [history, setHistory] = useState<CheckinHistoryEntry[]>([]);
   const [checkinDays, setCheckinDays] = useState<string[]>([]);
+  const [repairs, setRepairs] = useState<StreakRepair[]>([]);
+  const [pointBalance, setPointBalance] = useState(0);
+  const [repairingDay, setRepairingDay] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,14 +100,19 @@ export default function HistoryPage() {
           return;
         }
 
-        const [recentHistory, recentCheckinDays] = await Promise.all([
-          listRecentCheckinHistory(user.id, 30),
-          listCheckinDays(user.id),
-        ]);
+        const [recentHistory, allCheckinDays, streakRepairs, balance] =
+          await Promise.all([
+            listRecentCheckinHistory(user.id, 30),
+            listCheckinDays(user.id),
+            listStreakRepairs(user.id),
+            getPointBalance(),
+          ]);
 
         if (!cancelled) {
           setHistory(recentHistory);
-          setCheckinDays(recentCheckinDays);
+          setCheckinDays(allCheckinDays);
+          setRepairs(streakRepairs);
+          setPointBalance(balance);
         }
       } catch (error: unknown) {
         if (!cancelled) {
@@ -108,6 +132,19 @@ export default function HistoryPage() {
     };
   }, [router]);
 
+  const repairedDays = useMemo(
+    () => repairs.map((repair) => repair.day),
+    [repairs],
+  );
+  const repairedDaySet = useMemo(() => new Set(repairedDays), [repairedDays]);
+  const effectiveRhythmDays = useMemo(
+    () => [...checkinDays, ...repairedDays],
+    [checkinDays, repairedDays],
+  );
+  const repairableDays = useMemo(
+    () => findRepairableDays(checkinDays, repairedDays),
+    [checkinDays, repairedDays],
+  );
   const rhythmDays = useMemo(() => buildRhythmDays(history, 14), [history]);
   const checkedInLastSeven = useMemo(
     () => countRecentCheckins(history, 7),
@@ -118,9 +155,33 @@ export default function HistoryPage() {
     [history],
   );
   const streak = useMemo(
-    () => calculateStreakMetrics(checkinDays),
-    [checkinDays],
+    () => calculateStreakMetrics(effectiveRhythmDays),
+    [effectiveRhythmDays],
   );
+
+  async function repairDay(day: string) {
+    setRepairingDay(day);
+    setErrorMessage(null);
+
+    try {
+      const newBalance = await repairStreakDay(day);
+      setPointBalance(newBalance);
+      setRepairs((current) => [
+        ...current,
+        {
+          day,
+          cost_points: STREAK_REPAIR_COST_POINTS,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    } catch (error: unknown) {
+      setErrorMessage(
+        getErrorMessage(error, "That missed day could not be repaired."),
+      );
+    } finally {
+      setRepairingDay(null);
+    }
+  }
 
   return (
     <PageShell className="max-w-5xl">
@@ -187,30 +248,104 @@ export default function HistoryPage() {
           </div>
 
           <Card>
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="max-w-2xl">
+                <SectionHeading
+                  title="Recovery"
+                  description={`Finishing a day earns ${CHECKIN_REWARD_POINTS} points once. Repairing a missed rhythm day costs ${STREAK_REPAIR_COST_POINTS} points and restores continuity only — it does not create a fake check-in.`}
+                />
+              </div>
+              <div className="shrink-0 rounded-2xl border border-primary/15 bg-primary-soft/35 px-4 py-3">
+                <Stat value={pointBalance} label="recovery points" />
+              </div>
+            </div>
+
+            <div className="mt-5 border-t border-border pt-5">
+              {repairableDays.length === 0 ? (
+                <p className="text-sm leading-6 text-muted">
+                  No repairable gaps right now. A missed day becomes repairable
+                  only after you return and finish another real check-in.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted">
+                    Missed days between real check-ins can be repaired. Repairing
+                    them never changes the completion record for that day.
+                  </p>
+                  <div className="divide-y divide-border rounded-2xl border border-border bg-surface-soft px-4">
+                    {repairableDays.map((day) => {
+                      const canAfford = pointBalance >= STREAK_REPAIR_COST_POINTS;
+                      const isRepairing = repairingDay === day;
+
+                      return (
+                        <div
+                          key={day}
+                          className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {formatHistoryDate(day)}
+                            </p>
+                            <p className="mt-1 text-xs text-muted">
+                              Missed rhythm day · historical completion stays empty
+                            </p>
+                          </div>
+                          <Button
+                            className="shrink-0"
+                            disabled={!canAfford || repairingDay !== null}
+                            onClick={() => repairDay(day)}
+                          >
+                            {isRepairing
+                              ? "Repairing…"
+                              : `Repair · ${STREAK_REPAIR_COST_POINTS} pts`}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {pointBalance < STREAK_REPAIR_COST_POINTS && (
+                    <p className="text-xs text-muted">
+                      You need {STREAK_REPAIR_COST_POINTS - pointBalance} more
+                      points before you can repair one missed day.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </Card>
+
+          <Card>
             <SectionHeading
               title="Last 14 days"
-              description="Filled days are days you checked in. Stronger fill means everything on that check-in was completed."
+              description="Filled days are real check-ins. A dashed day is a repaired streak gap, not a completed check-in."
             />
 
             <div className="mt-5 grid grid-cols-7 gap-2 sm:grid-cols-[repeat(14,minmax(0,1fr))]">
-              {rhythmDays.map((day) => (
-                <div key={day.dateKey} className="min-w-0 text-center">
-                  <RhythmCell
-                    checkedIn={day.checkedIn}
-                    completionPercent={day.completionPercent}
-                  />
-                  <span className="mt-1.5 block text-[11px] text-muted">
-                    {day.label}
-                  </span>
-                  <span className="sr-only">
-                    {`${day.dateKey}: ${
-                      day.checkedIn
-                        ? `${day.completedCount} of ${day.totalCount} completed`
-                        : "no check-in"
-                    }`}
-                  </span>
-                </div>
-              ))}
+              {rhythmDays.map((day) => {
+                const repaired = repairedDaySet.has(day.dateKey);
+
+                return (
+                  <div key={day.dateKey} className="min-w-0 text-center">
+                    <RhythmCell
+                      checkedIn={day.checkedIn}
+                      repaired={repaired}
+                      completionPercent={day.completionPercent}
+                    />
+                    <span className="mt-1.5 block text-[11px] text-muted">
+                      {day.label}
+                    </span>
+                    <span className="sr-only">
+                      {`${day.dateKey}: ${
+                        repaired
+                          ? "streak repaired; no check-in recorded"
+                          : day.checkedIn
+                            ? `${day.completedCount} of ${day.totalCount} completed`
+                            : "no check-in"
+                      }`}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
@@ -226,13 +361,17 @@ export default function HistoryPage() {
                 <span className="h-3 w-3 rounded border border-primary bg-primary" />
                 Everything completed
               </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="h-3 w-3 rounded border border-dashed border-primary/55 bg-primary-soft/35" />
+                Rhythm repaired
+              </span>
             </div>
           </Card>
 
           <Card>
             <SectionHeading
               title="Recent check-ins"
-              description="Your most recent 30 daily check-ins."
+              description="Your most recent 30 real daily check-ins. Repaired days are not added here."
             />
 
             <div className="mt-5 divide-y divide-border">
