@@ -21,13 +21,28 @@ export default function LoginPage() {
 
     try {
       const supabase = supabaseBrowser();
-      const { error } =
-        mode === "login"
-          ? await supabase.auth.signInWithPassword({ email, password })
-          : await supabase.auth.signUp({ email, password });
 
+      if (mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+        router.push("/dashboard");
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
-      router.push("/dashboard");
+
+      if (data.session) {
+        router.push("/onboarding");
+      } else {
+        setMsg(
+          "Account created. Check your email to confirm it, then come back and log in.",
+        );
+      }
     } catch (error: unknown) {
       setMsg(getErrorMessage(error, "Something went wrong"));
     } finally {
@@ -81,7 +96,12 @@ export default function LoginPage() {
               />
             </label>
 
-            <Button variant="primary" className="w-full" disabled={loading} type="submit">
+            <Button
+              variant="primary"
+              className="w-full"
+              disabled={loading}
+              type="submit"
+            >
               {loading
                 ? "Please wait…"
                 : mode === "login"
@@ -99,7 +119,10 @@ export default function LoginPage() {
           <div className="mt-6 border-t border-border pt-5 text-center">
             <button
               className="text-sm font-medium text-primary transition hover:text-primary-strong"
-              onClick={() => setMode(mode === "login" ? "signup" : "login")}
+              onClick={() => {
+                setMode(mode === "login" ? "signup" : "login");
+                setMsg(null);
+              }}
               type="button"
             >
               {mode === "login"
