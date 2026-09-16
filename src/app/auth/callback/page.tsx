@@ -3,12 +3,9 @@
 import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { ErrorNotice, PageShell } from "@/components/ui";
+import { getSafeAuthCallbackPath } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-
-function safeNextPath(value: string | null): string {
-  return value?.startsWith("/") ? value : "/onboarding";
-}
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -21,7 +18,7 @@ export default function AuthCallbackPage() {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
-        const next = safeNextPath(url.searchParams.get("next"));
+        const next = getSafeAuthCallbackPath(url.searchParams.get("next"));
 
         if (!code) {
           throw new Error(

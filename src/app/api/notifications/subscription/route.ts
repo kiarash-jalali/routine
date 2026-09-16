@@ -9,6 +9,34 @@ type SubscriptionPayload = {
   auth?: unknown;
 };
 
+function isValidEndpoint(value: unknown): value is string {
+  if (
+    typeof value !== "string" ||
+    !value ||
+    value.length > 4096 ||
+    value.trim() !== value
+  ) {
+    return false;
+  }
+
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isValidSubscriptionKey(
+  value: unknown,
+  maximumLength: number,
+): value is string {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= maximumLength
+  );
+}
+
 function getAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -84,15 +112,12 @@ export async function POST(request: Request) {
 
   const { endpoint, p256dh, auth: authKey } = payload;
   if (
-    typeof endpoint !== "string" ||
-    typeof p256dh !== "string" ||
-    typeof authKey !== "string" ||
-    !endpoint ||
-    !p256dh ||
-    !authKey
+    !isValidEndpoint(endpoint) ||
+    !isValidSubscriptionKey(p256dh, 512) ||
+    !isValidSubscriptionKey(authKey, 256)
   ) {
     return NextResponse.json(
-      { error: "Incomplete push subscription." },
+      { error: "Invalid push subscription." },
       { status: 400 },
     );
   }
@@ -133,8 +158,8 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  if (typeof payload.endpoint !== "string" || !payload.endpoint) {
-    return NextResponse.json({ error: "Missing push endpoint." }, { status: 400 });
+  if (!isValidEndpoint(payload.endpoint)) {
+    return NextResponse.json({ error: "Invalid push endpoint." }, { status: 400 });
   }
 
   const { error } = await auth.admin

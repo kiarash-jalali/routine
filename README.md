@@ -76,6 +76,7 @@ npm run verify    # Lint + type generation/typecheck + production build
 | `/checkin` | Daily completion ritual for today's items |
 | `/history` | Recent check-ins, rhythm, points, and missed-day recovery |
 | `/settings` | Profile, email, password, appearance, session, and account controls |
+| `/feedback` | Private-alpha bug reports, friction notes, and ideas |
 
 ## Source structure
 
@@ -106,7 +107,10 @@ theme colours and global visual tokens live in `src/app/globals.css`.
 - `checkin_items`: completion state for each task or routine in a check-in;
 - `profiles`: display name and onboarding state;
 - `point_transactions`: append-only rewards and recovery spending;
-- `streak_repairs`: missed calendar days whose rhythm continuity was repaired.
+- `streak_repairs`: missed calendar days whose rhythm continuity was repaired;
+- `notification_preferences`: opt-in reminder time and device timezone;
+- `push_subscriptions`: server-managed Web Push device subscriptions;
+- `feedback`: private-alpha feedback owned by the submitting user.
 
 Supabase Row Level Security restricts users to their own readable rows. Point
 transactions and repairs cannot be written directly by the browser: rewards are
@@ -153,13 +157,16 @@ Points + missed-day recovery v1 adds these rules:
 - repaired days are visually distinct from real check-ins in History.
 
 Settings now provides profile editing, email and password changes, appearance,
-session controls, and server-side account deletion.
+session controls, server-side account deletion, and opt-in daily Web Push
+reminders. Routine is installable as a PWA on supported Android and iOS devices.
+The private-alpha pass also includes stricter database privileges and RLS,
+protected server endpoints, production security headers, safer user-facing error
+messages, mobile keyboard/sheet fixes, and an in-app feedback flow.
 
 ## Roadmap
 
-1. Finish the private-alpha account/settings and mobile usability pass.
-2. Prepare the web app as an installable PWA.
-3. Add gentle opt-in daily check-in reminders.
-4. Use the app with a small private group and observe real behaviour.
-5. Adjust points and recovery only after observing real use.
-6. Add earned personalisation without turning the app into a high-pressure game.
+1. Use the private alpha with a small group and collect feedback in the app.
+2. Fix repeated friction and mobile/PWA edge cases found by real use.
+3. Revisit onboarding and account verification before a wider release.
+4. Adjust points and recovery only after observing real behaviour.
+5. Add earned personalisation without turning the app into a high-pressure game.
