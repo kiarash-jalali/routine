@@ -7,6 +7,7 @@ import "@fontsource-variable/fraunces";
 import "@fontsource-variable/dm-sans";
 import "@fontsource/dm-mono/latin-400.css";
 import "./globals.css";
+import "./stability-polish.css";
 
 export const metadata: Metadata = {
   title: "Routine Helper",
