@@ -85,8 +85,7 @@ export function Sheet({
     panelElement.addEventListener("focusin", keepFocusedFieldVisible);
     document.addEventListener("keydown", handleKeyDown);
 
-    // Do not move focus to the close button on mobile. Doing so can dismiss the
-    // software keyboard and makes form typing feel broken. Desktop keeps the
+    // Do not move focus to the close control on mobile. Desktop keeps the
     // convenient first-field focus.
     if (!isMobile) {
       panelElement
@@ -121,24 +120,37 @@ export function Sheet({
     <div
       ref={overlayRef}
       className="sheet-overlay"
+      onPointerDownCapture={(event) => {
+        // The glass panel is a nested, momentum-scrolling layer on mobile. Some
+        // iOS/Android PWAs can visually show a control inside that layer while
+        // losing its final tap/click during viewport or keyboard changes. Handle
+        // the close gesture at the stable overlay layer before it reaches the
+        // scrolling panel instead.
+        const target = event.target;
+        if (
+          target instanceof Element &&
+          target.closest("[data-sheet-close]")
+        ) {
+          event.preventDefault();
+          closeSheet();
+        }
+      }}
       onPointerDown={(event) => {
-        // Close on pointer-down instead of waiting for click. On phones, tapping
-        // while the keyboard is open can resize the viewport before the click is
-        // delivered, which makes the tap appear to do nothing.
+        // Tapping the scrim already proved reliable on the affected phones.
         if (event.target === event.currentTarget) closeSheet();
       }}
     >
-      <section
-        ref={panelRef}
-        className="sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={description ? descriptionId : undefined}
-      >
-        <div className="sheet-body">
-          <div className="flex items-start justify-between gap-4">
-            <div>
+      <div className="sheet-shell">
+        <section
+          ref={panelRef}
+          className="sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          aria-describedby={description ? descriptionId : undefined}
+        >
+          <div className="sheet-body">
+            <div className="pr-14">
               <h2 id={titleId} className="sheet-title text-3xl">
                 {title}
               </h2>
@@ -151,24 +163,24 @@ export function Sheet({
                 </p>
               )}
             </div>
-            <button
-              data-sheet-close
-              className="icon-button"
-              type="button"
-              aria-label="Close dialog"
-              onPointerDown={(event) => {
-                event.stopPropagation();
-                closeSheet();
-              }}
-              onClick={closeSheet}
-              disabled={busy}
-            >
-              <Icon name="close" />
-            </button>
+            {children}
           </div>
-          {children}
-        </div>
-      </section>
+        </section>
+
+        {/* Keep the close target outside the transformed/scrolling glass panel.
+            It still looks like part of the sheet, but mobile hit-testing happens
+            in the same stable overlay layer as the working scrim close gesture. */}
+        <button
+          data-sheet-close
+          className="sheet-close-button icon-button"
+          type="button"
+          aria-label="Close dialog"
+          onClick={closeSheet}
+          disabled={busy}
+        >
+          <Icon name="close" />
+        </button>
+      </div>
     </div>
   );
 }
