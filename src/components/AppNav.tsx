@@ -77,6 +77,15 @@ export function AppNav() {
         ))}
       </nav>
       <div className="nav-footer">
+        <Link
+          href="/settings"
+          className="logout-button"
+          aria-current={pathname === "/settings" ? "page" : undefined}
+          aria-label="Settings"
+        >
+          <Icon name="settings" size={19} />
+          <span>Settings</span>
+        </Link>
         <ThemeToggle />
         {error && (
           <p role="alert" className="text-sm text-danger">
