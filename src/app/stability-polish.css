@@ -166,7 +166,7 @@
 }
 
 /* A short diagonal glint gives primary creation buttons the little cartoon-coin
-   shine without making them pulse constantly. */
+   shine. The tiny star at the end makes the sweep feel intentional. */
 .moment-shine::after {
   content: "";
   position: absolute;
@@ -184,37 +184,85 @@
     transparent 90%
   );
   transform: skewX(-18deg);
-  animation: moment-glint 4.8s ease-in-out infinite;
+  animation: moment-glint 3.5s ease-in-out infinite;
+}
+
+.moment-shine::before {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: 7px;
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+  background: #fff;
+  clip-path: polygon(
+    50% 0%,
+    60% 39%,
+    100% 50%,
+    60% 61%,
+    50% 100%,
+    40% 61%,
+    0% 50%,
+    40% 39%
+  );
+  opacity: 0;
+  transform: scale(0.2) rotate(0deg);
+  filter: drop-shadow(0 0 5px #ffffffaa);
+  animation: moment-spark 3.5s ease-in-out infinite;
 }
 
 @keyframes moment-glint {
   0%,
-  72% {
+  58% {
     left: -48%;
     opacity: 0;
   }
-  76% {
+  63% {
     opacity: 1;
   }
-  88% {
+  78% {
     left: 118%;
     opacity: 0.9;
   }
+  84%,
   100% {
     left: 118%;
     opacity: 0;
   }
 }
 
-/* Shared-element style status popup. It sits above the bottom navigation on
-   mobile and expands from a matching MomentSource when one is provided. */
+@keyframes moment-spark {
+  0%,
+  77%,
+  100% {
+    opacity: 0;
+    transform: scale(0.2) rotate(0deg);
+  }
+  82% {
+    opacity: 0.95;
+    transform: scale(0.55) rotate(20deg);
+  }
+  87% {
+    opacity: 1;
+    transform: scale(1.35) rotate(45deg);
+  }
+  94% {
+    opacity: 0;
+    transform: scale(0.45) rotate(80deg);
+  }
+}
+
+/* Status popups are portalled to the document body so list-layout animations
+   cannot pull task/routine controls or the mobile navigation around with them. */
 .moment-popup-wrap {
   position: fixed;
   z-index: 110;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: 28px;
   width: min(430px, calc(100vw - 32px));
-  transform: translateX(-50%);
+  margin-inline: auto;
   pointer-events: none;
 }
 
@@ -234,10 +282,6 @@
   backdrop-filter: blur(28px) saturate(1.25);
   pointer-events: auto;
   text-align: left;
-}
-
-.moment-popup:hover {
-  transform: translateY(-1px);
 }
 
 .moment-popup-icon {
@@ -353,6 +397,42 @@
   color: color-mix(in srgb, var(--on-primary) 76%, transparent);
 }
 
+@media (min-width: 768px) {
+  .moment-popup-wrap {
+    top: 30px;
+    bottom: auto;
+    width: min(760px, calc(100vw - 64px));
+  }
+
+  .moment-popup {
+    min-height: 104px;
+    gap: 18px;
+    padding: 20px 24px;
+    border-radius: 26px;
+  }
+
+  .moment-popup-icon {
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+    border-radius: 17px;
+  }
+
+  .moment-popup-icon svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .moment-popup-title {
+    font-size: 18px;
+  }
+
+  .moment-popup-detail {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+}
+
 @media (max-width: 767px) {
   .segmented {
     width: 100%;
@@ -377,6 +457,10 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .sheet-overlay[data-compact="true"] {
+    align-items: center;
   }
 
   .sheet-overlay .sheet {
@@ -463,6 +547,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .moment-shine::before,
   .moment-shine::after {
     animation: none;
     display: none;
