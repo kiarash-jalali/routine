@@ -122,6 +122,10 @@
   animation: sheet-panel-in 260ms var(--ease-out) both;
 }
 
+.sheet-overlay[data-compact="true"] .sheet {
+  width: min(460px, 100%);
+}
+
 .sheet-overlay .sheet-body {
   display: block;
   min-height: 0;
@@ -135,6 +139,10 @@
   display: block;
   height: 24px;
   pointer-events: none;
+}
+
+.sheet-overlay[data-keyboard-assist="false"] .sheet-body::after {
+  height: 0;
 }
 
 @keyframes sheet-overlay-in {
@@ -155,6 +163,194 @@
     opacity: 1;
     transform: none;
   }
+}
+
+/* A short diagonal glint gives primary creation buttons the little cartoon-coin
+   shine without making them pulse constantly. */
+.moment-shine::after {
+  content: "";
+  position: absolute;
+  top: -65%;
+  bottom: -65%;
+  width: 34%;
+  left: -48%;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 10%,
+    #ffffff18 30%,
+    #ffffffd0 50%,
+    #ffffff24 68%,
+    transparent 90%
+  );
+  transform: skewX(-18deg);
+  animation: moment-glint 4.8s ease-in-out infinite;
+}
+
+@keyframes moment-glint {
+  0%,
+  72% {
+    left: -48%;
+    opacity: 0;
+  }
+  76% {
+    opacity: 1;
+  }
+  88% {
+    left: 118%;
+    opacity: 0.9;
+  }
+  100% {
+    left: 118%;
+    opacity: 0;
+  }
+}
+
+/* Shared-element style status popup. It sits above the bottom navigation on
+   mobile and expands from a matching MomentSource when one is provided. */
+.moment-popup-wrap {
+  position: fixed;
+  z-index: 110;
+  left: 50%;
+  bottom: 28px;
+  width: min(430px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.moment-popup {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--glass-strong) 90%, var(--primary-soft));
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 18px 60px #071e3538;
+  backdrop-filter: blur(28px) saturate(1.25);
+  pointer-events: auto;
+  text-align: left;
+}
+
+.moment-popup:hover {
+  transform: translateY(-1px);
+}
+
+.moment-popup-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+
+.moment-warm .moment-popup-icon {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.moment-info .moment-popup-icon {
+  background: var(--surface-soft);
+  color: var(--primary);
+}
+
+.moment-popup-title {
+  display: block;
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 650;
+}
+
+.moment-popup-detail {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Wall-calendar history view. Hidden cells retain their grid position so the
+   month still reads like a real calendar instead of collapsing around data. */
+.month-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.month-calendar-weekday {
+  padding-bottom: 3px;
+  text-align: center;
+  font-family: var(--font-data);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.month-calendar-cell {
+  position: relative;
+  min-height: 66px;
+  padding: 9px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  overflow: hidden;
+}
+
+.month-calendar-cell.is-hidden {
+  visibility: hidden;
+}
+
+.month-calendar-cell.is-future {
+  background: color-mix(in srgb, var(--surface-soft) 56%, transparent);
+  border-style: dashed;
+  opacity: 0.58;
+}
+
+.month-calendar-cell.is-today {
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.month-calendar-cell.is-checked {
+  background: var(--primary-soft);
+  border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+}
+
+.month-calendar-cell.is-complete {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.month-calendar-cell.is-repaired {
+  border-style: dashed;
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary-soft) 72%, transparent);
+}
+
+.month-calendar-date {
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.month-calendar-status {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  bottom: 8px;
+  font-size: 9px;
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.month-calendar-cell.is-complete .month-calendar-status {
+  color: color-mix(in srgb, var(--on-primary) 76%, transparent);
 }
 
 @media (max-width: 767px) {
@@ -190,13 +386,39 @@
     scroll-padding-block: 20px 220px;
   }
 
+  .sheet-overlay[data-compact="true"] .sheet {
+    width: 100%;
+  }
+
   .sheet-overlay .sheet-body {
     padding: 22px 20px max(40px, calc(32px + env(safe-area-inset-bottom)));
   }
 
-  /* Extra room below the final action lets the form move above a tall keyboard. */
-  .sheet-overlay .sheet-body::after {
+  .sheet-overlay[data-keyboard-assist="true"] .sheet-body::after {
     height: 180px;
+  }
+
+  .sheet-overlay[data-keyboard-assist="false"] .sheet-body::after {
+    height: 0;
+  }
+
+  .moment-popup-wrap {
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    width: calc(100vw - 28px);
+  }
+
+  .month-calendar {
+    gap: 5px;
+  }
+
+  .month-calendar-cell {
+    min-height: 54px;
+    border-radius: 13px;
+    padding: 7px;
+  }
+
+  .month-calendar-status {
+    display: none;
   }
 
   /* While an editor sheet is open, remove the top mobile chrome so the form has
@@ -237,5 +459,12 @@
 @media (max-width: 390px) {
   .task-schedule-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moment-shine::after {
+    animation: none;
+    display: none;
   }
 }
