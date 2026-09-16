@@ -24,11 +24,15 @@ export function Sheet({
   const titleId = useId();
   const descriptionId = useId();
 
-  // Callers usually pass an inline onClose function. Keep the latest callback
-  // in a ref so typing in a form does not tear down and recreate the sheet
-  // effect on every parent render.
-  onCloseRef.current = onClose;
-  busyRef.current = busy;
+  // Keep the current callback and busy state available to the long-lived sheet
+  // effect without making that effect restart on every parent render.
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    busyRef.current = busy;
+  }, [busy]);
 
   useEffect(() => {
     if (!open) return;
@@ -112,7 +116,7 @@ export function Sheet({
   if (!open) return null;
 
   function closeSheet() {
-    if (!busyRef.current) onCloseRef.current();
+    if (!busy) onClose();
   }
 
   return (
