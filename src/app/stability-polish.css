@@ -2,6 +2,7 @@
    These rules intentionally override the broader visual system in globals.css. */
 
 /* Keep schedule controls visually consistent wherever they appear. */
+.field[type="date"],
 .field[type="time"],
 .field[type="datetime-local"] {
   min-height: 52px;
@@ -15,6 +16,7 @@
   box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
+.field[type="date"]:focus,
 .field[type="time"]:focus,
 .field[type="datetime-local"]:focus {
   background: var(--surface);
@@ -22,6 +24,12 @@
   box-shadow:
     0 0 0 4px var(--primary-ring),
     inset 0 1px 0 var(--glass-highlight);
+}
+
+.task-schedule-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(120px, 0.9fr);
+  gap: 12px;
 }
 
 /* The filter should read as one coherent control, not three loose labels. */
@@ -61,6 +69,13 @@
   font-weight: 600;
 }
 
+/* Keep the auth mode switch visibly centred inside the login card on desktop. */
+.auth-card .segmented {
+  width: min(100%, 280px);
+  min-width: 0;
+  margin-inline: auto;
+}
+
 /* Sheets must remain usable when the mobile keyboard reduces the viewport. */
 .sheet {
   overflow: hidden;
@@ -70,7 +85,7 @@
   max-height: inherit;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scroll-padding-block: 24px;
+  scroll-padding-block: 28px 140px;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -84,13 +99,50 @@
     padding-inline: 8px;
   }
 
+  .auth-card .segmented {
+    width: min(100%, 280px);
+  }
+
+  .task-schedule-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* On phones use a floating card instead of a bottom sheet. This leaves room
+     to scroll the form while the software keyboard is visible. */
   .sheet {
-    max-height: calc(100dvh - 12px - env(safe-area-inset-top));
+    top: max(12px, env(safe-area-inset-top));
+    right: 16px;
+    bottom: auto;
+    left: 16px;
+    inset-block-end: auto;
+    margin: 0 auto;
+    width: calc(100% - 32px);
+    max-height: calc(
+      100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+    border-radius: 24px;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  .sheet[open] {
+    transform: translateY(0) scale(1);
+  }
+
+  @starting-style {
+    .sheet[open] {
+      transform: translateY(18px) scale(0.985);
+    }
   }
 
   .sheet-body {
-    max-height: calc(100dvh - 12px - env(safe-area-inset-top));
-    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    max-height: calc(
+      100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+    padding: 22px 20px calc(28px + env(safe-area-inset-bottom));
+  }
+
+  .sheet-handle {
+    display: none;
   }
 
   /* The mobile app header is in normal flow, so subtract it from page height. */
@@ -107,5 +159,11 @@
 
   .auth-card {
     margin-inline: auto;
+  }
+}
+
+@media (max-width: 390px) {
+  .task-schedule-grid {
+    grid-template-columns: 1fr;
   }
 }
