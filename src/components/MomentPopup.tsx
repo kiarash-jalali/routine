@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Icon, type IconName } from "@/components/Icon";
 
@@ -16,6 +17,20 @@ export type MomentNotice = {
   durationMs?: number;
 };
 
+function useMobileMomentLayout() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px)");
+    const sync = () => setIsMobile(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  return isMobile;
+}
+
 export function MomentSource({
   id,
   className = "inline-flex",
@@ -26,11 +41,13 @@ export function MomentSource({
   children: ReactNode;
 }) {
   const reduced = useReducedMotion();
+  const isMobile = useMobileMomentLayout();
 
   return (
     <motion.span
       className={className}
-      layoutId={reduced ? undefined : `moment-${id}`}
+      data-moment-source={id}
+      layoutId={!reduced && !isMobile ? `moment-${id}` : undefined}
       transition={{ type: "spring", stiffness: 360, damping: 32 }}
     >
       {children}
@@ -46,7 +63,13 @@ export function MomentPopup({
   onDismiss: () => void;
 }) {
   const reduced = useReducedMotion();
+  const isMobile = useMobileMomentLayout();
+  const [mounted, setMounted] = useState(false);
   const dismissRef = useRef(onDismiss);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     dismissRef.current = onDismiss;
@@ -61,14 +84,21 @@ export function MomentPopup({
     return () => window.clearTimeout(timeout);
   }, [notice]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence initial={false}>
       {notice && (
         <motion.div
+          key={notice.id}
           className="moment-popup-wrap"
-          initial={{ opacity: 0, y: reduced ? 0 : 14 }}
+          initial={{ opacity: 0, y: reduced ? 0 : isMobile ? 14 : -18 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: reduced ? 0 : 8, scale: reduced ? 1 : 0.98 }}
+          exit={{
+            opacity: 0,
+            y: reduced ? 0 : isMobile ? 8 : -8,
+            scale: reduced ? 1 : 0.98,
+          }}
           transition={{ duration: reduced ? 0 : 0.2, ease: "easeOut" }}
           role="status"
           aria-live="polite"
@@ -77,7 +107,7 @@ export function MomentPopup({
             type="button"
             className={`moment-popup moment-${notice.tone ?? "success"}`}
             layoutId={
-              !reduced && notice.sourceId
+              !reduced && !isMobile && notice.sourceId
                 ? `moment-${notice.sourceId}`
                 : undefined
             }
@@ -97,6 +127,7 @@ export function MomentPopup({
           </motion.button>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
