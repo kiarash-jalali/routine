@@ -20,8 +20,16 @@ export function Sheet({
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
+  const onCloseRef = useRef(onClose);
+  const busyRef = useRef(busy);
   const titleId = useId();
   const descriptionId = useId();
+
+  // Callers usually pass an inline onClose function. Keep the latest callback
+  // in a ref so typing in a form does not tear down and recreate the sheet
+  // effect on every parent render.
+  onCloseRef.current = onClose;
+  busyRef.current = busy;
 
   useEffect(() => {
     if (!open) return;
@@ -30,10 +38,8 @@ export function Sheet({
     const panel = panelRef.current;
     if (!overlay || !panel) return;
 
-    // Preserve the non-null narrowing inside the event-handler closures below.
     const overlayElement = overlay;
     const panelElement = panel;
-
     const previousOverflow = document.body.style.overflow;
     const previousFocus = document.activeElement as HTMLElement | null;
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
@@ -53,7 +59,7 @@ export function Sheet({
       if (!isMobile) return;
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
-      if (!target.matches("input, textarea, select, button")) return;
+      if (!target.matches("input, textarea, select")) return;
 
       [80, 280, 520].forEach((delay) => {
         window.setTimeout(() => {
@@ -64,7 +70,9 @@ export function Sheet({
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !busy) onClose();
+      if (event.key === "Escape" && !busyRef.current) {
+        onCloseRef.current();
+      }
     }
 
     document.body.style.overflow = "hidden";
@@ -77,11 +85,10 @@ export function Sheet({
     panelElement.addEventListener("focusin", keepFocusedFieldVisible);
     document.addEventListener("keydown", handleKeyDown);
 
-    if (isMobile) {
-      panelElement
-        .querySelector<HTMLElement>("[data-sheet-close]")
-        ?.focus({ preventScroll: true });
-    } else {
+    // Do not move focus to the close button on mobile. Doing so can dismiss the
+    // software keyboard and makes form typing feel broken. Desktop keeps the
+    // convenient first-field focus.
+    if (!isMobile) {
       panelElement
         .querySelector<HTMLElement>(
           "input:not([type='hidden']):not(:disabled), textarea:not(:disabled)",
@@ -97,18 +104,25 @@ export function Sheet({
       document.removeEventListener("keydown", handleKeyDown);
       document.body.classList.remove("sheet-editor-open");
       document.body.style.overflow = previousOverflow;
-      previousFocus?.focus?.({ preventScroll: true });
+
+      if (previousFocus?.isConnected) {
+        previousFocus.focus({ preventScroll: true });
+      }
     };
-  }, [busy, onClose, open]);
+  }, [open]);
 
   if (!open) return null;
+
+  function closeSheet() {
+    if (!busyRef.current) onCloseRef.current();
+  }
 
   return (
     <div
       ref={overlayRef}
       className="sheet-overlay"
-      onPointerDown={(event) => {
-        if (event.target === event.currentTarget && !busy) onClose();
+      onClick={(event) => {
+        if (event.target === event.currentTarget) closeSheet();
       }}
     >
       <section
@@ -139,17 +153,7 @@ export function Sheet({
               className="icon-button"
               type="button"
               aria-label="Close dialog"
-              onPointerDown={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                if (!busy) onClose();
-              }}
-              onClick={(event) => {
-                // Keyboard activation does not fire pointer events, so retain a
-                // click fallback for accessibility and desktop keyboard use.
-                event.stopPropagation();
-                if (!busy) onClose();
-              }}
+              onClick={closeSheet}
               disabled={busy}
             >
               <Icon name="close" />
