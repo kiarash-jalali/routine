@@ -33,13 +33,38 @@ export function Sheet({
       ).matches;
       const autofocusElement =
         dialog.querySelector<HTMLElement>("[autofocus]");
+      const visualViewport = window.visualViewport;
+
+      function syncViewport() {
+        const height = visualViewport?.height ?? window.innerHeight;
+        const top = visualViewport?.offsetTop ?? 0;
+        dialog.style.setProperty("--sheet-viewport-height", `${height}px`);
+        dialog.style.setProperty("--sheet-viewport-top", `${top}px`);
+      }
+
+      function keepFocusedFieldVisible(event: FocusEvent) {
+        if (desktopInputFocus) return;
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        if (!target.matches("input, textarea, select, button")) return;
+
+        window.setTimeout(() => {
+          target.scrollIntoView({ block: "center", behavior: "smooth" });
+        }, 220);
+      }
 
       // Browsers autofocus dialog fields during showModal(). On a phone that can
-      // summon the keyboard before the bottom sheet is visible, covering it.
+      // summon the keyboard before the dialog is visible, covering it.
       if (!desktopInputFocus) autofocusElement?.removeAttribute("autofocus");
 
+      syncViewport();
       dialog.showModal();
       document.body.style.overflow = "hidden";
+
+      visualViewport?.addEventListener("resize", syncViewport);
+      visualViewport?.addEventListener("scroll", syncViewport);
+      window.addEventListener("resize", syncViewport);
+      dialog.addEventListener("focusin", keepFocusedFieldVisible);
 
       if (desktopInputFocus) {
         dialog
@@ -53,13 +78,17 @@ export function Sheet({
           ?.focus({ preventScroll: true });
       }
 
-      // Restore the DOM attribute for React/accessibility consistency. It will
-      // only take effect again the next time the dialog is opened.
       if (!desktopInputFocus && autofocusElement) {
         autofocusElement.setAttribute("autofocus", "");
       }
 
       return () => {
+        visualViewport?.removeEventListener("resize", syncViewport);
+        visualViewport?.removeEventListener("scroll", syncViewport);
+        window.removeEventListener("resize", syncViewport);
+        dialog.removeEventListener("focusin", keepFocusedFieldVisible);
+        dialog.style.removeProperty("--sheet-viewport-height");
+        dialog.style.removeProperty("--sheet-viewport-top");
         dialog.close();
         document.body.style.overflow = previousOverflow;
       };
