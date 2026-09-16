@@ -134,6 +134,14 @@ export default function DashboardPage() {
     }
   }
 
+  function closeTaskForm() {
+    if (creating) return;
+    setShowTaskForm(false);
+    setTitle("");
+    setDueLocal("");
+    setFormError(null);
+  }
+
   async function toggleDone(task: Task) {
     if (pending.current.has(task.id)) return;
     pending.current.add(task.id);
@@ -456,7 +464,7 @@ export default function DashboardPage() {
       </div>
       <Sheet
         open={showTaskForm}
-        onClose={() => setShowTaskForm(false)}
+        onClose={closeTaskForm}
         busy={creating}
         title="A new task"
         description="One thing to remember. Keep it simple."
@@ -481,15 +489,20 @@ export default function DashboardPage() {
           <Collapse show={!!formError}>
             <ErrorNotice>{formError}</ErrorNotice>
           </Collapse>
-          <Button
-            className="w-full"
-            variant="primary"
-            type="submit"
-            disabled={creating || !title.trim()}
-            busy={creating}
-          >
-            {creating ? "Adding…" : "Add task"}
-          </Button>
+          <div className="flex gap-3">
+            <Button onClick={closeTaskForm} disabled={creating}>
+              Cancel
+            </Button>
+            <Button
+              className="flex-1"
+              variant="primary"
+              type="submit"
+              disabled={creating || !title.trim()}
+              busy={creating}
+            >
+              {creating ? "Adding…" : "Add task"}
+            </Button>
+          </div>
         </form>
       </Sheet>
       <Sheet
