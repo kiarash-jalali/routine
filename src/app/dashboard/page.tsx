@@ -1,34 +1,44 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AppNav } from "@/components/AppNav";
+import { Icon } from "@/components/Icon";
+import { Sheet } from "@/components/Sheet";
 import {
   Button,
   Card,
+  CheckCircle,
   EmptyState,
   ErrorNotice,
   Input,
+  LoadingState,
   PageHeader,
   PageShell,
   SectionHeading,
+  SegmentedControl,
   Stat,
 } from "@/components/ui";
 import { listCheckinDays } from "@/lib/db/history";
+import { listStreakRepairs } from "@/lib/db/points";
 import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import { calculateStreakMetrics } from "@/lib/streak";
-import { filterTasksForToday, formatFriendlyDate } from "@/lib/today";
+import {
+  filterTasksForToday,
+  formatFriendlyDate,
+  getLocalDateKey,
+} from "@/lib/today";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
 
 function formatDueTime(task: Task) {
-  if (!task.due_at) return "Flexible — no due time";
-
+  if (!task.due_at) return "Anytime";
   return new Date(task.due_at).toLocaleString([], {
-    weekday: "short",
+    month: "short",
+    day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -36,402 +46,484 @@ function formatDueTime(task: Task) {
 
 export default function DashboardPage() {
   const router = useRouter();
-
-  const [loadingUser, setLoadingUser] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-
+  const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loadingTasks, setLoadingTasks] = useState(true);
-  const [taskError, setTaskError] = useState<string | null>(null);
-
+  const [routines, setRoutines] = useState<Routine[]>([]);
+  const [checkinDays, setCheckinDays] = useState<string[] | null>(null);
+  const [repairedDays, setRepairedDays] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [dueLocal, setDueLocal] = useState("");
   const [creating, setCreating] = useState(false);
-
-  const [todaysRoutines, setTodaysRoutines] = useState<Routine[]>([]);
-  const [loadingRoutines, setLoadingRoutines] = useState(true);
-  const [routineError, setRoutineError] = useState<string | null>(null);
-  const [checkinDays, setCheckinDays] = useState<string[] | null>(null);
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [pendingIds, setPendingIds] = useState<string[]>([]);
+  const pending = useRef(new Set<string>());
+  const [filter, setFilter] = useState<"today" | "all" | "done">("today");
+  const [announcement, setAnnouncement] = useState("");
+  const [today] = useState(() => new Date());
 
   useEffect(() => {
-    let mounted = true;
-
-    async function loadUser() {
+    let cancelled = false;
+    async function load() {
       try {
-        const supabase = supabaseBrowser();
-        const { data, error } = await supabase.auth.getUser();
-        if (error) throw error;
-
-        if (!data.user) {
+        const { data, error } = await supabaseBrowser().auth.getUser();
+        if (error || !data.user) {
           router.replace("/login");
           return;
         }
-
-        if (mounted) {
-          setUserId(data.user.id);
-          setLoadingUser(false);
-        }
-      } catch {
-        router.replace("/login");
+        if (cancelled) return;
+        setUserId(data.user.id);
+        const results = await Promise.allSettled([
+          listTasks(),
+          listTodaysRoutines(),
+          listCheckinDays(data.user.id),
+          listStreakRepairs(data.user.id),
+        ]);
+        if (cancelled) return;
+        const [taskResult, routineResult, daysResult, repairsResult] = results;
+        if (taskResult.status === "fulfilled") setTasks(taskResult.value);
+        if (routineResult.status === "fulfilled")
+          setRoutines(routineResult.value);
+        if (daysResult.status === "fulfilled") setCheckinDays(daysResult.value);
+        if (repairsResult.status === "fulfilled")
+          setRepairedDays(repairsResult.value.map((repair) => repair.day));
+        if (results.some((result) => result.status === "rejected"))
+          setError(
+            "Some of your day couldn’t be loaded. Refresh to try again.",
+          );
+      } catch (error: unknown) {
+        if (!cancelled)
+          setError(getErrorMessage(error, "Your day couldn’t be loaded."));
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
-
-    loadUser();
+    void load();
     return () => {
-      mounted = false;
+      cancelled = true;
     };
   }, [router]);
 
-  async function fetchTodaysRoutines() {
-    setRoutineError(null);
-    setLoadingRoutines(true);
-
-    try {
-      setTodaysRoutines(await listTodaysRoutines());
-    } catch (error: unknown) {
-      setRoutineError(getErrorMessage(error, "Failed to load routines"));
-    } finally {
-      setLoadingRoutines(false);
-    }
-  }
-
-  async function fetchTasks() {
-    setTaskError(null);
-    setLoadingTasks(true);
-
-    try {
-      setTasks(await listTasks());
-    } catch (error: unknown) {
-      setTaskError(getErrorMessage(error, "Failed to load tasks"));
-    } finally {
-      setLoadingTasks(false);
-    }
-  }
-
-  useEffect(() => {
-    if (!userId) return;
-
-    fetchTasks();
-    fetchTodaysRoutines();
-
-    listCheckinDays(userId)
-      .then(setCheckinDays)
-      .catch(() => setCheckinDays(null));
-  }, [userId]);
-
-  async function createTask() {
-    if (!userId || !title.trim()) return;
-
+  async function createTask(event: React.FormEvent) {
+    event.preventDefault();
+    if (!userId || !title.trim() || creating) return;
     setCreating(true);
-    setTaskError(null);
-
+    setFormError(null);
     try {
-      const dueAtIso =
-        dueLocal.trim() === "" ? null : new Date(dueLocal).toISOString();
-
       await addTask({
         user_id: userId,
         title: title.trim(),
-        due_at: dueAtIso,
+        due_at: dueLocal ? new Date(dueLocal).toISOString() : null,
       });
-
+      setTasks(await listTasks());
       setTitle("");
       setDueLocal("");
-      await fetchTasks();
+      setShowTaskForm(false);
+      setFilter("all");
+      setAnnouncement("Task added.");
     } catch (error: unknown) {
-      setTaskError(getErrorMessage(error, "Failed to create task"));
+      setFormError(getErrorMessage(error, "Your task couldn’t be added."));
     } finally {
       setCreating(false);
     }
   }
 
   async function toggleDone(task: Task) {
-    setTaskError(null);
+    if (pending.current.has(task.id)) return;
+    pending.current.add(task.id);
+    setPendingIds([...pending.current]);
+    setError(null);
     setTasks((current) =>
       current.map((item) =>
-        item.id === task.id ? { ...item, is_done: !item.is_done } : item,
+        item.id === task.id ? { ...item, is_done: !task.is_done } : item,
       ),
     );
-
     try {
       await setTaskDone(task.id, !task.is_done);
+      setAnnouncement(
+        task.is_done
+          ? "Task reopened."
+          : "Task completed. Find it in Done to undo.",
+      );
     } catch (error: unknown) {
       setTasks((current) =>
         current.map((item) =>
           item.id === task.id ? { ...item, is_done: task.is_done } : item,
         ),
       );
-      setTaskError(getErrorMessage(error, "Failed to update task"));
+      setError(getErrorMessage(error, "Your task couldn’t be updated."));
+    } finally {
+      pending.current.delete(task.id);
+      setPendingIds([...pending.current]);
     }
   }
 
-  async function deleteTask(task: Task) {
-    setTaskError(null);
-    setTasks((current) => current.filter((item) => item.id !== task.id));
-
+  async function deleteTask() {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    setFormError(null);
     try {
-      await removeTask(task.id);
+      await removeTask(deleteTarget.id);
+      setTasks((current) =>
+        current.filter((item) => item.id !== deleteTarget.id),
+      );
+      setDeleteTarget(null);
+      setAnnouncement("Task deleted.");
     } catch (error: unknown) {
-      await fetchTasks();
-      setTaskError(getErrorMessage(error, "Failed to delete task"));
+      setFormError(getErrorMessage(error, "Your task couldn’t be deleted."));
+    } finally {
+      setDeleting(false);
     }
   }
 
-  const todayTasks = useMemo(() => filterTasksForToday(tasks), [tasks]);
-  const streak = useMemo(
-    () => calculateStreakMetrics(checkinDays ?? []),
-    [checkinDays],
+  const todayTasks = useMemo(
+    () => filterTasksForToday(tasks, today),
+    [tasks, today],
   );
-  const todayLabel = useMemo(() => formatFriendlyDate(), []);
+  const visibleTasks =
+    filter === "today"
+      ? todayTasks
+      : filter === "done"
+        ? tasks.filter((task) => task.is_done)
+        : tasks;
+  const streak = calculateStreakMetrics([
+    ...(checkinDays ?? []),
+    ...repairedDays,
+  ]);
+  const checkedInToday = checkinDays?.includes(getLocalDateKey(today));
+  const weekDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - ((today.getDay() + 6) % 7) + index);
+    return date;
+  });
 
-  if (loadingUser) {
+  if (loading)
     return (
       <PageShell>
-        <p className="text-sm text-muted">Loading your day…</p>
+        <LoadingState label="Loading your day…" />
       </PageShell>
     );
-  }
 
   return (
     <PageShell>
-      <AppNav />
-
       <PageHeader
-        eyebrow={todayLabel}
-        title="Shape today, gently."
-        description="Your routines come first. Tasks are here when you need them."
+        eyebrow={formatFriendlyDate(today)}
+        title="Today"
+        description="A little progress, at your own pace."
         actions={
-          <Button variant="primary" onClick={() => router.push("/checkin")}>
-            Check in today
+          <Button
+            variant="primary"
+            onClick={() => {
+              setFormError(null);
+              setShowTaskForm(true);
+            }}
+          >
+            <Icon name="plus" size={18} />
+            Add task
           </Button>
         }
       />
-
-      <div className="mt-5 inline-grid w-full max-w-2xl grid-cols-3 divide-x divide-primary/10 rounded-2xl border border-primary/15 bg-primary-soft/40 px-2 py-3 shadow-sm sm:px-3">
-        <div className="px-2 sm:px-4">
-          <Stat value={todaysRoutines.length} label="routines today" />
+      {error && (
+        <div className="mb-6">
+          <ErrorNotice>{error}</ErrorNotice>
+        </div>
+      )}
+      <div className="mb-7 grid grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-surface px-2 py-5 sm:px-5">
+        <div className="px-3 sm:px-5">
+          <Stat value={routines.length} label="routines today" />
         </div>
         <div className="px-3 sm:px-5">
-          <Stat value={todayTasks.length} label="open tasks today" />
+          <Stat value={todayTasks.length} label="open tasks" />
         </div>
         <div className="px-3 sm:px-5">
           <Stat
             value={checkinDays ? streak.currentDays : "—"}
             label={
-              streak.currentDays === 1
-                ? "day in your rhythm"
-                : "days in your rhythm"
+              streak.currentDays === 1 ? "day in rhythm" : "days in rhythm"
             }
           />
         </div>
       </div>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.7fr)] lg:items-start">
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-6">
           <Card>
             <SectionHeading
-              title="Today's routines"
-              description="The repeating things that give your day some shape."
+              title="Your routines today"
+              action={
+                <Link
+                  className="inline-flex min-h-8 items-center gap-1 text-sm text-primary"
+                  href="/routines"
+                >
+                  Manage
+                  <Icon name="chevron" size={15} />
+                </Link>
+              }
             />
-
-            {routineError && (
-              <div className="mt-4">
-                <ErrorNotice>{routineError}</ErrorNotice>
-              </div>
-            )}
-
-            {loadingRoutines ? (
-              <p className="mt-4 text-sm text-muted">Loading routines…</p>
-            ) : todaysRoutines.length === 0 ? (
-              <div className="mt-4">
+            <div className="mt-6">
+              {routines.length === 0 ? (
                 <EmptyState>
-                  No routines are planned for today. Add one from the Routines
-                  page when you are ready.
-                </EmptyState>
-              </div>
-            ) : (
-              <ul className="mt-4 divide-y divide-border">
-                {todaysRoutines.map((routine) => (
-                  <li
-                    key={routine.id}
-                    className="flex items-center justify-between gap-4 py-3.5 first:pt-1 last:pb-0"
+                  No routines planned for today.
+                  <br />
+                  <Link
+                    className="mt-2 inline-flex min-h-11 items-center text-primary"
+                    href="/routines"
                   >
-                    <div className="flex min-w-0 items-start gap-3">
-                      <span
-                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary"
-                        aria-hidden="true"
-                      />
-                      <div className="min-w-0">
-                        <p className="wrap-break-word font-medium text-foreground">
-                          {routine.title}
-                        </p>
-                        <p className="mt-1 text-xs text-muted">
-                          {routine.preferred_time
-                            ? `Preferred at ${routine.preferred_time.slice(0, 5)}`
-                            : "No preferred time"}
+                    Add a small routine
+                    <Icon name="arrow" size={16} className="ml-2" />
+                  </Link>
+                </EmptyState>
+              ) : (
+                <ul>
+                  {routines.map((routine) => (
+                    <li className="list-row" key={routine.id}>
+                      <span className="icon-tile">
+                        <Icon
+                          name={
+                            routine.preferred_time &&
+                            routine.preferred_time >= "17:00"
+                              ? "moon"
+                              : "sun"
+                          }
+                        />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="row-title">{routine.title}</p>
+                        <p className="row-detail">
+                          {routine.frequency === "daily"
+                            ? "Every day"
+                            : "Weekly"}
                         </p>
                       </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      className="min-h-8 shrink-0 px-2.5 py-1"
-                      onClick={() => router.push("/routines")}
-                    >
-                      Manage
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
+                      <span className="text-sm text-muted tabular-nums">
+                        {routine.preferred_time?.slice(0, 5) || "Anytime"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </Card>
-
           <Card>
             <SectionHeading
-              title="Today's tasks"
-              description="One-off things that need your attention today."
+              title="Tasks"
+              action={
+                <button
+                  className="icon-button -mr-2 -mt-2"
+                  aria-label="Add a task"
+                  onClick={() => {
+                    setFormError(null);
+                    setShowTaskForm(true);
+                  }}
+                >
+                  <Icon name="plus" />
+                </button>
+              }
             />
-
-            {loadingTasks ? (
-              <p className="mt-4 text-sm text-muted">Loading tasks…</p>
-            ) : todayTasks.length === 0 ? (
-              <div className="mt-4">
-                <EmptyState>Nothing urgent is waiting for you today.</EmptyState>
-              </div>
+            <div className="mt-4 mb-6">
+              <SegmentedControl
+                value={filter}
+                onChange={setFilter}
+                label="Task filter"
+                options={[
+                  { value: "today", label: "Today" },
+                  { value: "all", label: "All" },
+                  { value: "done", label: "Done" },
+                ]}
+              />
+            </div>
+            {visibleTasks.length === 0 ? (
+              <EmptyState>
+                {filter === "done"
+                  ? "Your completed tasks will be here."
+                  : filter === "all"
+                    ? "Nothing here yet. Add a task when you need one."
+                    : "A little breathing room. No open tasks for today."}
+              </EmptyState>
             ) : (
-              <ul className="mt-4 divide-y divide-border">
-                {todayTasks.map((task) => (
+              <ul key={filter}>
+                {visibleTasks.map((task) => (
                   <li
                     key={task.id}
-                    className="flex flex-col gap-3 py-3.5 first:pt-1 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+                    className={`list-row ${task.is_done ? "is-done" : ""}`}
                   >
-                    <div className="min-w-0">
-                      <p className="wrap-break-word font-medium text-foreground">
-                        {task.title}
-                      </p>
-                      <p className="mt-1 text-xs text-muted">
-                        {formatDueTime(task)}
-                      </p>
+                    <button
+                      className="check-control -ml-2"
+                      aria-pressed={task.is_done}
+                      aria-label={`${task.is_done ? "Reopen" : "Complete"} ${task.title}`}
+                      disabled={pendingIds.includes(task.id)}
+                      onClick={() => toggleDone(task)}
+                    >
+                      <CheckCircle checked={task.is_done} />
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <p className="row-title">{task.title}</p>
+                      <p className="row-detail">{formatDueTime(task)}</p>
                     </div>
-                    <div className="flex shrink-0 gap-2">
-                      <Button
-                        className="min-h-8 px-3 py-1"
-                        onClick={() => toggleDone(task)}
-                      >
-                        Done
-                      </Button>
-                      <Button
-                        variant="danger"
-                        className="min-h-8 px-3 py-1"
-                        onClick={() => deleteTask(task)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
+                    <button
+                      className="icon-button danger -mr-2"
+                      aria-label={`Delete ${task.title}`}
+                      disabled={pendingIds.includes(task.id)}
+                      onClick={() => {
+                        setFormError(null);
+                        setDeleteTarget(task);
+                      }}
+                    >
+                      <Icon name="trash" size={17} />
+                    </button>
                   </li>
                 ))}
               </ul>
             )}
           </Card>
+          <p className="min-h-5 px-1 text-sm text-muted" role="status">
+            {announcement}
+          </p>
         </div>
-
-        <Card tone="soft" className="self-start lg:sticky lg:top-8">
-          <SectionHeading
-            title="Quick task"
-            description="Capture one-off work without turning it into a routine."
-          />
-          <div className="mt-5 space-y-3">
-            <label className="grid gap-1.5">
-              <span className="text-xs font-medium text-muted">Task</span>
-              <Input
-                placeholder="What needs doing?"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-              />
-            </label>
-            <label className="grid gap-1.5">
-              <span className="text-xs font-medium text-muted">Due time</span>
-              <Input
-                type="datetime-local"
-                value={dueLocal}
-                onChange={(event) => setDueLocal(event.target.value)}
-              />
-            </label>
-            <Button
-              className="w-full"
-              disabled={creating || !title.trim()}
-              onClick={createTask}
-            >
-              {creating ? "Adding…" : "Add task"}
-            </Button>
-          </div>
-        </Card>
-      </div>
-
-      {taskError && (
-        <div className="mt-6">
-          <ErrorNotice>{taskError}</ErrorNotice>
-        </div>
-      )}
-
-      <Card className="mt-6">
-        <SectionHeading
-          title="All tasks"
-          description="Everything you have captured, including completed tasks."
-        />
-
-        {tasks.length === 0 ? (
-          <div className="mt-4">
-            <EmptyState>No tasks yet.</EmptyState>
-          </div>
-        ) : (
-          <ul className="mt-4 divide-y divide-border">
-            {tasks.map((task) => (
-              <li
-                key={task.id}
-                className="flex flex-col gap-3 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+        <div className="space-y-6">
+          <Card>
+            <SectionHeading title="This week" />
+            <p className="mt-1 text-sm text-muted">
+              {today.toLocaleDateString(undefined, {
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+            <div className="week-strip mt-4">
+              {weekDays.map((date) => {
+                const dateKey = getLocalDateKey(date);
+                const isToday = dateKey === getLocalDateKey(today);
+                const checked = checkinDays?.includes(dateKey);
+                return (
+                  <div
+                    key={dateKey}
+                    className={`week-day ${isToday ? "is-today" : ""}`}
+                    aria-label={`${formatFriendlyDate(date)}${isToday ? ", today" : ""}${checked ? ", checked in" : ""}`}
+                  >
+                    <span>
+                      {date.toLocaleDateString(undefined, {
+                        weekday: "narrow",
+                      })}
+                    </span>
+                    <strong>{date.getDate()}</strong>
                     <span
-                      className={`h-2 w-2 shrink-0 rounded-full ${
-                        task.is_done ? "bg-border-strong" : "bg-primary"
-                      }`}
+                      className={`week-dot ${checked ? "filled" : ""}`}
                       aria-hidden="true"
                     />
-                    <p
-                      className={`wrap-break-word font-medium ${
-                        task.is_done
-                          ? "text-muted-soft line-through"
-                          : "text-foreground"
-                      }`}
-                    >
-                      {task.title}
-                    </p>
                   </div>
-                  <p className="mt-1 pl-4 text-xs text-muted">
-                    {formatDueTime(task)}
-                  </p>
-                </div>
-                <div className="flex shrink-0 gap-2">
-                  <Button
-                    className="min-h-8 px-3 py-1"
-                    onClick={() => toggleDone(task)}
-                  >
-                    {task.is_done ? "Undo" : "Done"}
-                  </Button>
-                  <Button
-                    variant="danger"
-                    className="min-h-8 px-3 py-1"
-                    onClick={() => deleteTask(task)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                );
+              })}
+            </div>
+            <Link
+              href="/history"
+              className="mt-4 flex min-h-11 items-center justify-between border-t border-border pt-4 text-sm text-muted"
+            >
+              View your rhythm
+              <Icon name="arrow" size={16} />
+            </Link>
+          </Card>
+          <Card tone="accent">
+            <span className="icon-tile mb-5 bg-surface">
+              <Icon name={checkedInToday ? "checkin" : "moon"} size={22} />
+            </span>
+            <h2 className="text-lg font-semibold tracking-tight">
+              {checkedInToday
+                ? "You showed up today."
+                : "A moment for yourself."}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              {checkedInToday
+                ? "Your check-in is saved. You can still make changes."
+                : "Take a breath and reflect on what happened today."}
+            </p>
+            <Link href="/checkin" className="btn btn-primary mt-5 w-full">
+              {checkedInToday ? "View check-in" : "Check in today"}
+              <Icon name="arrow" size={17} />
+            </Link>
+          </Card>
+        </div>
+      </div>
+      <Sheet
+        open={showTaskForm}
+        onClose={() => setShowTaskForm(false)}
+        busy={creating}
+        title="A new task"
+        description="One thing to remember. Keep it simple."
+      >
+        <form onSubmit={createTask} className="mt-6 space-y-5">
+          <label className="grid gap-2 text-sm font-medium">
+            Task
+            <Input
+              autoFocus
+              placeholder="What’s on your mind?"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              required
+              disabled={creating}
+            />
+          </label>
+          <label className="grid gap-2 text-sm font-medium">
+            Due time{" "}
+            <span className="-mt-1 font-normal text-muted">
+              Optional. Leave empty for anytime.
+            </span>
+            <Input
+              type="datetime-local"
+              value={dueLocal}
+              onChange={(event) => setDueLocal(event.target.value)}
+              disabled={creating}
+            />
+          </label>
+          {formError && <ErrorNotice>{formError}</ErrorNotice>}
+          <Button
+            className="w-full"
+            variant="primary"
+            type="submit"
+            disabled={creating || !title.trim()}
+            busy={creating}
+          >
+            {creating ? "Adding…" : "Add task"}
+          </Button>
+        </form>
+      </Sheet>
+      <Sheet
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete this task?"
+        description={
+          deleteTarget
+            ? `“${deleteTarget.title}” will be removed from your tasks.`
+            : undefined
+        }
+        busy={deleting}
+      >
+        {formError && (
+          <div className="mt-4">
+            <ErrorNotice>{formError}</ErrorNotice>
+          </div>
         )}
-      </Card>
+        <div className="mt-6 flex gap-3">
+          <Button
+            className="flex-1"
+            onClick={() => setDeleteTarget(null)}
+            disabled={deleting}
+          >
+            Keep task
+          </Button>
+          <Button
+            className="flex-1"
+            variant="danger"
+            onClick={deleteTask}
+            disabled={deleting}
+            busy={deleting}
+          >
+            Delete task
+          </Button>
+        </div>
+      </Sheet>
     </PageShell>
   );
 }

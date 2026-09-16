@@ -1,10 +1,12 @@
 import type {
   ButtonHTMLAttributes,
+  CSSProperties,
   HTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
   SelectHTMLAttributes,
 } from "react";
+import { Icon } from "@/components/Icon";
 
 function joinClasses(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -18,10 +20,8 @@ export function PageShell({
   className?: string;
 }) {
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-6 sm:py-10 lg:py-12">
-      <div className={joinClasses("mx-auto w-full max-w-6xl", className)}>
-        {children}
-      </div>
+    <main id="main-content" className="page-shell">
+      <div className={joinClasses("page-inner", className)}>{children}</div>
     </main>
   );
 }
@@ -38,24 +38,14 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-5 border-b border-border/80 pb-7 sm:flex-row sm:items-end sm:justify-between">
-      <div className="max-w-2xl">
-        {eyebrow && (
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            {eyebrow}
-          </p>
-        )}
-        <h1 className="text-3xl font-semibold tracking-[-0.035em] text-foreground sm:text-4xl">
-          {title}
-        </h1>
-        {description && (
-          <div className="mt-2 max-w-xl text-sm leading-6 text-muted sm:text-[15px]">
-            {description}
-          </div>
-        )}
+    <header className="page-header">
+      <div className="min-w-0">
+        {eyebrow && <p className="page-eyebrow">{eyebrow}</p>}
+        <h1 className="page-title">{title}</h1>
+        {description && <div className="page-description">{description}</div>}
       </div>
       {actions && (
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           {actions}
         </div>
       )}
@@ -63,26 +53,19 @@ export function PageHeader({
   );
 }
 
-type CardTone = "default" | "soft" | "accent";
-
-const cardTones: Record<CardTone, string> = {
-  default: "border-border bg-surface",
-  soft: "border-border/80 bg-surface-soft/80",
-  accent: "border-primary/15 bg-primary-soft/55",
+const cardTones = {
+  default: "bg-surface",
+  soft: "bg-surface-soft",
+  accent: "bg-primary-soft/65",
 };
-
 export function Card({
   className,
   tone = "default",
   ...props
-}: HTMLAttributes<HTMLElement> & { tone?: CardTone }) {
+}: HTMLAttributes<HTMLElement> & { tone?: keyof typeof cardTones }) {
   return (
     <section
-      className={joinClasses(
-        "rounded-[1.4rem] border p-5 shadow-card sm:p-6",
-        cardTones[tone],
-        className,
-      )}
+      className={joinClasses("card", cardTones[tone], className)}
       {...props}
     />
   );
@@ -100,11 +83,11 @@ export function SectionHeading({
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
-        <h2 className="text-base font-semibold tracking-[-0.015em] text-foreground sm:text-lg">
+        <h2 className="text-[17px] font-semibold tracking-tight text-foreground">
           {title}
         </h2>
         {description && (
-          <p className="mt-1 text-sm leading-5 text-muted">{description}</p>
+          <p className="mt-1 text-sm leading-6 text-muted">{description}</p>
         )}
       </div>
       {action}
@@ -113,32 +96,27 @@ export function SectionHeading({
 }
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-
-const buttonVariants: Record<ButtonVariant, string> = {
-  primary:
-    "border-primary bg-primary text-white shadow-button hover:border-primary-strong hover:bg-primary-strong",
-  secondary:
-    "border-border-strong bg-surface text-foreground hover:border-primary/25 hover:bg-primary-soft/45",
-  ghost:
-    "border-transparent bg-transparent text-muted hover:bg-surface-soft hover:text-foreground",
-  danger:
-    "border-danger-border bg-surface text-danger hover:bg-danger-soft",
-};
-
 export function Button({
   variant = "secondary",
   className,
+  busy,
+  children,
+  type = "button",
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant;
+  busy?: boolean;
+}) {
   return (
     <button
-      className={joinClasses(
-        "inline-flex min-h-10 items-center justify-center rounded-xl border px-4 py-2 text-sm font-medium transition duration-150 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring disabled:cursor-not-allowed disabled:opacity-50",
-        buttonVariants[variant],
-        className,
-      )}
+      type={type}
+      className={joinClasses("btn", `btn-${variant}`, className)}
+      aria-busy={busy || undefined}
       {...props}
-    />
+    >
+      {busy && <span className="spinner" aria-hidden="true" />}
+      {children}
+    </button>
   );
 }
 
@@ -146,48 +124,31 @@ export function Input({
   className,
   ...props
 }: InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      className={joinClasses(
-        "min-h-11 w-full rounded-xl border border-border-strong bg-surface px-3.5 py-2.5 text-sm text-foreground outline-none transition placeholder:text-muted-soft hover:border-border-strong/80 focus:border-primary focus:ring-4 focus:ring-primary-ring",
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <input className={joinClasses("field", className)} {...props} />;
 }
-
 export function Select({
   className,
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select
-      className={joinClasses(
-        "min-h-11 w-full rounded-xl border border-border-strong bg-surface px-3.5 py-2.5 text-sm text-foreground outline-none transition hover:border-border-strong/80 focus:border-primary focus:ring-4 focus:ring-primary-ring",
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <select className={joinClasses("field", className)} {...props} />;
 }
-
 export function ErrorNotice({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger">
+    <div
+      role="alert"
+      className="notice rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm leading-6 text-danger"
+    >
       {children}
     </div>
   );
 }
-
 export function EmptyState({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border-strong bg-surface-soft/70 px-4 py-5 text-sm leading-6 text-muted">
+    <div className="rounded-2xl bg-surface-soft px-5 py-7 text-center text-sm leading-6 text-muted">
       {children}
     </div>
   );
 }
-
 export function Pill({
   children,
   muted = false,
@@ -198,7 +159,7 @@ export function Pill({
   return (
     <span
       className={joinClasses(
-        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
+        "inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium",
         muted
           ? "bg-surface-soft text-muted"
           : "bg-primary-soft text-primary-strong",
@@ -208,7 +169,6 @@ export function Pill({
     </span>
   );
 }
-
 export function Stat({
   value,
   label,
@@ -218,35 +178,99 @@ export function Stat({
 }) {
   return (
     <div className="min-w-0">
-      <p className="text-xl font-semibold tracking-[-0.03em] text-foreground">
+      <p className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
         {value}
       </p>
-      <p className="mt-0.5 text-xs leading-5 text-muted">{label}</p>
+      <p className="mt-1 text-[13px] leading-5 text-muted">{label}</p>
     </div>
   );
 }
-
-export function ProgressBar({
-  value,
-  max,
-}: {
-  value: number;
-  max: number;
-}) {
-  const percent = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
-
+export function ProgressBar({ value, max }: { value: number; max: number }) {
+  const percent =
+    max > 0 ? Math.max(0, Math.min(100, Math.round((value / max) * 100))) : 0;
   return (
     <div
       className="h-1.5 overflow-hidden rounded-full bg-primary-soft"
       role="progressbar"
+      aria-label="Completion"
       aria-valuemin={0}
-      aria-valuemax={max}
-      aria-valuenow={value}
+      aria-valuemax={100}
+      aria-valuenow={percent}
     >
       <div
-        className="h-full rounded-full bg-primary transition-[width] duration-200"
+        className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
         style={{ width: `${percent}%` }}
       />
+    </div>
+  );
+}
+export function LoadingState({
+  label = "Loading your space…",
+}: {
+  label?: string;
+}) {
+  return (
+    <div role="status" className="space-y-6">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true" className="space-y-5">
+        <div className="skeleton h-4 w-36" />
+        <div className="skeleton h-9 w-52" />
+        <div className="skeleton mt-8 h-44 w-full" />
+        <div className="skeleton h-28 w-full" />
+      </div>
+    </div>
+  );
+}
+export function CheckCircle({ checked = false }: { checked?: boolean }) {
+  return (
+    <span
+      className={joinClasses("check-circle", checked && "is-checked")}
+      aria-hidden="true"
+    >
+      <Icon name="check" size={16} />
+    </span>
+  );
+}
+export function SegmentedControl<T extends string>({
+  value,
+  options,
+  onChange,
+  label,
+  disabled,
+}: {
+  value: T;
+  options: ReadonlyArray<{ value: T; label: string }>;
+  onChange: (value: T) => void;
+  label: string;
+  disabled?: boolean;
+}) {
+  return (
+    <div
+      className="segmented"
+      role="group"
+      aria-label={label}
+      style={
+        {
+          "--segment-count": options.length,
+          "--segment-index": Math.max(
+            0,
+            options.findIndex((option) => option.value === value),
+          ),
+        } as CSSProperties
+      }
+    >
+      <span className="segmented-indicator" aria-hidden="true" />
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-pressed={value === option.value}
+          onClick={() => onChange(option.value)}
+          disabled={disabled}
+        >
+          {option.label}
+        </button>
+      ))}
     </div>
   );
 }

@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BrandMark, Icon } from "@/components/Icon";
 import { RoutineForm } from "@/components/routines/RoutineForm";
 import {
   Button,
+  LoadingState,
   Card,
   ErrorNotice,
   Input,
@@ -12,7 +14,11 @@ import {
   Pill,
   SectionHeading,
 } from "@/components/ui";
-import { completeOnboarding, getProfile, saveDisplayName } from "@/lib/db/profile";
+import {
+  completeOnboarding,
+  getProfile,
+  saveDisplayName,
+} from "@/lib/db/profile";
 import { addRoutine, listRoutines } from "@/lib/db/routines";
 import { getErrorMessage } from "@/lib/errors";
 import {
@@ -79,9 +85,7 @@ export default function OnboardingPage() {
         }
       } catch (error: unknown) {
         if (!cancelled) {
-          setErrorMessage(
-            getErrorMessage(error, "Setup could not be loaded."),
-          );
+          setErrorMessage(getErrorMessage(error, "Setup could not be loaded."));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -96,7 +100,7 @@ export default function OnboardingPage() {
   }, [router]);
 
   async function saveName() {
-    if (!userId || !displayName.trim()) return;
+    if (!userId || !displayName.trim() || saving) return;
 
     setSaving(true);
     setErrorMessage(null);
@@ -113,7 +117,7 @@ export default function OnboardingPage() {
   }
 
   async function createRoutine(values: RoutineFormValues) {
-    if (!userId) return;
+    if (!userId || saving) return;
 
     setSaving(true);
     setErrorMessage(null);
@@ -139,7 +143,7 @@ export default function OnboardingPage() {
   }
 
   async function finishOnboarding() {
-    if (!userId || routines.length === 0) return;
+    if (!userId || routines.length === 0 || saving) return;
 
     setSaving(true);
     setErrorMessage(null);
@@ -148,9 +152,7 @@ export default function OnboardingPage() {
       await completeOnboarding(userId);
       router.replace("/dashboard");
     } catch (error: unknown) {
-      setErrorMessage(
-        getErrorMessage(error, "Setup could not be completed."),
-      );
+      setErrorMessage(getErrorMessage(error, "Setup could not be completed."));
     } finally {
       setSaving(false);
     }
@@ -158,8 +160,8 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <PageShell className="max-w-3xl">
-        <p className="text-sm text-muted">Preparing your space…</p>
+      <PageShell className="max-w-xl">
+        <LoadingState label="Preparing your space…" />
       </PageShell>
     );
   }
@@ -167,14 +169,25 @@ export default function OnboardingPage() {
   const stepNumber = step === "name" ? 1 : step === "routine" ? 2 : 3;
 
   return (
-    <PageShell className="max-w-3xl">
-      <div className="mx-auto mb-7 flex max-w-xl flex-col items-center text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-lg font-semibold text-white shadow-card">
-          R
-        </div>
-        <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-          Routine Helper · setup {stepNumber} of 3
+    <PageShell className="max-w-xl">
+      <div className="mb-8 text-center">
+        <BrandMark className="mb-6" />
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Your space, your pace.
+        </h1>
+        <p className="mt-3 text-sm text-muted">
+          Step {stepNumber} of 3 ·{" "}
+          {step === "name"
+            ? "A quick hello"
+            : step === "routine"
+              ? "Your first routine"
+              : "All set"}
         </p>
+        <div className="onboarding-steps mt-5" aria-hidden="true">
+          {[1, 2, 3].map((number) => (
+            <span key={number} data-active={number <= stepNumber} />
+          ))}
+        </div>
       </div>
 
       {errorMessage && (
@@ -183,120 +196,135 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      {step === "name" && (
-        <Card>
-          <SectionHeading
-            title="Welcome. Let's make this yours."
-            description="Routine Helper is built around returning to your rhythm, not chasing a perfect day."
-          />
-
-          <label className="mt-6 grid gap-1.5">
-            <span className="text-sm font-medium text-foreground">
-              What should we call you?
-            </span>
-            <Input
-              autoFocus
-              maxLength={80}
-              placeholder="Your name"
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") void saveName();
-              }}
+      <div key={step} className="route-view">
+        {step === "name" && (
+          <Card>
+            <SectionHeading
+              title="What should we call you?"
+              description="Let’s start with a name."
             />
-          </label>
 
-          <Button
-            variant="primary"
-            className="mt-5 w-full sm:w-auto"
-            disabled={saving || !displayName.trim()}
-            onClick={saveName}
-          >
-            {saving ? "Saving…" : "Continue"}
-          </Button>
-        </Card>
-      )}
-
-      {step === "routine" && (
-        <Card>
-          <SectionHeading
-            title="Start with one small routine."
-            description="Choose something that gives your day shape. You can edit, pause, or delete it whenever life changes."
-          />
-
-          <RoutineForm
-            key={routineFormVersion}
-            initialValues={getDefaultRoutineFormValues()}
-            submitLabel="Add routine"
-            submittingLabel="Adding…"
-            isSubmitting={saving}
-            onSubmit={createRoutine}
-          />
-
-          {routines.length > 0 && (
-            <div className="mt-6 border-t border-border pt-5">
-              <p className="text-sm font-medium text-foreground">
-                Good start. You can add another or keep it simple.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {routines.map((routine) => (
-                  <Pill key={routine.id}>{routine.title}</Pill>
-                ))}
-              </div>
-              <Button
-                variant="primary"
-                className="mt-5"
+            <label className="mt-6 grid gap-1.5">
+              <span className="text-sm font-medium text-foreground">
+                Your name
+              </span>
+              <Input
+                autoFocus
                 disabled={saving}
-                onClick={() => setStep("ready")}
-              >
-                Continue
-              </Button>
-            </div>
-          )}
-        </Card>
-      )}
+                autoComplete="given-name"
+                maxLength={80}
+                placeholder="Your name"
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") void saveName();
+                }}
+              />
+            </label>
 
-      {step === "ready" && (
-        <Card tone="accent">
-          <SectionHeading
-            title={`You're ready${displayName ? `, ${displayName}` : ""}.`}
-            description="Your routines shape the day. The daily check-in records what actually happened — even when the day was imperfect."
-          />
-
-          <div className="mt-6 space-y-4 text-sm leading-6 text-muted">
-            <p>
-              Use <span className="font-medium text-foreground">Today</span> to
-              see what is in front of you. Tasks are for one-off things; routines
-              are the repeating parts of your rhythm.
-            </p>
-            <p>
-              At the end of the day, use the daily check-in. Showing up earns
-              points once per day, regardless of how many boxes you completed.
-            </p>
-            <p>
-              History is there for perspective, not judgment. Missing a day does
-              not erase the work you already did.
-            </p>
-          </div>
-
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
             <Button
               variant="primary"
-              disabled={saving || routines.length === 0}
-              onClick={finishOnboarding}
+              className="mt-5 w-full sm:w-auto"
+              busy={saving}
+              disabled={saving || !displayName.trim()}
+              onClick={saveName}
             >
-              {saving ? "Finishing setup…" : "Start today"}
+              {saving ? "Saving…" : "Continue"}
+              <Icon name="arrow" size={17} />
             </Button>
+          </Card>
+        )}
+
+        {step === "routine" && (
+          <Card>
+            <SectionHeading
+              title="Start with one small routine."
+              description="Choose something that gives your day shape. You can edit, pause, or delete it whenever life changes."
+            />
+
             <Button
               variant="ghost"
+              className="mt-3"
+              onClick={() => setStep("name")}
               disabled={saving}
-              onClick={() => setStep("routine")}
             >
-              Add another routine
+              Back
             </Button>
-          </div>
-        </Card>
-      )}
+            <RoutineForm
+              key={routineFormVersion}
+              initialValues={getDefaultRoutineFormValues()}
+              submitLabel="Add routine"
+              submittingLabel="Adding…"
+              isSubmitting={saving}
+              onSubmit={createRoutine}
+            />
+
+            {routines.length > 0 && (
+              <div className="mt-6 border-t border-border pt-5">
+                <p className="text-sm font-medium text-foreground">
+                  Good start. You can add another or keep it simple.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {routines.map((routine) => (
+                    <Pill key={routine.id}>{routine.title}</Pill>
+                  ))}
+                </div>
+                <Button
+                  variant="primary"
+                  className="mt-5"
+                  disabled={saving}
+                  onClick={() => setStep("ready")}
+                >
+                  Continue
+                </Button>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {step === "ready" && (
+          <Card tone="accent">
+            <SectionHeading
+              title={`You're ready${displayName ? `, ${displayName}` : ""}.`}
+              description="Your routines shape the day. The daily check-in records what actually happened — even when the day was imperfect."
+            />
+
+            <div className="mt-6 space-y-4 text-sm leading-6 text-muted">
+              <p>
+                Use <span className="font-medium text-foreground">Today</span>{" "}
+                to see what is in front of you. Tasks are for one-off things;
+                routines are the repeating parts of your rhythm.
+              </p>
+              <p>
+                At the end of the day, use the daily check-in. Showing up earns
+                points once per day, regardless of how many boxes you completed.
+              </p>
+              <p>
+                History is there for perspective, not judgment. Missing a day
+                does not erase the work you already did.
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+              <Button
+                variant="primary"
+                busy={saving}
+                disabled={saving || routines.length === 0}
+                onClick={finishOnboarding}
+              >
+                {saving ? "Finishing setup…" : "Start today"}
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={saving}
+                onClick={() => setStep("routine")}
+              >
+                Add another routine
+              </Button>
+            </div>
+          </Card>
+        )}
+      </div>
     </PageShell>
   );
 }

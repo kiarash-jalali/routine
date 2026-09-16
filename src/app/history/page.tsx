@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AppNav } from "@/components/AppNav";
+import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import {
   Button,
+  LoadingState,
   Card,
   EmptyState,
   ErrorNotice,
@@ -14,10 +16,7 @@ import {
   SectionHeading,
   Stat,
 } from "@/components/ui";
-import {
-  listCheckinDays,
-  listRecentCheckinHistory,
-} from "@/lib/db/history";
+import { listCheckinDays, listRecentCheckinHistory } from "@/lib/db/history";
 import {
   getPointBalance,
   listStreakRepairs,
@@ -37,11 +36,7 @@ import {
   STREAK_REPAIR_COST_POINTS,
 } from "@/lib/points";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import {
-  calculateStreakMetrics,
-  formatDayCount,
-  streakMessage,
-} from "@/lib/streak";
+import { calculateStreakMetrics, formatDayCount } from "@/lib/streak";
 import type { CheckinHistoryEntry } from "@/types/history";
 import type { StreakRepair } from "@/types/points";
 
@@ -64,7 +59,7 @@ function RhythmCell({
 
   return (
     <span
-      className={`block h-8 rounded-lg border transition ${className}`}
+      className={`block h-11 rounded-xl border transition ${className}`}
       aria-hidden="true"
     />
   );
@@ -78,6 +73,7 @@ export default function HistoryPage() {
   const [checkinDays, setCheckinDays] = useState<string[]>([]);
   const [repairs, setRepairs] = useState<StreakRepair[]>([]);
   const [pointBalance, setPointBalance] = useState(0);
+  const [showAll, setShowAll] = useState(false);
   const [repairingDay, setRepairingDay] = useState<string | null>(null);
 
   useEffect(() => {
@@ -117,7 +113,10 @@ export default function HistoryPage() {
       } catch (error: unknown) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, "Your check-in history could not be loaded."),
+            getErrorMessage(
+              error,
+              "Your check-in history could not be loaded.",
+            ),
           );
         }
       } finally {
@@ -184,171 +183,83 @@ export default function HistoryPage() {
   }
 
   return (
-    <PageShell className="max-w-5xl">
-      <AppNav />
-
+    <PageShell>
       <PageHeader
-        eyebrow="History"
-        title="Your rhythm, over time."
-        description="A quiet record of the days you checked in. This is context, not a scorecard."
+        eyebrow="Every return counts"
+        title="Your rhythm"
+        description="A little perspective on the days you showed up."
       />
-
       {errorMessage && (
-        <div className="mt-6">
+        <div className="mb-6">
           <ErrorNotice>{errorMessage}</ErrorNotice>
         </div>
       )}
-
       {loading ? (
-        <p className="mt-6 text-sm text-muted">Loading your history…</p>
+        <LoadingState label="Loading your history…" />
       ) : history.length === 0 ? (
-        <div className="mt-6">
+        <Card>
           <EmptyState>
-            No check-in history yet. Finish your first day and it will appear
-            here.
+            Your story starts with a check-in.
+            <br />
+            Finish your first day and it will appear here.
+            <div className="mt-4">
+              <Link href="/checkin" className="btn btn-primary">
+                Check in today
+                <Icon name="arrow" size={16} />
+              </Link>
+            </div>
           </EmptyState>
-        </div>
+        </Card>
       ) : (
-        <div className="mt-6 space-y-6">
-          <Card tone="accent">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-              <div className="max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-                  Current rhythm
-                </p>
-                <p className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-foreground">
-                  {formatDayCount(streak.currentDays)}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  {streakMessage(streak)}
-                </p>
-              </div>
-              <div className="shrink-0 rounded-2xl border border-primary/15 bg-surface/70 px-4 py-3">
-                <Stat
-                  value={formatDayCount(streak.bestDays)}
-                  label="best rhythm so far"
-                />
-              </div>
-            </div>
-          </Card>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Card tone="soft" className="p-4 sm:p-5">
-              <Stat
-                value={`${checkedInLastSeven}/7`}
-                label="days checked in lately"
-              />
-            </Card>
-            <Card tone="soft" className="p-4 sm:p-5">
-              <Stat value={`${averageCompletion}%`} label="average completion" />
-            </Card>
-            <Card tone="soft" className="p-4 sm:p-5">
-              <Stat value={history.length} label="recent check-ins shown" />
-            </Card>
-          </div>
-
+        <div className="space-y-6">
           <Card>
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-              <div className="max-w-2xl">
-                <SectionHeading
-                  title="Recovery"
-                  description={`Finishing a day earns ${CHECKIN_REWARD_POINTS} points once. Repairing a missed rhythm day costs ${STREAK_REPAIR_COST_POINTS} points and restores continuity only — it does not create a fake check-in.`}
-                />
-              </div>
-              <div className="shrink-0 rounded-2xl border border-primary/15 bg-primary-soft/35 px-4 py-3">
-                <Stat value={pointBalance} label="recovery points" />
-              </div>
-            </div>
-
-            <div className="mt-5 border-t border-border pt-5">
-              {repairableDays.length === 0 ? (
-                <p className="text-sm leading-6 text-muted">
-                  No repairable gaps right now. A missed day becomes repairable
-                  only after you return and finish another real check-in.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted">
-                    Missed days between real check-ins can be repaired. Repairing
-                    them never changes the completion record for that day.
-                  </p>
-                  <div className="divide-y divide-border rounded-2xl border border-border bg-surface-soft px-4">
-                    {repairableDays.map((day) => {
-                      const canAfford = pointBalance >= STREAK_REPAIR_COST_POINTS;
-                      const isRepairing = repairingDay === day;
-
-                      return (
-                        <div
-                          key={day}
-                          className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          <div>
-                            <p className="font-medium text-foreground">
-                              {formatHistoryDate(day)}
-                            </p>
-                            <p className="mt-1 text-xs text-muted">
-                              Missed rhythm day · historical completion stays empty
-                            </p>
-                          </div>
-                          <Button
-                            className="shrink-0"
-                            disabled={!canAfford || repairingDay !== null}
-                            onClick={() => repairDay(day)}
-                          >
-                            {isRepairing
-                              ? "Repairing…"
-                              : `Repair · ${STREAK_REPAIR_COST_POINTS} pts`}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {pointBalance < STREAK_REPAIR_COST_POINTS && (
-                    <p className="text-xs text-muted">
-                      You need {STREAK_REPAIR_COST_POINTS - pointBalance} more
-                      points before you can repair one missed day.
-                    </p>
-                  )}
-                </div>
-              )}
+            <div className="grid grid-cols-2 gap-x-5 gap-y-6 sm:grid-cols-4">
+              <Stat
+                value={formatDayCount(streak.currentDays)}
+                label="current rhythm"
+              />
+              <Stat
+                value={formatDayCount(streak.bestDays)}
+                label="longest rhythm"
+              />
+              <Stat
+                value={`${checkedInLastSeven} / 7`}
+                label="check-ins this week"
+              />
+              <Stat
+                value={`${averageCompletion}%`}
+                label="average completion"
+              />
             </div>
           </Card>
-
           <Card>
             <SectionHeading
-              title="Last 14 days"
-              description="Filled days are real check-ins. A dashed day is a repaired streak gap, not a completed check-in."
+              title="The last two weeks"
+              description="Each check-in is a small step forward."
             />
-
-            <div className="mt-5 grid grid-cols-7 gap-2 sm:grid-cols-[repeat(14,minmax(0,1fr))]">
+            <div className="mt-6 grid grid-cols-7 gap-3 sm:grid-cols-[repeat(14,minmax(0,1fr))]">
               {rhythmDays.map((day) => {
                 const repaired = repairedDaySet.has(day.dateKey);
-
                 return (
-                  <div key={day.dateKey} className="min-w-0 text-center">
+                  <div
+                    key={day.dateKey}
+                    className="min-w-0 text-center"
+                    title={`${day.dateKey}: ${repaired ? "Rhythm repaired" : day.checkedIn ? "Checked in" : "No check-in"}`}
+                  >
                     <RhythmCell
                       checkedIn={day.checkedIn}
                       repaired={repaired}
                       completionPercent={day.completionPercent}
                     />
-                    <span className="mt-1.5 block text-[11px] text-muted">
+                    <span className="mt-2 block text-xs text-muted">
                       {day.label}
                     </span>
-                    <span className="sr-only">
-                      {`${day.dateKey}: ${
-                        repaired
-                          ? "streak repaired; no check-in recorded"
-                          : day.checkedIn
-                            ? `${day.completedCount} of ${day.totalCount} completed`
-                            : "no check-in"
-                      }`}
-                    </span>
+                    <span className="sr-only">{`${day.dateKey}: ${repaired ? "streak repaired; no check-in recorded" : day.checkedIn ? `${day.completedCount} of ${day.totalCount} completed` : "no check-in"}`}</span>
                   </div>
                 );
               })}
             </div>
-
-            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
               <span className="inline-flex items-center gap-2">
                 <span className="h-3 w-3 rounded border border-border bg-surface-soft" />
                 No check-in
@@ -358,63 +269,130 @@ export default function HistoryPage() {
                 Checked in
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="h-3 w-3 rounded border border-primary bg-primary" />
-                Everything completed
+                <span className="h-3 w-3 rounded bg-primary" />
+                All completed
               </span>
               <span className="inline-flex items-center gap-2">
                 <span className="h-3 w-3 rounded border border-dashed border-primary/55 bg-primary-soft/35" />
-                Rhythm repaired
+                Repaired
               </span>
             </div>
           </Card>
-
-          <Card>
-            <SectionHeading
-              title="Recent check-ins"
-              description="Your most recent 30 real daily check-ins. Repaired days are not added here."
-            />
-
-            <div className="mt-5 divide-y divide-border">
-              {history.map((entry) => {
-                const summary = summarizeCheckin(entry);
-
-                return (
-                  <article key={entry.id} className="py-4 first:pt-0 last:pb-0">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="font-medium text-foreground">
-                          {formatHistoryDate(entry.day)}
-                        </p>
-                        <p className="mt-1 text-xs text-muted">
-                          {summary.totalCount === 0
-                            ? "No routines or tasks were due."
-                            : `${summary.routineCompletedCount}/${summary.routineTotalCount} routines · ${summary.taskCompletedCount}/${summary.taskTotalCount} tasks`}
-                        </p>
-                      </div>
-
-                      {summary.totalCount === 0 ? (
-                        <span className="text-xs font-medium text-primary">
-                          Checked in
+          <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+            <Card>
+              <SectionHeading
+                title="Recent check-ins"
+                description="Your real check-ins, just as they happened."
+              />
+              <div className="mt-6 divide-y divide-border">
+                {(showAll ? history : history.slice(0, 7)).map((entry) => {
+                  const summary = summarizeCheckin(entry);
+                  return (
+                    <article
+                      key={entry.id}
+                      className="notice py-4 first:pt-0 last:pb-0"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="icon-tile green">
+                          <Icon name="checkin" size={19} />
                         </span>
-                      ) : (
-                        <div className="flex items-center gap-3 sm:min-w-52">
-                          <div className="min-w-0 flex-1">
-                            <ProgressBar
-                              value={summary.completedCount}
-                              max={summary.totalCount}
-                            />
-                          </div>
-                          <span className="w-10 text-right text-xs font-medium text-primary">
-                            {summary.completionPercent}%
-                          </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[15px] font-medium">
+                            {formatHistoryDate(entry.day)}
+                          </p>
+                          <p className="mt-1 text-xs text-muted">
+                            {summary.totalCount === 0
+                              ? "You took a moment to check in."
+                              : `${summary.routineCompletedCount}/${summary.routineTotalCount} routines · ${summary.taskCompletedCount}/${summary.taskTotalCount} tasks`}
+                          </p>
+                        </div>
+                        <span className="text-sm text-primary tabular-nums">
+                          {summary.totalCount
+                            ? `${summary.completionPercent}%`
+                            : "✓"}
+                        </span>
+                      </div>
+                      {summary.totalCount > 0 && (
+                        <div className="mt-3 pl-14">
+                          <ProgressBar
+                            value={summary.completedCount}
+                            max={summary.totalCount}
+                          />
                         </div>
                       )}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </Card>
+                    </article>
+                  );
+                })}
+              </div>
+              {history.length > 7 && (
+                <Button
+                  className="mt-5 w-full"
+                  variant="ghost"
+                  onClick={() => setShowAll(!showAll)}
+                  aria-expanded={showAll}
+                >
+                  {showAll
+                    ? "Show less"
+                    : `Show all ${history.length} check-ins`}
+                </Button>
+              )}
+            </Card>
+            <Card tone="accent">
+              <span className="icon-tile mb-5 bg-surface">
+                <Icon name="spark" />
+              </span>
+              <SectionHeading title="Room to return" />
+              <div className="mt-4">
+                <Stat value={pointBalance} label="recovery points" />
+              </div>
+              <p className="mt-4 text-sm leading-6 text-muted">
+                Each daily check-in earns {CHECKIN_REWARD_POINTS} points once.
+                Use {STREAK_REPAIR_COST_POINTS} points to reconnect a missed day
+                in your rhythm.
+              </p>
+              <p className="mt-3 text-sm leading-6 text-muted">
+                A repaired day keeps its original history. It won’t count as a
+                completed check-in.
+              </p>
+              <div className="mt-5 border-t border-primary/10 pt-5">
+                {repairableDays.length === 0 ? (
+                  <p className="text-sm leading-6 text-muted">
+                    No gaps to repair. A missed day becomes available after your
+                    next check-in.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {repairableDays.map((day) => (
+                      <div className="rounded-2xl bg-surface p-4" key={day}>
+                        <p className="mb-3 text-sm font-medium">
+                          {formatHistoryDate(day)}
+                        </p>
+                        <Button
+                          className="w-full"
+                          disabled={
+                            pointBalance < STREAK_REPAIR_COST_POINTS ||
+                            repairingDay !== null
+                          }
+                          onClick={() => repairDay(day)}
+                          busy={repairingDay === day}
+                        >
+                          {repairingDay === day
+                            ? "Repairing…"
+                            : `Repair · ${STREAK_REPAIR_COST_POINTS} pts`}
+                        </Button>
+                      </div>
+                    ))}
+                    {pointBalance < STREAK_REPAIR_COST_POINTS && (
+                      <p className="text-sm text-muted">
+                        {STREAK_REPAIR_COST_POINTS - pointBalance} more points
+                        to repair a day.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
         </div>
       )}
     </PageShell>

@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AppNav } from "@/components/AppNav";
+import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import {
   Button,
+  CheckCircle,
+  LoadingState,
   Card,
   EmptyState,
   ErrorNotice,
@@ -55,33 +58,17 @@ function CheckinChoice({
   return (
     <button
       type="button"
-      className={`flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring disabled:cursor-default ${
-        completed
-          ? "border-primary bg-primary-soft"
-          : "border-border bg-surface-soft hover:border-border-strong hover:bg-surface"
-      }`}
+      className="checkin-choice"
       aria-pressed={completed}
       disabled={locked}
       onClick={onToggle}
     >
-      <span className="min-w-0">
-        <span className="block wrap-break-word font-medium text-foreground">
-          {title}
-        </span>
+      <CheckCircle checked={completed} />
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-medium">{title}</span>
         {detail && (
-          <span className="mt-1 block text-xs text-muted">{detail}</span>
+          <span className="mt-1 block text-[13px] text-muted">{detail}</span>
         )}
-      </span>
-
-      <span
-        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition ${
-          completed
-            ? "border-primary bg-primary text-white"
-            : "border-border-strong bg-surface text-transparent"
-        }`}
-        aria-hidden="true"
-      >
-        ✓
       </span>
     </button>
   );
@@ -212,7 +199,7 @@ export default function CheckinPage() {
   }
 
   async function finishDay() {
-    if (!userId) return;
+    if (!userId || saving) return;
 
     setSaving(true);
     setErrorMessage(null);
@@ -258,52 +245,40 @@ export default function CheckinPage() {
   const totalCount = routines.length + tasks.length;
   const completionPercent =
     totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const checkinLocked =
-    saving || (hasFinishedToday && !editingFinishedCheckin);
+  const checkinLocked = saving || (hasFinishedToday && !editingFinishedCheckin);
 
-  if (loading) {
+  if (loading)
     return (
-      <PageShell className="max-w-4xl">
-        <p className="text-sm text-muted">Loading today&apos;s check-in…</p>
+      <PageShell className="max-w-3xl">
+        <LoadingState label="Loading your check-in…" />
       </PageShell>
     );
-  }
 
   return (
-    <PageShell className="max-w-4xl">
-      <AppNav />
-
+    <PageShell className="max-w-3xl">
       <PageHeader
         eyebrow={todayLabel}
         title="Daily check-in"
-        description="Notice what you managed today. This is a ritual, not a test."
+        description="Notice what you did. Showing up is enough."
       />
-
       {errorMessage && (
-        <div className="mt-6">
+        <div className="mb-6">
           <ErrorNotice>{errorMessage}</ErrorNotice>
         </div>
       )}
-
       {hasFinishedToday && !editingFinishedCheckin && (
-        <Card tone="accent" className="mt-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-start gap-3">
-              <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-base font-semibold text-white"
-                aria-hidden="true"
-              >
-                ✓
-              </span>
-              <div>
-                <p className="font-semibold text-foreground">
-                  Today is checked in.
-                </p>
-                <p className="mt-1 text-sm leading-5 text-muted">
-                  {completedCount} of {totalCount} items marked complete. You can
-                  still edit today if something changes.
-                </p>
-              </div>
+        <Card tone="accent" className="notice mb-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="success-mark" aria-hidden="true">
+              <Icon name="check" size={25} />
+            </span>
+            <div className="min-w-0 flex-1" role="status">
+              <h2 className="text-lg font-semibold">
+                A day worth acknowledging.
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                Your check-in is saved. Come back to it if anything changes.
+              </p>
             </div>
             <Button onClick={() => setEditingFinishedCheckin(true)}>
               Edit check-in
@@ -311,21 +286,26 @@ export default function CheckinPage() {
           </div>
         </Card>
       )}
-
-      <div className="mt-6 space-y-6">
+      <div className="space-y-6">
         <Card>
           <SectionHeading
-            title="Today's routines"
-            description="Mark what happened, not what should have happened."
+            title="Routines"
+            action={
+              <span className="text-sm text-muted">
+                {
+                  routines.filter((routine) =>
+                    isItemCompleted("routine", routine.id),
+                  ).length
+                }{" "}
+                / {routines.length}
+              </span>
+            }
           />
-
-          {routines.length === 0 ? (
-            <div className="mt-4">
-              <EmptyState>No routines are planned for today.</EmptyState>
-            </div>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {routines.map((routine) => (
+          <div className="mt-5 space-y-2.5">
+            {routines.length === 0 ? (
+              <EmptyState>No routines planned for today.</EmptyState>
+            ) : (
+              routines.map((routine) => (
                 <CheckinChoice
                   key={routine.id}
                   title={routine.title}
@@ -334,24 +314,28 @@ export default function CheckinPage() {
                   locked={checkinLocked}
                   onToggle={() => toggleItem("routine", routine.id)}
                 />
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </Card>
-
         <Card>
           <SectionHeading
-            title="Today's tasks"
-            description="One-off items can count too."
+            title="Tasks"
+            action={
+              <span className="text-sm text-muted">
+                {
+                  tasks.filter((task) => isItemCompleted("task", task.id))
+                    .length
+                }{" "}
+                / {tasks.length}
+              </span>
+            }
           />
-
-          {tasks.length === 0 ? (
-            <div className="mt-4">
-              <EmptyState>No unfinished tasks are planned for today.</EmptyState>
-            </div>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {tasks.map((task) => (
+          <div className="mt-5 space-y-2.5">
+            {tasks.length === 0 ? (
+              <EmptyState>No unfinished tasks planned for today.</EmptyState>
+            ) : (
+              tasks.map((task) => (
                 <CheckinChoice
                   key={task.id}
                   title={task.title}
@@ -360,26 +344,19 @@ export default function CheckinPage() {
                   locked={checkinLocked}
                   onToggle={() => toggleItem("task", task.id)}
                 />
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </Card>
-
-        <div
-          className={`rounded-[1.4rem] border p-4 shadow-card sm:p-5 ${
-            hasFinishedToday && !editingFinishedCheckin
-              ? "border-primary/15 bg-primary-soft/45"
-              : "sticky bottom-4 border-primary/15 bg-surface/95 backdrop-blur"
-          }`}
-        >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="checkin-footer">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0 flex-1">
-              <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm text-muted">
                   <span className="font-semibold text-foreground">
                     {completedCount}
-                  </span>
-                  {` of ${totalCount} marked complete`}
+                  </span>{" "}
+                  of {totalCount} completed
                 </p>
                 <span className="text-xs font-medium text-primary">
                   {completionPercent}%
@@ -387,11 +364,11 @@ export default function CheckinPage() {
               </div>
               <ProgressBar value={completedCount} max={totalCount} />
             </div>
-
             {hasFinishedToday && !editingFinishedCheckin ? (
-              <Button onClick={() => router.push("/dashboard")}>
+              <Link href="/dashboard" className="btn btn-secondary">
                 Back to today
-              </Button>
+                <Icon name="arrow" size={16} />
+              </Link>
             ) : (
               <div className="flex gap-2">
                 {editingFinishedCheckin && (
@@ -405,20 +382,25 @@ export default function CheckinPage() {
                 )}
                 <Button
                   variant="primary"
-                  className="sm:min-w-36"
+                  className="flex-1 sm:min-w-36"
                   disabled={saving || !userId}
                   onClick={finishDay}
+                  busy={saving}
                 >
                   {saving
                     ? "Saving…"
                     : editingFinishedCheckin
                       ? "Save changes"
                       : "Finish day"}
+                  {!saving && <Icon name="check" size={17} />}
                 </Button>
               </div>
             )}
           </div>
         </div>
+        <p className="text-center text-sm text-muted">
+          An unfinished day is still a day you showed up.
+        </p>
       </div>
     </PageShell>
   );

@@ -1,77 +1,96 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState, type CSSProperties } from "react";
+import { BrandMark, Icon } from "@/components/Icon";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
 const navItems = [
-  { href: "/dashboard", label: "Today" },
-  { href: "/checkin", label: "Check-in" },
-  { href: "/routines", label: "Routines" },
-  { href: "/history", label: "History" },
+  { href: "/dashboard", label: "Today", icon: "today" },
+  { href: "/routines", label: "Routines", icon: "routines" },
+  { href: "/checkin", label: "Check-in", icon: "checkin" },
+  { href: "/history", label: "History", icon: "history" },
 ] as const;
 
-function linkClassName(active: boolean) {
-  return [
-    "rounded-lg px-3 py-2 text-sm font-medium transition",
-    "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring",
-    active
-      ? "bg-primary-soft text-primary-strong"
-      : "text-muted hover:bg-surface-soft hover:text-foreground",
-  ].join(" ");
+function NavPending() {
+  const { pending } = useLinkStatus();
+  return pending ? (
+    <span className="nav-pending" aria-label="Loading page" />
+  ) : null;
 }
 
 export function AppNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [error, setError] = useState(false);
+  const activeIndex = Math.max(
+    0,
+    navItems.findIndex((item) => pathname === item.href),
+  );
 
   async function logout() {
-    const supabase = supabaseBrowser();
-    await supabase.auth.signOut();
-    router.push("/login");
+    setLoggingOut(true);
+    setError(false);
+    try {
+      const { error } = await supabaseBrowser().auth.signOut();
+      if (error) throw error;
+      router.replace("/login");
+    } catch {
+      setError(true);
+      setLoggingOut(false);
+    }
   }
 
   return (
-    <nav
-      className="mb-8 flex flex-col gap-4 border-b border-border/80 pb-4 sm:flex-row sm:items-center sm:justify-between"
-      aria-label="Main navigation"
-    >
+    <aside className="app-navigation">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-2 self-start rounded-lg text-sm font-semibold tracking-[-0.01em] text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring"
+        className="brand-link"
+        aria-label="Routine Helper home"
       >
-        <span
-          className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-white shadow-button"
-          aria-hidden="true"
-        >
-          R
+        <BrandMark />
+        <span>
+          routine<span className="brand-caption">A little, every day.</span>
         </span>
-        <span>Routine Helper</span>
       </Link>
-
-      <div className="flex flex-wrap items-center gap-1">
-        {navItems.map((item) => {
-          const active = pathname === item.href;
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={linkClassName(active)}
-              aria-current={active ? "page" : undefined}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav
+        aria-label="Main navigation"
+        className="nav-tabs"
+        style={{ "--active-tab": activeIndex } as CSSProperties}
+      >
+        <span className="nav-indicator" aria-hidden="true" />
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="nav-tab"
+            aria-current={pathname === item.href ? "page" : undefined}
+          >
+            <Icon name={item.icon} size={21} />
+            <span>{item.label}</span>
+            <NavPending />
+          </Link>
+        ))}
+      </nav>
+      <div className="nav-footer">
+        {error && (
+          <p role="alert" className="text-sm text-danger">
+            Couldn’t log out. Try again.
+          </p>
+        )}
         <button
           type="button"
-          className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-surface-soft hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-ring"
+          className="logout-button"
+          disabled={loggingOut}
           onClick={logout}
+          aria-label={loggingOut ? "Logging out" : "Log out"}
         >
-          Log out
+          <Icon name="logout" size={19} />
+          <span>{loggingOut ? "Logging out…" : "Log out"}</span>
         </button>
       </div>
-    </nav>
+    </aside>
   );
 }

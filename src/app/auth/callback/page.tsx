@@ -24,7 +24,9 @@ export default function AuthCallbackPage() {
         const next = safeNextPath(url.searchParams.get("next"));
 
         if (!code) {
-          throw new Error("This confirmation link is missing its sign-in code.");
+          throw new Error(
+            "This confirmation link is missing its sign-in code.",
+          );
         }
 
         const supabase = supabaseBrowser();
@@ -35,7 +37,10 @@ export default function AuthCallbackPage() {
       } catch (error: unknown) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, "Your email confirmation could not be completed."),
+            getErrorMessage(
+              error,
+              "Your email confirmation could not be completed.",
+            ),
           );
         }
       }
