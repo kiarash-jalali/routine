@@ -199,6 +199,25 @@
     height: 180px;
   }
 
+  /* While the software keyboard is being used in an editor, remove the top
+     mobile chrome so Settings/Logout do not compete with the form. The fixed
+     bottom navigation remains available. */
+  .app-navigation > .brand-link,
+  .app-navigation > .nav-footer {
+    transition:
+      opacity 180ms ease,
+      transform 220ms var(--ease-out),
+      visibility 180ms;
+  }
+
+  body.sheet-keyboard-active .app-navigation > .brand-link,
+  body.sheet-keyboard-active .app-navigation > .nav-footer {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-10px);
+  }
+
   /* The mobile app header is in normal flow, so subtract it from page height. */
   .app-frame .page-shell {
     min-height: calc(100dvh - 62px - env(safe-area-inset-top));
