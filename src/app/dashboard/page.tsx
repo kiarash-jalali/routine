@@ -4,6 +4,11 @@ import { Link } from "next-view-transitions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
+import {
+  MomentPopup,
+  MomentSource,
+  type MomentNotice,
+} from "@/components/MomentPopup";
 import { Sheet } from "@/components/Sheet";
 import { AnimatedList, AnimatedListItem, Collapse } from "@/components/Motion";
 import { TaskScheduleFields } from "@/components/tasks/TaskScheduleFields";
@@ -26,6 +31,7 @@ import { listStreakRepairs } from "@/lib/db/points";
 import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
+import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import { calculateStreakMetrics } from "@/lib/streak";
 import {
@@ -63,10 +69,25 @@ export default function DashboardPage() {
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
+  const [moment, setMoment] = useState<MomentNotice | null>(null);
   const pending = useRef(new Set<string>());
   const [filter, setFilter] = useState<"today" | "all" | "done">("today");
-  const [announcement, setAnnouncement] = useState("");
   const [today] = useState(() => new Date());
+
+  function showMoment(
+    key: MomentCopyKey,
+    sourceId?: string,
+    icon: MomentNotice["icon"] = "spark",
+  ) {
+    const copy = getMomentCopy(key);
+    setMoment({
+      id: `${key}-${Date.now()}`,
+      ...copy,
+      sourceId,
+      icon,
+      tone: "success",
+    });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -126,7 +147,7 @@ export default function DashboardPage() {
       setDueLocal("");
       setShowTaskForm(false);
       setFilter("all");
-      setAnnouncement("Task added.");
+      showMoment("task_added", "add-task", "plus");
     } catch (error: unknown) {
       setFormError(getErrorMessage(error, "Your task couldn’t be added."));
     } finally {
@@ -154,10 +175,10 @@ export default function DashboardPage() {
     );
     try {
       await setTaskDone(task.id, !task.is_done);
-      setAnnouncement(
-        task.is_done
-          ? "Task reopened."
-          : "Task completed. Find it in Done to undo.",
+      showMoment(
+        task.is_done ? "task_reopened" : "task_completed",
+        `task-${task.id}`,
+        task.is_done ? "history" : "check",
       );
     } catch (error: unknown) {
       setTasks((current) =>
@@ -182,7 +203,7 @@ export default function DashboardPage() {
         current.filter((item) => item.id !== deleteTarget.id),
       );
       setDeleteTarget(null);
-      setAnnouncement("Task deleted.");
+      showMoment("task_deleted", undefined, "trash");
     } catch (error: unknown) {
       setFormError(getErrorMessage(error, "Your task couldn’t be deleted."));
     } finally {
@@ -225,16 +246,19 @@ export default function DashboardPage() {
         title="Today"
         description="A little progress, at your own pace."
         actions={
-          <Button
-            variant="primary"
-            onClick={() => {
-              setFormError(null);
-              setShowTaskForm(true);
-            }}
-          >
-            <Icon name="plus" size={18} />
-            Add task
-          </Button>
+          <MomentSource id="add-task">
+            <Button
+              className="moment-shine"
+              variant="primary"
+              onClick={() => {
+                setFormError(null);
+                setShowTaskForm(true);
+              }}
+            >
+              <Icon name="plus" size={18} />
+              Add task
+            </Button>
+          </MomentSource>
         }
       />
       <Collapse show={!!error}>
@@ -364,15 +388,17 @@ export default function DashboardPage() {
                     key={task.id}
                     className={`list-row ${task.is_done ? "is-done" : ""}`}
                   >
-                    <button
-                      className="check-control -ml-2"
-                      aria-pressed={task.is_done}
-                      aria-label={`${task.is_done ? "Reopen" : "Complete"} ${task.title}`}
-                      disabled={pendingIds.includes(task.id)}
-                      onClick={() => toggleDone(task)}
-                    >
-                      <CheckCircle checked={task.is_done} />
-                    </button>
+                    <MomentSource id={`task-${task.id}`}>
+                      <button
+                        className="check-control -ml-2"
+                        aria-pressed={task.is_done}
+                        aria-label={`${task.is_done ? "Reopen" : "Complete"} ${task.title}`}
+                        disabled={pendingIds.includes(task.id)}
+                        onClick={() => toggleDone(task)}
+                      >
+                        <CheckCircle checked={task.is_done} />
+                      </button>
+                    </MomentSource>
                     <div className="min-w-0 flex-1">
                       <p className="row-title">{task.title}</p>
                       <p className="row-detail">{formatDueTime(task)}</p>
@@ -393,11 +419,6 @@ export default function DashboardPage() {
               )}
             </AnimatedList>
           </Card>
-          <p className="min-h-5 px-1 text-sm text-muted" role="status">
-            <span key={announcement} className="notice inline-block">
-              {announcement}
-            </span>
-          </p>
         </div>
         <div className="space-y-6">
           <Card>
@@ -462,6 +483,9 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+
+      <MomentPopup notice={moment} onDismiss={() => setMoment(null)} />
+
       <Sheet
         open={showTaskForm}
         onClose={closeTaskForm}
@@ -494,7 +518,7 @@ export default function DashboardPage() {
               Cancel
             </Button>
             <Button
-              className="flex-1"
+              className="moment-shine flex-1"
               variant="primary"
               type="submit"
               disabled={creating || !title.trim()}
@@ -515,6 +539,8 @@ export default function DashboardPage() {
             : undefined
         }
         busy={deleting}
+        keyboardAssist={false}
+        compact
       >
         {formError && (
           <div className="mt-4">
