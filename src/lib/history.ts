@@ -10,6 +10,16 @@ function dateFromKey(dateKey: string): Date {
   return new Date(year, month - 1, day);
 }
 
+export type MonthCalendarDay = {
+  dateKey: string;
+  dayNumber: number | null;
+  hidden: boolean;
+  future: boolean;
+  today: boolean;
+  checkedIn: boolean;
+  completionPercent: number;
+};
+
 export function formatHistoryDate(dateKey: string): string {
   return new Intl.DateTimeFormat(undefined, {
     weekday: "short",
@@ -97,4 +107,54 @@ export function buildRhythmDays(
       totalCount: summary?.totalCount ?? 0,
     };
   });
+}
+
+export function buildMonthCalendarDays(
+  history: CheckinHistoryEntry[],
+  checkinDays: string[],
+  referenceDate = new Date(),
+): MonthCalendarDay[] {
+  const today = new Date(referenceDate);
+  today.setHours(0, 0, 0, 0);
+  const todayKey = getLocalDateKey(today);
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const firstCheckinKey = checkinDays[0] ?? todayKey;
+  const historyByDay = new Map(history.map((entry) => [entry.day, entry]));
+  const checkinSet = new Set(checkinDays);
+
+  // Monday-first matches the rest of Routine's week views. Placeholder cells
+  // remain in the grid so the month retains real wall-calendar geometry.
+  const leadingPlaceholders = (monthStart.getDay() + 6) % 7;
+  const cells: MonthCalendarDay[] = Array.from(
+    { length: leadingPlaceholders },
+    (_, index) => ({
+      dateKey: `placeholder-${index}`,
+      dayNumber: null,
+      hidden: true,
+      future: false,
+      today: false,
+      checkedIn: false,
+      completionPercent: 0,
+    }),
+  );
+
+  for (let dayNumber = 1; dayNumber <= monthEnd.getDate(); dayNumber += 1) {
+    const date = new Date(today.getFullYear(), today.getMonth(), dayNumber);
+    const dateKey = getLocalDateKey(date);
+    const entry = historyByDay.get(dateKey);
+    const summary = entry ? summarizeCheckin(entry) : null;
+
+    cells.push({
+      dateKey,
+      dayNumber,
+      hidden: dateKey < firstCheckinKey,
+      future: dateKey > todayKey,
+      today: dateKey === todayKey,
+      checkedIn: checkinSet.has(dateKey),
+      completionPercent: summary?.completionPercent ?? 0,
+    });
+  }
+
+  return cells;
 }
