@@ -76,8 +76,7 @@
   margin-inline: auto;
 }
 
-/* Let the dialog own a real scroll container. The JS sheet component updates
-   --sheet-viewport-height when a phone keyboard changes the visual viewport. */
+/* The dialog is a flex column and the body is the scrollable region. */
 .sheet {
   overflow: hidden;
 }
@@ -92,7 +91,7 @@
   flex: 1 1 auto;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scroll-padding-block: 28px 160px;
+  scroll-padding-block: 28px 180px;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
 }
@@ -115,17 +114,19 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  /* Floating card rather than a bottom sheet. It follows the visual viewport,
-     so the whole form remains reachable while the keyboard is open. */
+  /* Floating card rather than a bottom sheet. Give it an explicit fallback
+     height so it is always a genuine scroll viewport. Sheet.tsx replaces this
+     height with the visual viewport height while the keyboard is open. */
   .sheet {
-    top: calc(var(--sheet-viewport-top, 0px) + 12px);
+    top: 12px;
     right: 16px;
     bottom: auto;
     left: 16px;
     inset-block-end: auto;
     margin: 0 auto;
     width: calc(100% - 32px);
-    max-height: calc(var(--sheet-viewport-height, 100dvh) - 24px);
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
     border-radius: 24px;
     transform: translateY(18px) scale(0.985);
   }
@@ -141,8 +142,16 @@
   }
 
   .sheet-body {
+    height: 100%;
     max-height: none;
-    padding: 22px 20px calc(32px + env(safe-area-inset-bottom));
+    padding: 22px 20px max(36px, calc(28px + env(safe-area-inset-bottom)));
+  }
+
+  .sheet-body::after {
+    content: "";
+    display: block;
+    height: 96px;
+    pointer-events: none;
   }
 
   .sheet-handle {
