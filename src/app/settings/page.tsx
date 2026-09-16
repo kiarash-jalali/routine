@@ -14,6 +14,7 @@ import {
   PageShell,
   SectionHeading,
 } from "@/components/ui";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import {
   getNotificationPreference,
   removePushSubscription,
@@ -170,8 +171,10 @@ export default function SettingsPage() {
     event.preventDefault();
     if (busyAction) return;
 
-    if (newPassword.length < 6) {
-      setError("Your new password must be at least 6 characters.");
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      setError(
+        `Your new password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+      );
       setNotice(null);
       return;
     }
@@ -298,7 +301,9 @@ export default function SettingsPage() {
         error: sessionError,
       } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
-      if (!session?.access_token) throw new Error("Your session has expired. Log in again.");
+      if (!session?.access_token) {
+        throw new Error("Your session has expired. Log in again.");
+      }
 
       const response = await fetch("/api/account/delete", {
         method: "POST",
@@ -414,14 +419,14 @@ export default function SettingsPage() {
           <Card>
             <SectionHeading
               title="Password"
-              description="Choose a new password for future sign-ins."
+              description={`Choose a new password with at least ${MIN_PASSWORD_LENGTH} characters.`}
             />
             <form className="mt-6 space-y-5" onSubmit={updatePassword}>
               <label className="grid gap-2 text-sm font-medium">
                 New password
                 <Input
                   type="password"
-                  minLength={6}
+                  minLength={MIN_PASSWORD_LENGTH}
                   value={newPassword}
                   autoComplete="new-password"
                   disabled={Boolean(busyAction)}
@@ -432,7 +437,7 @@ export default function SettingsPage() {
                 Confirm new password
                 <Input
                   type="password"
-                  minLength={6}
+                  minLength={MIN_PASSWORD_LENGTH}
                   value={confirmPassword}
                   autoComplete="new-password"
                   disabled={Boolean(busyAction)}
@@ -481,11 +486,13 @@ export default function SettingsPage() {
                 />
               </label>
               <p className="text-sm leading-6 text-muted">
-                Device timezone: {reminderTimeZone}. Permission: {notificationPermission}.
+                Device timezone: {reminderTimeZone}. Permission:{" "}
+                {notificationPermission}.
               </p>
               {!notificationAvailable ? (
                 <p className="text-sm leading-6 text-muted">
-                  Push notifications are not available in this browser. On iPhone, open the installed Home Screen app.
+                  Push notifications are not available in this browser. On iPhone,
+                  open the installed Home Screen app.
                 </p>
               ) : reminderEnabled ? (
                 <div className="flex flex-wrap gap-3">
@@ -542,7 +549,8 @@ export default function SettingsPage() {
             />
             <div className="mt-6 space-y-4">
               <p className="text-sm leading-6 text-muted">
-                Type <span className="font-semibold text-danger">DELETE</span> to confirm.
+                Type <span className="font-semibold text-danger">DELETE</span> to
+                confirm.
               </p>
               <Input
                 value={deleteConfirmation}
@@ -554,7 +562,9 @@ export default function SettingsPage() {
               <Button
                 variant="danger"
                 onClick={deleteAccount}
-                disabled={Boolean(busyAction) || deleteConfirmation !== "DELETE"}
+                disabled={
+                  Boolean(busyAction) || deleteConfirmation !== "DELETE"
+                }
                 busy={busyAction === "delete"}
               >
                 <Icon name="trash" size={17} />
