@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
+import { MomentPopup, type MomentNotice } from "@/components/MomentPopup";
 import { RoutineForm } from "@/components/routines/RoutineForm";
 import {
   Button,
@@ -22,6 +23,7 @@ import {
 } from "@/lib/db/profile";
 import { addRoutine, listRoutines } from "@/lib/db/routines";
 import { getErrorMessage } from "@/lib/errors";
+import { getMomentCopy } from "@/lib/moments";
 import {
   formatPreferredTimeForDatabase,
   getDefaultRoutineFormValues,
@@ -41,6 +43,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<OnboardingStep>("name");
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [routineFormVersion, setRoutineFormVersion] = useState(0);
+  const [moment, setMoment] = useState<MomentNotice | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,8 +82,6 @@ export default function OnboardingPage() {
         setDisplayName(profile.display_name ?? "");
         setRoutines(existingRoutines);
 
-        // A saved routine should not silently advance onboarding after refresh.
-        // The user chooses when to leave this step with the Continue button.
         if (profile.display_name) {
           setStep("routine");
         }
@@ -134,6 +135,14 @@ export default function OnboardingPage() {
 
       setRoutines(await listRoutines());
       setRoutineFormVersion((current) => current + 1);
+      const copy = getMomentCopy("routine_added");
+      setMoment({
+        id: `onboarding-routine-${Date.now()}`,
+        ...copy,
+        sourceId: "onboarding-routine-add",
+        icon: "plus",
+        tone: "success",
+      });
     } catch (error: unknown) {
       setErrorMessage(
         getErrorMessage(error, "Your routine could not be created."),
@@ -200,7 +209,7 @@ export default function OnboardingPage() {
           <Card>
             <SectionHeading
               title="What should we call you?"
-              description="Let’s start with a name."
+              description="Just a name for now. You can change it anytime later in Settings."
             />
 
             <label className="mt-6 grid gap-1.5">
@@ -256,6 +265,8 @@ export default function OnboardingPage() {
               submittingLabel="Adding…"
               isSubmitting={saving}
               onSubmit={createRoutine}
+              shineSubmit
+              momentSourceId="onboarding-routine-add"
             />
 
             {routines.length > 0 && (
@@ -318,12 +329,14 @@ export default function OnboardingPage() {
                 disabled={saving}
                 onClick={() => setStep("routine")}
               >
-                Add another routine
+                Back
               </Button>
             </div>
           </Card>
         )}
       </AnimatedSwap>
+
+      <MomentPopup notice={moment} onDismiss={() => setMoment(null)} />
     </PageShell>
   );
 }
