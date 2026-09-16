@@ -5,6 +5,7 @@ import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap, Collapse } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
 import { Button, ErrorNotice, Input, SegmentedControl } from "@/components/ui";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import { getProfile } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
@@ -154,14 +155,16 @@ export default function LoginPage() {
                           className="pr-14"
                           placeholder={
                             mode === "signup"
-                              ? "At least 6 characters"
+                              ? `At least ${MIN_PASSWORD_LENGTH} characters`
                               : "Your password"
                           }
                           type={showPassword ? "text" : "password"}
                           value={password}
                           onChange={(event) => setPassword(event.target.value)}
                           required
-                          minLength={6}
+                          minLength={
+                            mode === "signup" ? MIN_PASSWORD_LENGTH : undefined
+                          }
                           autoComplete={
                             mode === "login"
                               ? "current-password"
