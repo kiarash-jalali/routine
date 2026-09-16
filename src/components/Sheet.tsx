@@ -121,7 +121,10 @@ export function Sheet({
     <div
       ref={overlayRef}
       className="sheet-overlay"
-      onClick={(event) => {
+      onPointerDown={(event) => {
+        // Close on pointer-down instead of waiting for click. On phones, tapping
+        // while the keyboard is open can resize the viewport before the click is
+        // delivered, which makes the tap appear to do nothing.
         if (event.target === event.currentTarget) closeSheet();
       }}
     >
@@ -153,6 +156,10 @@ export function Sheet({
               className="icon-button"
               type="button"
               aria-label="Close dialog"
+              onPointerDown={(event) => {
+                event.stopPropagation();
+                closeSheet();
+              }}
               onClick={closeSheet}
               disabled={busy}
             >
