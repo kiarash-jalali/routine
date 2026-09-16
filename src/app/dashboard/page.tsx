@@ -6,6 +6,7 @@ import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
 import { Sheet } from "@/components/Sheet";
 import { AnimatedList, AnimatedListItem, Collapse } from "@/components/Motion";
+import { TaskScheduleFields } from "@/components/tasks/TaskScheduleFields";
 import {
   Button,
   Card,
@@ -472,18 +473,11 @@ export default function DashboardPage() {
               disabled={creating}
             />
           </label>
-          <label className="grid gap-2 text-sm font-medium">
-            Due time{" "}
-            <span className="-mt-1 font-normal text-muted">
-              Optional. Leave empty for anytime.
-            </span>
-            <Input
-              type="datetime-local"
-              value={dueLocal}
-              onChange={(event) => setDueLocal(event.target.value)}
-              disabled={creating}
-            />
-          </label>
+          <TaskScheduleFields
+            value={dueLocal}
+            onChange={setDueLocal}
+            disabled={creating}
+          />
           <Collapse show={!!formError}>
             <ErrorNotice>{formError}</ErrorNotice>
           </Collapse>
