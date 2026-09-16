@@ -12,6 +12,16 @@ import "./stability-polish.css";
 export const metadata: Metadata = {
   title: "Routine Helper",
   description: "A calm, routine-first way to shape each day.",
+  applicationName: "Routine Helper",
+  manifest: "/manifest.webmanifest",
+  formatDetection: {
+    telephone: false,
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Routine",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
