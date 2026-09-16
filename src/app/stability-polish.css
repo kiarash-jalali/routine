@@ -76,16 +76,24 @@
   margin-inline: auto;
 }
 
-/* Sheets must remain usable when the mobile keyboard reduces the viewport. */
+/* Let the dialog own a real scroll container. The JS sheet component updates
+   --sheet-viewport-height when a phone keyboard changes the visual viewport. */
 .sheet {
   overflow: hidden;
 }
 
+.sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+
 .sheet-body {
-  max-height: inherit;
+  min-height: 0;
+  flex: 1 1 auto;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scroll-padding-block: 28px 140px;
+  scroll-padding-block: 28px 160px;
+  touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -107,19 +115,17 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  /* On phones use a floating card instead of a bottom sheet. This leaves room
-     to scroll the form while the software keyboard is visible. */
+  /* Floating card rather than a bottom sheet. It follows the visual viewport,
+     so the whole form remains reachable while the keyboard is open. */
   .sheet {
-    top: max(12px, env(safe-area-inset-top));
+    top: calc(var(--sheet-viewport-top, 0px) + 12px);
     right: 16px;
     bottom: auto;
     left: 16px;
     inset-block-end: auto;
     margin: 0 auto;
     width: calc(100% - 32px);
-    max-height: calc(
-      100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
-    );
+    max-height: calc(var(--sheet-viewport-height, 100dvh) - 24px);
     border-radius: 24px;
     transform: translateY(18px) scale(0.985);
   }
@@ -135,10 +141,8 @@
   }
 
   .sheet-body {
-    max-height: calc(
-      100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
-    );
-    padding: 22px 20px calc(28px + env(safe-area-inset-bottom));
+    max-height: none;
+    padding: 22px 20px calc(32px + env(safe-area-inset-bottom));
   }
 
   .sheet-handle {
