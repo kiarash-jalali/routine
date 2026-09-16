@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
+import {
+  MomentPopup,
+  MomentSource,
+  type MomentNotice,
+} from "@/components/MomentPopup";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Button,
@@ -23,6 +28,7 @@ import {
 } from "@/lib/db/notifications";
 import { getProfile, saveDisplayName } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
+import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import {
   currentNotificationPermission,
   disablePushNotifications,
@@ -62,7 +68,24 @@ export default function SettingsPage() {
     | null
   >(null);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [moment, setMoment] = useState<MomentNotice | null>(null);
+
+  function showMoment(
+    key: MomentCopyKey,
+    sourceId: string,
+    icon: MomentNotice["icon"],
+    detailOverride?: string,
+  ) {
+    const copy = getMomentCopy(key);
+    setMoment({
+      id: `${key}-${Date.now()}`,
+      ...copy,
+      detail: detailOverride ?? copy.detail,
+      sourceId,
+      icon,
+      tone: "success",
+    });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -90,8 +113,6 @@ export default function SettingsPage() {
         setReminderTimeZone(getDeviceTimeZone());
         setNotificationPermission(currentNotificationPermission());
 
-        // Notification storage is a newer migration. Keep the rest of Settings
-        // usable even before that migration has been applied locally.
         try {
           const preference = await getNotificationPreference(user.id);
           if (!cancelled && preference) {
@@ -100,8 +121,7 @@ export default function SettingsPage() {
             setReminderTimeZone(preference.timezone || getDeviceTimeZone());
           }
         } catch {
-          // The notification card will surface setup errors when the user tries
-          // to enable it; existing account settings should still load normally.
+          // Keep the rest of Settings usable if reminder storage is unavailable.
         }
       } catch (loadError: unknown) {
         if (!cancelled) {
@@ -121,7 +141,6 @@ export default function SettingsPage() {
   function beginAction(action: typeof busyAction) {
     setBusyAction(action);
     setError(null);
-    setNotice(null);
   }
 
   async function saveProfile(event: React.FormEvent) {
@@ -132,7 +151,7 @@ export default function SettingsPage() {
     try {
       await saveDisplayName(userId, displayName);
       setDisplayName(displayName.trim());
-      setNotice("Profile updated.");
+      showMoment("profile_saved", "settings-profile", "check");
     } catch (saveError: unknown) {
       setError(getErrorMessage(saveError, "Your profile could not be updated."));
     } finally {
@@ -155,10 +174,13 @@ export default function SettingsPage() {
       const currentEmail = data.user.email ?? nextEmail;
       setEmail(currentEmail);
       setNewEmail(currentEmail);
-      setNotice(
+      showMoment(
+        "email_saved",
+        "settings-email",
+        "mail",
         currentEmail === nextEmail
-          ? "Email updated."
-          : "Email change requested. Check your inbox if confirmation is required.",
+          ? undefined
+          : "Check your inbox to finish the email change.",
       );
     } catch (updateError: unknown) {
       setError(getErrorMessage(updateError, "Your email could not be updated."));
@@ -175,12 +197,10 @@ export default function SettingsPage() {
       setError(
         `Your new password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
       );
-      setNotice(null);
       return;
     }
     if (newPassword !== confirmPassword) {
       setError("The two password fields do not match.");
-      setNotice(null);
       return;
     }
 
@@ -193,7 +213,7 @@ export default function SettingsPage() {
 
       setNewPassword("");
       setConfirmPassword("");
-      setNotice("Password updated.");
+      showMoment("password_saved", "settings-password", "check");
     } catch (updateError: unknown) {
       setError(getErrorMessage(updateError, "Your password could not be updated."));
     } finally {
@@ -219,7 +239,7 @@ export default function SettingsPage() {
       setReminderTimeZone(timeZone);
       setNotificationPermission("granted");
       await showNotificationTest();
-      setNotice("Daily check-in reminder enabled on this device.");
+      showMoment("reminder_enabled", "settings-reminder", "checkin");
     } catch (notificationError: unknown) {
       setNotificationPermission(currentNotificationPermission());
       setError(
@@ -243,7 +263,12 @@ export default function SettingsPage() {
         timezone: timeZone,
       });
       setReminderTimeZone(timeZone);
-      setNotice(`Reminder time saved for ${reminderTime}.`);
+      showMoment(
+        "reminder_saved",
+        "settings-reminder",
+        "clock",
+        `Your daily reminder is set for ${reminderTime}.`,
+      );
     } catch (notificationError: unknown) {
       setError(
         getErrorMessage(notificationError, "The reminder time could not be saved."),
@@ -267,7 +292,7 @@ export default function SettingsPage() {
       });
       setReminderEnabled(false);
       setNotificationPermission(currentNotificationPermission());
-      setNotice("Daily reminder turned off.");
+      showMoment("reminder_disabled", "settings-reminder-off", "moon");
     } catch (notificationError: unknown) {
       setError(
         getErrorMessage(notificationError, "The reminder could not be turned off."),
@@ -345,15 +370,9 @@ export default function SettingsPage() {
         description="Keep the account simple and make Routine feel like yours."
       />
 
-      {(error || notice) && (
-        <div className="mb-6" aria-live="polite">
-          {error ? (
-            <ErrorNotice>{error}</ErrorNotice>
-          ) : (
-            <div className="notice rounded-2xl border border-border bg-surface-soft px-4 py-3 text-sm text-foreground">
-              {notice}
-            </div>
-          )}
+      {error && (
+        <div className="mb-6">
+          <ErrorNotice>{error}</ErrorNotice>
         </div>
       )}
 
@@ -375,14 +394,16 @@ export default function SettingsPage() {
                   onChange={(event) => setDisplayName(event.target.value)}
                 />
               </label>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={Boolean(busyAction) || !displayName.trim()}
-                busy={busyAction === "profile"}
-              >
-                Save profile
-              </Button>
+              <MomentSource id="settings-profile">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={Boolean(busyAction) || !displayName.trim()}
+                  busy={busyAction === "profile"}
+                >
+                  Save profile
+                </Button>
+              </MomentSource>
             </form>
           </Card>
 
@@ -402,17 +423,19 @@ export default function SettingsPage() {
                   onChange={(event) => setNewEmail(event.target.value)}
                 />
               </label>
-              <Button
-                type="submit"
-                disabled={
-                  Boolean(busyAction) ||
-                  !newEmail.trim() ||
-                  newEmail.trim() === email
-                }
-                busy={busyAction === "email"}
-              >
-                Update email
-              </Button>
+              <MomentSource id="settings-email">
+                <Button
+                  type="submit"
+                  disabled={
+                    Boolean(busyAction) ||
+                    !newEmail.trim() ||
+                    newEmail.trim() === email
+                  }
+                  busy={busyAction === "email"}
+                >
+                  Update email
+                </Button>
+              </MomentSource>
             </form>
           </Card>
 
@@ -444,17 +467,19 @@ export default function SettingsPage() {
                   onChange={(event) => setConfirmPassword(event.target.value)}
                 />
               </label>
-              <Button
-                type="submit"
-                disabled={
-                  Boolean(busyAction) ||
-                  !newPassword ||
-                  !confirmPassword
-                }
-                busy={busyAction === "password"}
-              >
-                Change password
-              </Button>
+              <MomentSource id="settings-password">
+                <Button
+                  type="submit"
+                  disabled={
+                    Boolean(busyAction) ||
+                    !newPassword ||
+                    !confirmPassword
+                  }
+                  busy={busyAction === "password"}
+                >
+                  Change password
+                </Button>
+              </MomentSource>
             </form>
           </Card>
         </div>
@@ -496,32 +521,38 @@ export default function SettingsPage() {
                 </p>
               ) : reminderEnabled ? (
                 <div className="flex flex-wrap gap-3">
+                  <MomentSource id="settings-reminder">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={Boolean(busyAction) || !reminderTime}
+                      busy={busyAction === "notifications"}
+                    >
+                      Save reminder time
+                    </Button>
+                  </MomentSource>
+                  <MomentSource id="settings-reminder-off">
+                    <Button
+                      type="button"
+                      onClick={disableReminder}
+                      disabled={Boolean(busyAction)}
+                    >
+                      Turn off
+                    </Button>
+                  </MomentSource>
+                </div>
+              ) : (
+                <MomentSource id="settings-reminder">
                   <Button
-                    type="submit"
+                    type="button"
                     variant="primary"
+                    onClick={enableReminder}
                     disabled={Boolean(busyAction) || !reminderTime}
                     busy={busyAction === "notifications"}
                   >
-                    Save reminder time
+                    Enable reminders
                   </Button>
-                  <Button
-                    type="button"
-                    onClick={disableReminder}
-                    disabled={Boolean(busyAction)}
-                  >
-                    Turn off
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="primary"
-                  onClick={enableReminder}
-                  disabled={Boolean(busyAction) || !reminderTime}
-                  busy={busyAction === "notifications"}
-                >
-                  Enable reminders
-                </Button>
+                </MomentSource>
               )}
             </form>
           </Card>
@@ -574,6 +605,8 @@ export default function SettingsPage() {
           </Card>
         </div>
       </div>
+
+      <MomentPopup notice={moment} onDismiss={() => setMoment(null)} />
     </PageShell>
   );
 }
