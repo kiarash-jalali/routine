@@ -121,11 +121,10 @@ export function Sheet({
       ref={overlayRef}
       className="sheet-overlay"
       onPointerDownCapture={(event) => {
-        // The glass panel is a nested, momentum-scrolling layer on mobile. Some
-        // iOS/Android PWAs can visually show a control inside that layer while
-        // losing its final tap/click during viewport or keyboard changes. Handle
-        // the close gesture at the stable overlay layer before it reaches the
-        // scrolling panel instead.
+        // Use the same stable overlay layer for the mobile X that already makes
+        // scrim taps reliable. The capture phase fires before the keyboard can
+        // resize the visual viewport and before the scrolling glass panel can
+        // swallow/cancel the gesture.
         const target = event.target;
         if (
           target instanceof Element &&
@@ -136,21 +135,20 @@ export function Sheet({
         }
       }}
       onPointerDown={(event) => {
-        // Tapping the scrim already proved reliable on the affected phones.
         if (event.target === event.currentTarget) closeSheet();
       }}
     >
-      <div className="sheet-shell">
-        <section
-          ref={panelRef}
-          className="sheet"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          aria-describedby={description ? descriptionId : undefined}
-        >
-          <div className="sheet-body">
-            <div className="pr-14">
+      <section
+        ref={panelRef}
+        className="sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={description ? descriptionId : undefined}
+      >
+        <div className="sheet-body">
+          <div className="flex items-start justify-between gap-4">
+            <div>
               <h2 id={titleId} className="sheet-title text-3xl">
                 {title}
               </h2>
@@ -163,24 +161,34 @@ export function Sheet({
                 </p>
               )}
             </div>
-            {children}
+            <button
+              data-sheet-close
+              className="sheet-close-inside icon-button"
+              type="button"
+              aria-label="Close dialog"
+              onClick={closeSheet}
+              disabled={busy}
+            >
+              <Icon name="close" />
+            </button>
           </div>
-        </section>
+          {children}
+        </div>
+      </section>
 
-        {/* Keep the close target outside the transformed/scrolling glass panel.
-            It still looks like part of the sheet, but mobile hit-testing happens
-            in the same stable overlay layer as the working scrim close gesture. */}
-        <button
-          data-sheet-close
-          className="sheet-close-button icon-button"
-          type="button"
-          aria-label="Close dialog"
-          onClick={closeSheet}
-          disabled={busy}
-        >
-          <Icon name="close" />
-        </button>
-      </div>
+      {/* On mobile this button is deliberately outside the scrolling/glass
+          panel. It sits in the same overlay layer as the scrim, whose tap-to-
+          close behavior is already reliable on the affected installed PWAs. */}
+      <button
+        data-sheet-close
+        className="sheet-close-mobile icon-button"
+        type="button"
+        aria-label="Close dialog"
+        onClick={closeSheet}
+        disabled={busy}
+      >
+        <Icon name="close" />
+      </button>
     </div>
   );
 }
