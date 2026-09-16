@@ -30,6 +30,10 @@ export function Sheet({
     const panel = panelRef.current;
     if (!overlay || !panel) return;
 
+    // Preserve the non-null narrowing inside the event-handler closures below.
+    const overlayElement = overlay;
+    const panelElement = panel;
+
     const previousOverflow = document.body.style.overflow;
     const previousFocus = document.activeElement as HTMLElement | null;
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
@@ -38,8 +42,11 @@ export function Sheet({
     function syncViewport() {
       const height = visualViewport?.height ?? window.innerHeight;
       const top = visualViewport?.offsetTop ?? 0;
-      overlay.style.setProperty("--sheet-viewport-height", `${height}px`);
-      overlay.style.setProperty("--sheet-viewport-top", `${top}px`);
+      overlayElement.style.setProperty(
+        "--sheet-viewport-height",
+        `${height}px`,
+      );
+      overlayElement.style.setProperty("--sheet-viewport-top", `${top}px`);
     }
 
     function keepFocusedFieldVisible(event: FocusEvent) {
@@ -66,15 +73,15 @@ export function Sheet({
     visualViewport?.addEventListener("resize", syncViewport);
     visualViewport?.addEventListener("scroll", syncViewport);
     window.addEventListener("resize", syncViewport);
-    panel.addEventListener("focusin", keepFocusedFieldVisible);
+    panelElement.addEventListener("focusin", keepFocusedFieldVisible);
     document.addEventListener("keydown", handleKeyDown);
 
     if (isMobile) {
-      panel
+      panelElement
         .querySelector<HTMLElement>("[data-sheet-close]")
         ?.focus({ preventScroll: true });
     } else {
-      panel
+      panelElement
         .querySelector<HTMLElement>(
           "input:not([type='hidden']):not(:disabled), textarea:not(:disabled)",
         )
@@ -85,7 +92,7 @@ export function Sheet({
       visualViewport?.removeEventListener("resize", syncViewport);
       visualViewport?.removeEventListener("scroll", syncViewport);
       window.removeEventListener("resize", syncViewport);
-      panel.removeEventListener("focusin", keepFocusedFieldVisible);
+      panelElement.removeEventListener("focusin", keepFocusedFieldVisible);
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previousOverflow;
       previousFocus?.focus?.({ preventScroll: true });
@@ -117,7 +124,10 @@ export function Sheet({
                 {title}
               </h2>
               {description && (
-                <p id={descriptionId} className="mt-2 text-sm leading-6 text-muted">
+                <p
+                  id={descriptionId}
+                  className="mt-2 text-sm leading-6 text-muted"
+                >
                   {description}
                 </p>
               )}
