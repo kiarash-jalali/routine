@@ -27,10 +27,7 @@ export function AppNav() {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
   const [error, setError] = useState(false);
-  const activeIndex = Math.max(
-    0,
-    navItems.findIndex((item) => pathname === item.href),
-  );
+  const activeIndex = navItems.findIndex((item) => pathname === item.href);
 
   async function logout() {
     setLoggingOut(true);
@@ -60,9 +57,15 @@ export function AppNav() {
       <nav
         aria-label="Main navigation"
         className="nav-tabs"
-        style={{ "--active-tab": activeIndex } as CSSProperties}
+        style={
+          activeIndex >= 0
+            ? ({ "--active-tab": activeIndex } as CSSProperties)
+            : undefined
+        }
       >
-        <span className="nav-indicator" aria-hidden="true" />
+        {activeIndex >= 0 && (
+          <span className="nav-indicator" aria-hidden="true" />
+        )}
         {navItems.map((item) => (
           <Link
             key={item.href}
