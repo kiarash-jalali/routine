@@ -1,11 +1,10 @@
 "use client";
 
 import { useLinkStatus } from "next/link";
-import { Link, useTransitionRouter as useRouter } from "next-view-transitions";
+import { Link } from "next-view-transitions";
 import { usePathname } from "next/navigation";
-import { useState, type CSSProperties } from "react";
+import { type CSSProperties } from "react";
 import { BrandMark, Icon } from "@/components/Icon";
-import { supabaseBrowser } from "@/lib/supabaseClient";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navItems = [
@@ -24,23 +23,7 @@ function NavPending() {
 
 export function AppNav() {
   const pathname = usePathname();
-  const router = useRouter();
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [error, setError] = useState(false);
   const activeIndex = navItems.findIndex((item) => pathname === item.href);
-
-  async function logout() {
-    setLoggingOut(true);
-    setError(false);
-    try {
-      const { error } = await supabaseBrowser().auth.signOut();
-      if (error) throw error;
-      router.replace("/login");
-    } catch {
-      setError(true);
-      setLoggingOut(false);
-    }
-  }
 
   return (
     <aside className="app-navigation">
@@ -99,21 +82,6 @@ export function AppNav() {
           <span>Feedback</span>
         </Link>
         <ThemeToggle />
-        {error && (
-          <p role="alert" className="text-sm text-danger">
-            Couldn’t log out. Try again.
-          </p>
-        )}
-        <button
-          type="button"
-          className="logout-button"
-          disabled={loggingOut}
-          onClick={logout}
-          aria-label={loggingOut ? "Logging out" : "Log out"}
-        >
-          <Icon name="logout" size={19} />
-          <span>{loggingOut ? "Logging out…" : "Log out"}</span>
-        </button>
       </div>
     </aside>
   );
