@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
-import { Icon } from "@/components/Icon";
 
 export function Sheet({
   open,
@@ -85,8 +84,8 @@ export function Sheet({
     panelElement.addEventListener("focusin", keepFocusedFieldVisible);
     document.addEventListener("keydown", handleKeyDown);
 
-    // Do not move focus to the close control on mobile. Desktop keeps the
-    // convenient first-field focus.
+    // Keep the keyboard stable on mobile. Desktop still gets the convenient
+    // first-field focus when a sheet opens.
     if (!isMobile) {
       panelElement
         .querySelector<HTMLElement>(
@@ -120,20 +119,6 @@ export function Sheet({
     <div
       ref={overlayRef}
       className="sheet-overlay"
-      onPointerDownCapture={(event) => {
-        // Use the same stable overlay layer for the mobile X that already makes
-        // scrim taps reliable. The capture phase fires before the keyboard can
-        // resize the visual viewport and before the scrolling glass panel can
-        // swallow/cancel the gesture.
-        const target = event.target;
-        if (
-          target instanceof Element &&
-          target.closest("[data-sheet-close]")
-        ) {
-          event.preventDefault();
-          closeSheet();
-        }
-      }}
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) closeSheet();
       }}
@@ -147,48 +132,22 @@ export function Sheet({
         aria-describedby={description ? descriptionId : undefined}
       >
         <div className="sheet-body">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 id={titleId} className="sheet-title text-3xl">
-                {title}
-              </h2>
-              {description && (
-                <p
-                  id={descriptionId}
-                  className="mt-2 text-sm leading-6 text-muted"
-                >
-                  {description}
-                </p>
-              )}
-            </div>
-            <button
-              data-sheet-close
-              className="sheet-close-inside icon-button"
-              type="button"
-              aria-label="Close dialog"
-              onClick={closeSheet}
-              disabled={busy}
-            >
-              <Icon name="close" />
-            </button>
+          <div>
+            <h2 id={titleId} className="sheet-title text-3xl">
+              {title}
+            </h2>
+            {description && (
+              <p
+                id={descriptionId}
+                className="mt-2 text-sm leading-6 text-muted"
+              >
+                {description}
+              </p>
+            )}
           </div>
           {children}
         </div>
       </section>
-
-      {/* On mobile this button is deliberately outside the scrolling/glass
-          panel. It sits in the same overlay layer as the scrim, whose tap-to-
-          close behavior is already reliable on the affected installed PWAs. */}
-      <button
-        data-sheet-close
-        className="sheet-close-mobile icon-button"
-        type="button"
-        aria-label="Close dialog"
-        onClick={closeSheet}
-        disabled={busy}
-      >
-        <Icon name="close" />
-      </button>
     </div>
   );
 }
