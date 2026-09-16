@@ -38,8 +38,6 @@ export function Sheet({
     const previousFocus = document.activeElement as HTMLElement | null;
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
     const visualViewport = window.visualViewport;
-    const typingSelector =
-      "textarea, input:not([type='checkbox']):not([type='radio']):not([type='date']):not([type='time']):not([type='datetime-local']):not([type='button']):not([type='submit'])";
 
     function syncViewport() {
       const height = visualViewport?.height ?? window.innerHeight;
@@ -51,22 +49,11 @@ export function Sheet({
       overlayElement.style.setProperty("--sheet-viewport-top", `${top}px`);
     }
 
-    function setTypingState(target: EventTarget | null) {
-      if (!isMobile) return;
-      const element = target instanceof HTMLElement ? target : null;
-      document.body.classList.toggle(
-        "sheet-keyboard-active",
-        Boolean(element?.matches(typingSelector)),
-      );
-    }
-
     function keepFocusedFieldVisible(event: FocusEvent) {
       if (!isMobile) return;
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
       if (!target.matches("input, textarea, select, button")) return;
-
-      setTypingState(target);
 
       [80, 280, 520].forEach((delay) => {
         window.setTimeout(() => {
@@ -76,34 +63,18 @@ export function Sheet({
       });
     }
 
-    function handleFocusOut() {
-      if (!isMobile) return;
-
-      // Focus can move directly from one field to another. Wait until the next
-      // frame so we read the new active element instead of briefly flashing the
-      // mobile header back in between fields.
-      window.requestAnimationFrame(() => {
-        const activeElement = document.activeElement;
-        if (!panelElement.contains(activeElement)) {
-          document.body.classList.remove("sheet-keyboard-active");
-          return;
-        }
-        setTypingState(activeElement);
-      });
-    }
-
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape" && !busy) onClose();
     }
 
     document.body.style.overflow = "hidden";
+    if (isMobile) document.body.classList.add("sheet-editor-open");
     syncViewport();
 
     visualViewport?.addEventListener("resize", syncViewport);
     visualViewport?.addEventListener("scroll", syncViewport);
     window.addEventListener("resize", syncViewport);
     panelElement.addEventListener("focusin", keepFocusedFieldVisible);
-    panelElement.addEventListener("focusout", handleFocusOut);
     document.addEventListener("keydown", handleKeyDown);
 
     if (isMobile) {
@@ -123,9 +94,8 @@ export function Sheet({
       visualViewport?.removeEventListener("scroll", syncViewport);
       window.removeEventListener("resize", syncViewport);
       panelElement.removeEventListener("focusin", keepFocusedFieldVisible);
-      panelElement.removeEventListener("focusout", handleFocusOut);
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.classList.remove("sheet-keyboard-active");
+      document.body.classList.remove("sheet-editor-open");
       document.body.style.overflow = previousOverflow;
       previousFocus?.focus?.({ preventScroll: true });
     };
