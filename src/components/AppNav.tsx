@@ -89,6 +89,15 @@ export function AppNav() {
           <Icon name="settings" size={19} />
           <span>Settings</span>
         </Link>
+        <Link
+          href="/feedback"
+          className="logout-button"
+          aria-current={pathname === "/feedback" ? "page" : undefined}
+          aria-label="Send feedback"
+        >
+          <Icon name="mail" size={19} />
+          <span>Feedback</span>
+        </Link>
         <ThemeToggle />
         {error && (
           <p role="alert" className="text-sm text-danger">
