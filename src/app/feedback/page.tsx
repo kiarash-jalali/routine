@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import {
+  MomentPopup,
+  MomentSource,
+  type MomentNotice,
+} from "@/components/MomentPopup";
+import {
   Button,
   Card,
   ErrorNotice,
@@ -17,6 +22,7 @@ import {
   type FeedbackCategory,
 } from "@/lib/db/feedback";
 import { getErrorMessage } from "@/lib/errors";
+import { getMomentCopy } from "@/lib/moments";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
 const feedbackCategories: ReadonlyArray<{
@@ -37,7 +43,7 @@ export default function FeedbackPage() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [moment, setMoment] = useState<MomentNotice | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,12 +77,19 @@ export default function FeedbackPage() {
 
     setSubmitting(true);
     setError(null);
-    setNotice(null);
 
     try {
       await submitFeedback(userId, category, trimmedMessage);
       setMessage("");
-      setNotice("Thanks — your feedback was saved.");
+      const copy = getMomentCopy("feedback_sent");
+      setMoment({
+        id: `feedback-${Date.now()}`,
+        ...copy,
+        sourceId: "send-feedback",
+        icon: "mail",
+        tone: "warm",
+        durationMs: 3400,
+      });
     } catch (submitError: unknown) {
       setError(
         getErrorMessage(submitError, "Your feedback could not be sent. Try again."),
@@ -102,15 +115,9 @@ export default function FeedbackPage() {
         description="While Routine is small, the most useful feedback is what interrupted your flow, confused you, or made you wish something worked differently."
       />
 
-      {(error || notice) && (
-        <div className="mb-6" aria-live="polite">
-          {error ? (
-            <ErrorNotice>{error}</ErrorNotice>
-          ) : (
-            <div className="notice rounded-2xl border border-border bg-surface-soft px-4 py-3 text-sm text-foreground">
-              {notice}
-            </div>
-          )}
+      {error && (
+        <div className="mb-6">
+          <ErrorNotice>{error}</ErrorNotice>
         </div>
       )}
 
@@ -153,17 +160,21 @@ export default function FeedbackPage() {
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-muted">{message.length}/2000</p>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={submitting || message.trim().length < 3}
-              busy={submitting}
-            >
-              Send feedback
-            </Button>
+            <MomentSource id="send-feedback">
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={submitting || message.trim().length < 3}
+                busy={submitting}
+              >
+                Send feedback
+              </Button>
+            </MomentSource>
           </div>
         </form>
       </Card>
+
+      <MomentPopup notice={moment} onDismiss={() => setMoment(null)} />
     </PageShell>
   );
 }
