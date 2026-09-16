@@ -1,0 +1,71 @@
+"use client";
+
+import { Input } from "@/components/ui";
+import { getLocalDateKey } from "@/lib/today";
+
+function splitLocalDateTime(value: string) {
+  const [date = "", time = ""] = value.split("T");
+  return { date, time };
+}
+
+function combineLocalDateTime(date: string, time: string) {
+  if (!date && !time) return "";
+
+  // A time on its own means today; a date on its own means by the end of day.
+  const resolvedDate = date || getLocalDateKey(new Date());
+  const resolvedTime = time || "23:59";
+  return `${resolvedDate}T${resolvedTime}`;
+}
+
+export function TaskScheduleFields({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const { date, time } = splitLocalDateTime(value);
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <p className="text-sm font-medium">Due</p>
+        <p className="mt-1 text-sm font-normal text-muted">
+          Optional. Pick a day, a time, or both.
+        </p>
+      </div>
+
+      <div className="task-schedule-grid">
+        <label className="grid gap-2 text-sm font-medium">
+          <span className="text-xs font-medium text-muted">Date</span>
+          <Input
+            type="date"
+            value={date}
+            onChange={(event) =>
+              onChange(combineLocalDateTime(event.target.value, time))
+            }
+            disabled={disabled}
+          />
+        </label>
+
+        <label className="grid gap-2 text-sm font-medium">
+          <span className="text-xs font-medium text-muted">Time</span>
+          <Input
+            type="time"
+            value={time}
+            onChange={(event) =>
+              onChange(combineLocalDateTime(date, event.target.value))
+            }
+            disabled={disabled}
+          />
+        </label>
+      </div>
+
+      <p className="text-xs leading-5 text-muted">
+        If you choose only a time, it is planned for today.
+      </p>
+    </div>
+  );
+}
