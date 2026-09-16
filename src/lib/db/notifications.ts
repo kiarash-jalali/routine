@@ -65,9 +65,11 @@ async function readApiError(response: Response, fallback: string) {
 }
 
 export async function savePushSubscription(
-  _userId: string,
+  userId: string,
   subscription: StoredPushSubscription,
 ) {
+  if (!userId) throw new Error("You must be signed in to enable reminders.");
+
   const accessToken = await getAccessToken();
   const response = await fetch("/api/notifications/subscription", {
     method: "POST",
