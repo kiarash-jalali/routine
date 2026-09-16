@@ -29,6 +29,16 @@ NEXT_PUBLIC_SUPABASE_URL=your-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
+Account deletion is handled only by a server route. To enable it, also add the
+Supabase service-role key to the server environment:
+
+```env
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+Never expose the service-role key in browser code or commit it to the repository.
+The `.env*` files are ignored by Git.
+
 Install the locked dependency versions and start the development server:
 
 ```bash
@@ -53,6 +63,7 @@ npm run dev       # Development server with live reload
 npm run lint      # ESLint code-quality checks
 npx tsc --noEmit  # TypeScript type check
 npm run build     # Production build check
+npm run verify    # Lint + type generation/typecheck + production build
 ```
 
 ## Routes
@@ -64,6 +75,7 @@ npm run build     # Production build check
 | `/routines` | Create, edit, pause, resume, and delete daily/weekly routines |
 | `/checkin` | Daily completion ritual for today's items |
 | `/history` | Recent check-ins, rhythm, points, and missed-day recovery |
+| `/settings` | Profile, email, password, appearance, session, and account controls |
 
 ## Source structure
 
@@ -92,6 +104,7 @@ theme colours and global visual tokens live in `src/app/globals.css`.
 - `routines`: reusable daily or weekly plans;
 - `daily_checkins`: one row per user and local calendar day;
 - `checkin_items`: completion state for each task or routine in a check-in;
+- `profiles`: display name and onboarding state;
 - `point_transactions`: append-only rewards and recovery spending;
 - `streak_repairs`: missed calendar days whose rhythm continuity was repaired.
 
@@ -111,8 +124,15 @@ Editor before testing the updated History page:
 supabase/migrations/202609151100_add_points_and_streak_recovery.sql
 ```
 
-The migration also backfills existing finished check-ins with 10 points each, so
-old check-ins participate in the same economy without needing to be recreated.
+Profiles and first-time onboarding use:
+
+```text
+supabase/migrations/202609151330_add_profiles_and_onboarding.sql
+```
+
+The points migration also backfills existing finished check-ins with 10 points
+each, so old check-ins participate in the same economy without needing to be
+recreated.
 
 ## Current milestone
 
@@ -132,10 +152,14 @@ Points + missed-day recovery v1 adds these rules:
 - a repair restores streak continuity only and never creates fake completion data;
 - repaired days are visually distinct from real check-ins in History.
 
+Settings now provides profile editing, email and password changes, appearance,
+session controls, and server-side account deletion.
+
 ## Roadmap
 
-1. Test points and recovery with several real days and one intentional gap.
-2. Adjust reward/cost numbers only after observing real use.
-3. Add earned personalisation without turning the app into a high-pressure game.
-4. Add optional notifications.
-5. Prepare the web app as a PWA before considering native mobile clients.
+1. Finish the private-alpha account/settings and mobile usability pass.
+2. Prepare the web app as an installable PWA.
+3. Add gentle opt-in daily check-in reminders.
+4. Use the app with a small private group and observe real behaviour.
+5. Adjust points and recovery only after observing real use.
+6. Add earned personalisation without turning the app into a high-pressure game.
