@@ -13,6 +13,7 @@ type RoutineFormProps = {
   isSubmitting: boolean;
   onSubmit: (values: RoutineFormValues) => Promise<void>;
   onCancel?: () => void;
+  shineSubmit?: boolean;
 };
 
 export function RoutineForm({
@@ -22,6 +23,7 @@ export function RoutineForm({
   isSubmitting,
   onSubmit,
   onCancel,
+  shineSubmit = false,
 }: RoutineFormProps) {
   const [values, setValues] = useState<RoutineFormValues>(initialValues);
   const canSubmit = Boolean(
@@ -126,7 +128,7 @@ export function RoutineForm({
         <Button
           type="submit"
           variant="primary"
-          className="flex-1"
+          className={`flex-1 ${shineSubmit ? "moment-shine" : ""}`}
           disabled={!canSubmit || isSubmitting}
           busy={isSubmitting}
         >
