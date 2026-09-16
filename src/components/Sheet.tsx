@@ -21,25 +21,43 @@ export function Sheet({
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
+
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
+
     if (open) {
       const previousOverflow = document.body.style.overflow;
       dialog.showModal();
       document.body.style.overflow = "hidden";
-      dialog
-        .querySelector<HTMLElement>(
-          "input:not([type='hidden']):not(:disabled), textarea:not(:disabled)",
-        )
-        ?.focus({ preventScroll: true });
+
+      const desktopInputFocus = window.matchMedia(
+        "(min-width: 768px) and (pointer: fine)",
+      ).matches;
+
+      if (desktopInputFocus) {
+        dialog
+          .querySelector<HTMLElement>(
+            "input:not([type='hidden']):not(:disabled), textarea:not(:disabled)",
+          )
+          ?.focus({ preventScroll: true });
+      } else {
+        // On phones, opening the keyboard immediately can cover a bottom sheet.
+        // Keep the sheet visible first and let the user choose the field to edit.
+        dialog
+          .querySelector<HTMLElement>("[data-sheet-close]")
+          ?.focus({ preventScroll: true });
+      }
+
       return () => {
         dialog.close();
         document.body.style.overflow = previousOverflow;
       };
     }
+
     dialog.close();
   }, [open]);
+
   return (
     <dialog
       ref={ref}
@@ -71,6 +89,7 @@ export function Sheet({
             )}
           </div>
           <button
+            data-sheet-close
             className="icon-button"
             type="button"
             aria-label="Close dialog"
