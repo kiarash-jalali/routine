@@ -5,7 +5,14 @@ import type { ReactNode } from "react";
 import { AppNav } from "@/components/AppNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const appPaths = ["/dashboard", "/routines", "/checkin", "/history"];
+const appPaths = [
+  "/dashboard",
+  "/routines",
+  "/checkin",
+  "/history",
+  "/settings",
+];
+
 export function AppFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isApp = appPaths.includes(pathname);
