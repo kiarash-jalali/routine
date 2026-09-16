@@ -8,6 +8,8 @@ export function Sheet({
   title,
   description,
   busy = false,
+  keyboardAssist = true,
+  compact = false,
   children,
 }: {
   open: boolean;
@@ -15,6 +17,8 @@ export function Sheet({
   title: string;
   description?: string;
   busy?: boolean;
+  keyboardAssist?: boolean;
+  compact?: boolean;
   children: ReactNode;
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -24,8 +28,6 @@ export function Sheet({
   const titleId = useId();
   const descriptionId = useId();
 
-  // Keep the current callback and busy state available to the long-lived sheet
-  // effect without making that effect restart on every parent render.
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
@@ -59,7 +61,7 @@ export function Sheet({
     }
 
     function keepFocusedFieldVisible(event: FocusEvent) {
-      if (!isMobile) return;
+      if (!isMobile || !keyboardAssist) return;
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
       if (!target.matches("input, textarea, select")) return;
@@ -88,9 +90,7 @@ export function Sheet({
     panelElement.addEventListener("focusin", keepFocusedFieldVisible);
     document.addEventListener("keydown", handleKeyDown);
 
-    // Keep the keyboard stable on mobile. Desktop still gets the convenient
-    // first-field focus when a sheet opens.
-    if (!isMobile) {
+    if (!isMobile && keyboardAssist) {
       panelElement
         .querySelector<HTMLElement>(
           "input:not([type='hidden']):not(:disabled), textarea:not(:disabled)",
@@ -111,7 +111,7 @@ export function Sheet({
         previousFocus.focus({ preventScroll: true });
       }
     };
-  }, [open]);
+  }, [keyboardAssist, open]);
 
   if (!open) return null;
 
@@ -123,6 +123,8 @@ export function Sheet({
     <div
       ref={overlayRef}
       className="sheet-overlay"
+      data-keyboard-assist={keyboardAssist}
+      data-compact={compact}
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) closeSheet();
       }}
