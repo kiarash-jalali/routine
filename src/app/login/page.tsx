@@ -5,7 +5,10 @@ import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap, Collapse } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
 import { Button, ErrorNotice, Input, SegmentedControl } from "@/components/ui";
-import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
+import {
+  getFriendlySignInError,
+  MIN_PASSWORD_LENGTH,
+} from "@/lib/auth";
 import { getProfile } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
@@ -59,7 +62,11 @@ export default function LoginPage() {
         setConfirmationSent(true);
       }
     } catch (error: unknown) {
-      setErrorMessage(getErrorMessage(error, "Something went wrong"));
+      setErrorMessage(
+        mode === "login"
+          ? getFriendlySignInError(error)
+          : getErrorMessage(error, "Couldn’t create your account. Try again."),
+      );
     } finally {
       setLoading(false);
     }
