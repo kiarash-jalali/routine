@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { Link } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
+import {
+  MomentPopup,
+  MomentSource,
+  type MomentNotice,
+} from "@/components/MomentPopup";
 import { AnimatedNumber, AnimatedSwap, Collapse } from "@/components/Motion";
 import {
   Button,
@@ -26,6 +31,7 @@ import {
 import { listTasks } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
+import { getMomentCopy } from "@/lib/moments";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import {
   filterTasksForToday,
@@ -112,6 +118,7 @@ export default function CheckinPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [moment, setMoment] = useState<MomentNotice | null>(null);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [dailyCheckinId, setDailyCheckinId] = useState<string | null>(null);
@@ -185,10 +192,27 @@ export default function CheckinPage() {
 
   function toggleItem(itemType: CheckinItemType, itemId: string) {
     const itemKey = createItemKey(itemType, itemId);
+    const willComplete = !completionByItem[itemKey];
+
     setCompletionByItem((current) => ({
       ...current,
       [itemKey]: !current[itemKey],
     }));
+
+    if (willComplete) {
+      const copy = getMomentCopy(
+        itemType === "routine"
+          ? "checkin_routine_completed"
+          : "checkin_task_completed",
+      );
+      setMoment({
+        id: `checkin-${itemKey}-${Date.now()}`,
+        ...copy,
+        sourceId: `checkin-${itemType}-${itemId}`,
+        icon: "check",
+        tone: "success",
+      });
+    }
   }
 
   function isItemCompleted(itemType: CheckinItemType, itemId: string) {
@@ -232,6 +256,16 @@ export default function CheckinPage() {
       setSavedCompletionByItem({ ...completionByItem });
       setHasFinishedToday(true);
       setEditingFinishedCheckin(false);
+
+      const copy = getMomentCopy("day_saved");
+      setMoment({
+        id: `day-saved-${Date.now()}`,
+        ...copy,
+        sourceId: "finish-day",
+        icon: "checkin",
+        tone: "warm",
+        durationMs: 3200,
+      });
     } catch (error: unknown) {
       setErrorMessage(
         getErrorMessage(error, "Today's check-in could not be saved."),
@@ -307,14 +341,19 @@ export default function CheckinPage() {
               <EmptyState>No routines planned for today.</EmptyState>
             ) : (
               routines.map((routine) => (
-                <CheckinChoice
+                <MomentSource
                   key={routine.id}
-                  title={routine.title}
-                  detail={formatRoutineTime(routine)}
-                  completed={isItemCompleted("routine", routine.id)}
-                  locked={checkinLocked}
-                  onToggle={() => toggleItem("routine", routine.id)}
-                />
+                  id={`checkin-routine-${routine.id}`}
+                  className="block w-full"
+                >
+                  <CheckinChoice
+                    title={routine.title}
+                    detail={formatRoutineTime(routine)}
+                    completed={isItemCompleted("routine", routine.id)}
+                    locked={checkinLocked}
+                    onToggle={() => toggleItem("routine", routine.id)}
+                  />
+                </MomentSource>
               ))
             )}
           </div>
@@ -337,14 +376,19 @@ export default function CheckinPage() {
               <EmptyState>No unfinished tasks planned for today.</EmptyState>
             ) : (
               tasks.map((task) => (
-                <CheckinChoice
+                <MomentSource
                   key={task.id}
-                  title={task.title}
-                  detail={formatTaskTime(task)}
-                  completed={isItemCompleted("task", task.id)}
-                  locked={checkinLocked}
-                  onToggle={() => toggleItem("task", task.id)}
-                />
+                  id={`checkin-task-${task.id}`}
+                  className="block w-full"
+                >
+                  <CheckinChoice
+                    title={task.title}
+                    detail={formatTaskTime(task)}
+                    completed={isItemCompleted("task", task.id)}
+                    locked={checkinLocked}
+                    onToggle={() => toggleItem("task", task.id)}
+                  />
+                </MomentSource>
               ))
             )}
           </div>
@@ -388,20 +432,22 @@ export default function CheckinPage() {
                       Cancel
                     </Button>
                   )}
-                  <Button
-                    variant="primary"
-                    className="flex-1 sm:min-w-36"
-                    disabled={saving || !userId}
-                    onClick={finishDay}
-                    busy={saving}
-                  >
-                    {saving
-                      ? "Saving…"
-                      : editingFinishedCheckin
-                        ? "Save changes"
-                        : "Finish day"}
-                    {!saving && <Icon name="check" size={17} />}
-                  </Button>
+                  <MomentSource id="finish-day" className="flex flex-1">
+                    <Button
+                      variant="primary"
+                      className="flex-1 sm:min-w-36"
+                      disabled={saving || !userId}
+                      onClick={finishDay}
+                      busy={saving}
+                    >
+                      {saving
+                        ? "Saving…"
+                        : editingFinishedCheckin
+                          ? "Save changes"
+                          : "Finish day"}
+                      {!saving && <Icon name="check" size={17} />}
+                    </Button>
+                  </MomentSource>
                 </div>
               )}
             </AnimatedSwap>
@@ -411,6 +457,8 @@ export default function CheckinPage() {
           An unfinished day is still a day you showed up.
         </p>
       </div>
+
+      <MomentPopup notice={moment} onDismiss={() => setMoment(null)} />
     </PageShell>
   );
 }
