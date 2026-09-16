@@ -28,6 +28,7 @@ export function Sheet({
 
     if (open) {
       const previousOverflow = document.body.style.overflow;
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
       const desktopInputFocus = window.matchMedia(
         "(min-width: 768px) and (pointer: fine)",
       ).matches;
@@ -36,25 +37,39 @@ export function Sheet({
       const visualViewport = window.visualViewport;
 
       function syncViewport() {
+        if (!isMobile) return;
+
         const height = visualViewport?.height ?? window.innerHeight;
         const top = visualViewport?.offsetTop ?? 0;
-        dialog.style.setProperty("--sheet-viewport-height", `${height}px`);
-        dialog.style.setProperty("--sheet-viewport-top", `${top}px`);
+        const availableHeight = Math.max(260, Math.floor(height - 24));
+
+        // Use a real height, not only max-height. Mobile browsers can leave the
+        // dialog at its pre-keyboard size otherwise, which means there is no
+        // overflow area to scroll when the software keyboard appears.
+        dialog.style.height = `${availableHeight}px`;
+        dialog.style.maxHeight = `${availableHeight}px`;
+        dialog.style.top = `${Math.floor(top + 12)}px`;
       }
 
       function keepFocusedFieldVisible(event: FocusEvent) {
-        if (desktopInputFocus) return;
+        if (!isMobile) return;
         const target = event.target;
         if (!(target instanceof HTMLElement)) return;
         if (!target.matches("input, textarea, select, button")) return;
 
-        window.setTimeout(() => {
-          target.scrollIntoView({ block: "center", behavior: "smooth" });
-        }, 220);
+        // Keyboard animation and visualViewport resizing are asynchronous on
+        // iOS/Android. Re-sync a few times while it settles, then reveal the
+        // focused control inside the sheet's own scroll container.
+        [60, 260, 520].forEach((delay) => {
+          window.setTimeout(() => {
+            syncViewport();
+            target.scrollIntoView({ block: "center", behavior: "smooth" });
+          }, delay);
+        });
       }
 
       // Browsers autofocus dialog fields during showModal(). On a phone that can
-      // summon the keyboard before the dialog is visible, covering it.
+      // summon the keyboard before the floating card is visible, covering it.
       if (!desktopInputFocus) autofocusElement?.removeAttribute("autofocus");
 
       syncViewport();
@@ -87,8 +102,9 @@ export function Sheet({
         visualViewport?.removeEventListener("scroll", syncViewport);
         window.removeEventListener("resize", syncViewport);
         dialog.removeEventListener("focusin", keepFocusedFieldVisible);
-        dialog.style.removeProperty("--sheet-viewport-height");
-        dialog.style.removeProperty("--sheet-viewport-top");
+        dialog.style.removeProperty("height");
+        dialog.style.removeProperty("max-height");
+        dialog.style.removeProperty("top");
         dialog.close();
         document.body.style.overflow = previousOverflow;
       };
