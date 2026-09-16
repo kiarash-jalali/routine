@@ -26,7 +26,7 @@ import {
 import { getErrorMessage } from "@/lib/errors";
 import {
   averageCompletionPercent,
-  buildRhythmDays,
+  buildMonthCalendarDays,
   countRecentCheckins,
   formatHistoryDate,
   summarizeCheckin,
@@ -41,33 +41,19 @@ import { calculateStreakMetrics, formatDayCount } from "@/lib/streak";
 import type { CheckinHistoryEntry } from "@/types/history";
 import type { StreakRepair } from "@/types/points";
 
-function RhythmCell({
-  checkedIn,
-  repaired,
-  completionPercent,
-}: {
-  checkedIn: boolean;
-  repaired: boolean;
-  completionPercent: number;
-}) {
-  const className = repaired
-    ? "border-dashed border-primary/55 bg-primary-soft/35"
-    : checkedIn
-      ? completionPercent === 100
-        ? "border-primary bg-primary"
-        : "border-primary/30 bg-primary-soft"
-      : "border-border bg-surface-soft";
+const weekdayReferenceMonday = new Date(2026, 0, 5);
 
-  return (
-    <span
-      className={`block h-11 rounded-xl border transition ${className}`}
-      aria-hidden="true"
-    />
-  );
+function getWeekdayLabels() {
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(weekdayReferenceMonday);
+    date.setDate(weekdayReferenceMonday.getDate() + index);
+    return new Intl.DateTimeFormat(undefined, { weekday: "narrow" }).format(date);
+  });
 }
 
 export default function HistoryPage() {
   const router = useRouter();
+  const [today] = useState(() => new Date());
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [history, setHistory] = useState<CheckinHistoryEntry[]>([]);
@@ -145,10 +131,13 @@ export default function HistoryPage() {
     () => findRepairableDays(checkinDays, repairedDays),
     [checkinDays, repairedDays],
   );
-  const rhythmDays = useMemo(() => buildRhythmDays(history, 14), [history]);
+  const calendarDays = useMemo(
+    () => buildMonthCalendarDays(history, checkinDays, today),
+    [checkinDays, history, today],
+  );
   const checkedInLastSeven = useMemo(
-    () => countRecentCheckins(history, 7),
-    [history],
+    () => countRecentCheckins(history, 7, today),
+    [history, today],
   );
   const averageCompletion = useMemo(
     () => averageCompletionPercent(history),
@@ -158,6 +147,15 @@ export default function HistoryPage() {
     () => calculateStreakMetrics(effectiveRhythmDays),
     [effectiveRhythmDays],
   );
+  const monthLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        month: "long",
+        year: "numeric",
+      }).format(today),
+    [today],
+  );
+  const weekdayLabels = useMemo(() => getWeekdayLabels(), []);
 
   async function repairDay(day: string) {
     setRepairingDay(day);
@@ -233,34 +231,72 @@ export default function HistoryPage() {
               />
             </div>
           </Card>
+
           <Card>
             <SectionHeading
-              title="The last two weeks"
-              description="Each check-in is a small step forward."
+              title={monthLabel}
+              description="Your month like a wall calendar: the story begins where you began."
             />
-            <div className="mt-6 grid grid-cols-7 gap-3 sm:grid-cols-[repeat(14,minmax(0,1fr))]">
-              {rhythmDays.map((day) => {
+            <div className="month-calendar mt-6" role="grid" aria-label={monthLabel}>
+              {weekdayLabels.map((label, index) => (
+                <div
+                  key={`${label}-${index}`}
+                  className="month-calendar-weekday"
+                  role="columnheader"
+                >
+                  {label}
+                </div>
+              ))}
+              {calendarDays.map((day) => {
                 const repaired = repairedDaySet.has(day.dateKey);
+                const complete = day.checkedIn && day.completionPercent === 100;
+                const status = day.future
+                  ? "Future day"
+                  : repaired
+                    ? "Rhythm repaired; no check-in recorded"
+                    : day.checkedIn
+                      ? day.completionPercent === 100
+                        ? "Checked in; all completed"
+                        : `Checked in; ${day.completionPercent}% completed`
+                      : "No check-in";
+
                 return (
                   <div
                     key={day.dateKey}
-                    className="min-w-0 text-center"
-                    title={`${day.dateKey}: ${repaired ? "Rhythm repaired" : day.checkedIn ? "Checked in" : "No check-in"}`}
+                    role="gridcell"
+                    aria-hidden={day.hidden || day.dayNumber === null || undefined}
+                    aria-label={
+                      day.hidden || day.dayNumber === null
+                        ? undefined
+                        : `${formatHistoryDate(day.dateKey)}: ${status}`
+                    }
+                    className={`month-calendar-cell${day.hidden || day.dayNumber === null ? " is-hidden" : ""}${day.future ? " is-future" : ""}${day.today ? " is-today" : ""}${day.checkedIn ? " is-checked" : ""}${complete ? " is-complete" : ""}${repaired ? " is-repaired" : ""}`}
                   >
-                    <RhythmCell
-                      checkedIn={day.checkedIn}
-                      repaired={repaired}
-                      completionPercent={day.completionPercent}
-                    />
-                    <span className="mt-2 block text-xs text-muted">
-                      {day.label}
-                    </span>
-                    <span className="sr-only">{`${day.dateKey}: ${repaired ? "streak repaired; no check-in recorded" : day.checkedIn ? `${day.completedCount} of ${day.totalCount} completed` : "no check-in"}`}</span>
+                    {day.dayNumber !== null && (
+                      <>
+                        <span className="month-calendar-date">{day.dayNumber}</span>
+                        {!day.hidden && !day.future && (
+                          <span className="month-calendar-status">
+                            {repaired
+                              ? "repaired"
+                              : day.checkedIn
+                                ? day.completionPercent === 100
+                                  ? "complete"
+                                  : `${day.completionPercent}%`
+                                : "—"}
+                          </span>
+                        )}
+                      </>
+                    )}
                   </div>
                 );
               })}
             </div>
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
+              <span className="inline-flex items-center gap-2">
+                <span className="h-3 w-3 rounded border border-dashed border-border bg-surface-soft opacity-60" />
+                Ahead
+              </span>
               <span className="inline-flex items-center gap-2">
                 <span className="h-3 w-3 rounded border border-border bg-surface-soft" />
                 No check-in
@@ -274,11 +310,12 @@ export default function HistoryPage() {
                 All completed
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="h-3 w-3 rounded border border-dashed border-primary/55 bg-primary-soft/35" />
+                <span className="h-3 w-3 rounded border border-dashed border-primary bg-primary-soft" />
                 Repaired
               </span>
             </div>
           </Card>
+
           <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
             <Card>
               <SectionHeading
