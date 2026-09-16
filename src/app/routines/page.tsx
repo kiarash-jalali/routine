@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
+import {
+  MomentPopup,
+  MomentSource,
+  type MomentNotice,
+} from "@/components/MomentPopup";
 import { Sheet } from "@/components/Sheet";
 import {
   AnimatedList,
@@ -29,6 +34,7 @@ import {
   updateRoutine,
 } from "@/lib/db/routines";
 import { getErrorMessage } from "@/lib/errors";
+import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import {
   describeRoutine,
   formatPreferredTimeForDatabase,
@@ -51,9 +57,24 @@ export default function RoutinesPage() {
   const [deleteTarget, setDeleteTarget] = useState<Routine | null>(null);
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "paused">("all");
-  const [announcement, setAnnouncement] = useState("");
+  const [moment, setMoment] = useState<MomentNotice | null>(null);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
   const pending = useRef(new Set<string>());
+
+  function showMoment(
+    key: MomentCopyKey,
+    sourceId?: string,
+    icon: MomentNotice["icon"] = "spark",
+  ) {
+    const copy = getMomentCopy(key);
+    setMoment({
+      id: `${key}-${Date.now()}`,
+      ...copy,
+      sourceId,
+      icon,
+      tone: "success",
+    });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -93,12 +114,17 @@ export default function RoutinesPage() {
         days_of_week: values.frequency === "weekly" ? values.daysOfWeek : null,
         preferred_time: formatPreferredTimeForDatabase(values.preferredTime),
       };
+      const wasEditing = Boolean(editingRoutine);
       if (editingRoutine) await updateRoutine(editingRoutine.id, changes);
       else await addRoutine({ user_id: userId, ...changes });
       setRoutines(await listRoutines());
       setEditorOpen(false);
-      setAnnouncement(editingRoutine ? "Routine updated." : "Routine added.");
-      if (!editingRoutine) setFilter("all");
+      showMoment(
+        wasEditing ? "routine_updated" : "routine_added",
+        wasEditing ? undefined : "add-routine",
+        wasEditing ? "edit" : "plus",
+      );
+      if (!wasEditing) setFilter("all");
     } catch (error: unknown) {
       setFormError(getErrorMessage(error, "Your routine couldn’t be saved."));
     } finally {
@@ -127,10 +153,10 @@ export default function RoutinesPage() {
     );
     try {
       await toggleRoutineActive(routine.id, !routine.is_active);
-      setAnnouncement(
-        routine.is_active
-          ? "Routine paused. Resume whenever you’re ready."
-          : "Routine resumed.",
+      showMoment(
+        routine.is_active ? "routine_paused" : "routine_resumed",
+        `routine-toggle-${routine.id}`,
+        routine.is_active ? "pause" : "routines",
       );
     } catch (error: unknown) {
       setRoutines((current) =>
@@ -157,7 +183,7 @@ export default function RoutinesPage() {
         current.filter((item) => item.id !== deleteTarget.id),
       );
       setDeleteTarget(null);
-      setAnnouncement("Routine deleted.");
+      showMoment("routine_deleted", undefined, "trash");
     } catch (error: unknown) {
       setFormError(getErrorMessage(error, "Your routine couldn’t be deleted."));
     } finally {
@@ -185,14 +211,17 @@ export default function RoutinesPage() {
         title="Routines"
         description="A rhythm that fits your life. Adjust it as you go."
         actions={
-          <Button
-            variant="primary"
-            onClick={() => openEditor(null)}
-            disabled={!userId}
-          >
-            <Icon name="plus" size={18} />
-            New routine
-          </Button>
+          <MomentSource id="add-routine">
+            <Button
+              className="moment-shine"
+              variant="primary"
+              onClick={() => openEditor(null)}
+              disabled={!userId}
+            >
+              <Icon name="plus" size={18} />
+              New routine
+            </Button>
+          </MomentSource>
         }
       />
       {error && (
@@ -228,7 +257,11 @@ export default function RoutinesPage() {
                     : "Start small. A glass of water, a walk, a few pages."}
                 {routines.length === 0 && (
                   <div className="mt-4">
-                    <Button onClick={() => openEditor(null)} disabled={!userId}>
+                    <Button
+                      className="moment-shine"
+                      onClick={() => openEditor(null)}
+                      disabled={!userId}
+                    >
                       <Icon name="plus" size={16} />
                       Create your first routine
                     </Button>
@@ -279,17 +312,19 @@ export default function RoutinesPage() {
                     <Icon name="edit" size={16} />
                     <span>Edit</span>
                   </Button>
-                  <span className="switch-target">
-                    <button
-                      className="switch"
-                      type="button"
-                      role="switch"
-                      aria-checked={routine.is_active}
-                      aria-label={`${routine.is_active ? "Pause" : "Resume"} ${routine.title}`}
-                      onClick={() => toggleActive(routine)}
-                      disabled={pendingIds.includes(routine.id)}
-                    />
-                  </span>
+                  <MomentSource id={`routine-toggle-${routine.id}`}>
+                    <span className="switch-target">
+                      <button
+                        className="switch"
+                        type="button"
+                        role="switch"
+                        aria-checked={routine.is_active}
+                        aria-label={`${routine.is_active ? "Pause" : "Resume"} ${routine.title}`}
+                        onClick={() => toggleActive(routine)}
+                        disabled={pendingIds.includes(routine.id)}
+                      />
+                    </span>
+                  </MomentSource>
                   <button
                     className="icon-button danger"
                     aria-label={`Delete ${routine.title}`}
@@ -307,11 +342,9 @@ export default function RoutinesPage() {
           )}
         </AnimatedList>
       </Card>
-      <p className="mt-4 min-h-6 px-1 text-sm text-muted" role="status">
-        <span key={announcement} className="notice inline-block">
-          {announcement || "Pause a routine whenever you need a little space."}
-        </span>
-      </p>
+
+      <MomentPopup notice={moment} onDismiss={() => setMoment(null)} />
+
       <Sheet
         open={editorOpen}
         onClose={() => setEditorOpen(false)}
@@ -331,6 +364,7 @@ export default function RoutinesPage() {
           isSubmitting={saving}
           onSubmit={saveRoutine}
           onCancel={() => setEditorOpen(false)}
+          shineSubmit={!editingRoutine}
         />
         {formError && (
           <div className="mt-4">
@@ -348,6 +382,8 @@ export default function RoutinesPage() {
             ? `“${deleteTarget.title}” will be removed. You can pause it instead if you only need a break.`
             : undefined
         }
+        keyboardAssist={false}
+        compact
       >
         {formError && (
           <div className="mt-4">
