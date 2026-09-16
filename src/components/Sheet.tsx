@@ -107,7 +107,7 @@ export function Sheet({
     <div
       ref={overlayRef}
       className="sheet-overlay"
-      onMouseDown={(event) => {
+      onPointerDown={(event) => {
         if (event.target === event.currentTarget && !busy) onClose();
       }}
     >
@@ -139,7 +139,17 @@ export function Sheet({
               className="icon-button"
               type="button"
               aria-label="Close dialog"
-              onClick={onClose}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (!busy) onClose();
+              }}
+              onClick={(event) => {
+                // Keyboard activation does not fire pointer events, so retain a
+                // click fallback for accessibility and desktop keyboard use.
+                event.stopPropagation();
+                if (!busy) onClose();
+              }}
               disabled={busy}
             >
               <Icon name="close" />
