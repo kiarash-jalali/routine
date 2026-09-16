@@ -79,9 +79,9 @@ export default function OnboardingPage() {
         setDisplayName(profile.display_name ?? "");
         setRoutines(existingRoutines);
 
-        if (existingRoutines.length > 0) {
-          setStep("ready");
-        } else if (profile.display_name) {
+        // A saved routine should not silently advance onboarding after refresh.
+        // The user chooses when to leave this step with the Continue button.
+        if (profile.display_name) {
           setStep("routine");
         }
       } catch (error: unknown) {
