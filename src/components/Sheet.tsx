@@ -28,12 +28,18 @@ export function Sheet({
 
     if (open) {
       const previousOverflow = document.body.style.overflow;
-      dialog.showModal();
-      document.body.style.overflow = "hidden";
-
       const desktopInputFocus = window.matchMedia(
         "(min-width: 768px) and (pointer: fine)",
       ).matches;
+      const autofocusElement =
+        dialog.querySelector<HTMLElement>("[autofocus]");
+
+      // Browsers autofocus dialog fields during showModal(). On a phone that can
+      // summon the keyboard before the bottom sheet is visible, covering it.
+      if (!desktopInputFocus) autofocusElement?.removeAttribute("autofocus");
+
+      dialog.showModal();
+      document.body.style.overflow = "hidden";
 
       if (desktopInputFocus) {
         dialog
@@ -42,11 +48,15 @@ export function Sheet({
           )
           ?.focus({ preventScroll: true });
       } else {
-        // On phones, opening the keyboard immediately can cover a bottom sheet.
-        // Keep the sheet visible first and let the user choose the field to edit.
         dialog
           .querySelector<HTMLElement>("[data-sheet-close]")
           ?.focus({ preventScroll: true });
+      }
+
+      // Restore the DOM attribute for React/accessibility consistency. It will
+      // only take effect again the next time the dialog is opened.
+      if (!desktopInputFocus && autofocusElement) {
+        autofocusElement.setAttribute("autofocus", "");
       }
 
       return () => {
