@@ -137,6 +137,13 @@
   pointer-events: none;
 }
 
+/* Desktop keeps the close button inside the panel. Mobile uses a duplicate
+   overlay-level hit target to avoid iOS/Android PWA hit-testing issues inside
+   the momentum-scrolling, backdrop-filtered glass panel. */
+.sheet-close-mobile {
+  display: none;
+}
+
 @keyframes sheet-overlay-in {
   from {
     opacity: 0;
@@ -197,6 +204,26 @@
   /* Extra room below the final action lets the form move above a tall keyboard. */
   .sheet-overlay .sheet-body::after {
     height: 180px;
+  }
+
+  .sheet-close-inside {
+    display: none;
+  }
+
+  .sheet-close-mobile {
+    position: absolute;
+    z-index: 6;
+    top: 34px;
+    right: 36px;
+    display: inline-flex;
+    pointer-events: auto;
+    touch-action: manipulation;
+    background: color-mix(in srgb, var(--surface-soft) 78%, var(--glass-strong));
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      0 4px 16px var(--glass-shadow);
+    backdrop-filter: blur(16px);
   }
 
   /* While an editor sheet is open, remove the top mobile chrome immediately so
