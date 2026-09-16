@@ -43,29 +43,62 @@ export async function saveNotificationPreference(
   if (error) throw error;
 }
 
-export async function savePushSubscription(
-  userId: string,
-  subscription: StoredPushSubscription,
-) {
-  const { error } = await supabaseBrowser()
-    .from("push_subscriptions")
-    .upsert(
-      {
-        user_id: userId,
-        ...subscription,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "endpoint" },
-    );
+async function getAccessToken() {
+  const {
+    data: { session },
+    error,
+  } = await supabaseBrowser().auth.getSession();
 
   if (error) throw error;
+  if (!session?.access_token) {
+    throw new Error("Your session has expired. Log in again.");
+  }
+
+  return session.access_token;
+}
+
+async function readApiError(response: Response, fallback: string) {
+  const payload = (await response.json().catch(() => null)) as
+    | { error?: string }
+    | null;
+  return payload?.error ?? fallback;
+}
+
+export async function savePushSubscription(
+  _userId: string,
+  subscription: StoredPushSubscription,
+) {
+  const accessToken = await getAccessToken();
+  const response = await fetch("/api/notifications/subscription", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(subscription),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "The push subscription could not be saved."),
+    );
+  }
 }
 
 export async function removePushSubscription(endpoint: string) {
-  const { error } = await supabaseBrowser()
-    .from("push_subscriptions")
-    .delete()
-    .eq("endpoint", endpoint);
+  const accessToken = await getAccessToken();
+  const response = await fetch("/api/notifications/subscription", {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ endpoint }),
+  });
 
-  if (error) throw error;
+  if (!response.ok) {
+    throw new Error(
+      await readApiError(response, "The push subscription could not be removed."),
+    );
+  }
 }
