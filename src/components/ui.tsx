@@ -1,3 +1,5 @@
+"use client";
+
 import type {
   ButtonHTMLAttributes,
   CSSProperties,
@@ -6,7 +8,8 @@ import type {
   ReactNode,
   SelectHTMLAttributes,
 } from "react";
-import { Icon } from "@/components/Icon";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatedNumber } from "@/components/Motion";
 
 function joinClasses(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -56,7 +59,7 @@ export function PageHeader({
 const cardTones = {
   default: "bg-surface",
   soft: "bg-surface-soft",
-  accent: "bg-primary-soft/65",
+  accent: "card-accent",
 };
 export function Card({
   className,
@@ -107,6 +110,7 @@ export function Button({
   variant?: ButtonVariant;
   busy?: boolean;
 }) {
+  const reduced = useReducedMotion();
   return (
     <button
       type={type}
@@ -114,7 +118,20 @@ export function Button({
       aria-busy={busy || undefined}
       {...props}
     >
-      {busy && <span className="spinner" aria-hidden="true" />}
+      <AnimatePresence initial={false}>
+        {busy && (
+          <motion.span
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 15, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: reduced ? 0 : 0.2 }}
+            className="flex shrink-0"
+            aria-hidden="true"
+          >
+            <span className="spinner" />
+          </motion.span>
+        )}
+      </AnimatePresence>
       {children}
     </button>
   );
@@ -178,14 +195,15 @@ export function Stat({
 }) {
   return (
     <div className="min-w-0">
-      <p className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
-        {value}
+      <p className="stat-value text-2xl tracking-tight text-foreground">
+        <AnimatedNumber value={value} />
       </p>
       <p className="mt-1 text-[13px] leading-5 text-muted">{label}</p>
     </div>
   );
 }
 export function ProgressBar({ value, max }: { value: number; max: number }) {
+  const reduced = useReducedMotion();
   const percent =
     max > 0 ? Math.max(0, Math.min(100, Math.round((value / max) * 100))) : 0;
   return (
@@ -197,9 +215,11 @@ export function ProgressBar({ value, max }: { value: number; max: number }) {
       aria-valuemax={100}
       aria-valuenow={percent}
     >
-      <div
-        className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
-        style={{ width: `${percent}%` }}
+      <motion.div
+        className="h-full rounded-full bg-primary"
+        initial={false}
+        animate={{ width: `${percent}%` }}
+        transition={{ duration: reduced ? 0 : 0.55, ease: [0.22, 1, 0.36, 1] }}
       />
     </div>
   );
@@ -222,13 +242,33 @@ export function LoadingState({
   );
 }
 export function CheckCircle({ checked = false }: { checked?: boolean }) {
+  const reduced = useReducedMotion();
   return (
-    <span
+    <motion.span
+      initial={false}
+      animate={{ scale: checked && !reduced ? [1, 1.18, 1] : 1 }}
+      transition={{ duration: reduced ? 0 : 0.35 }}
       className={joinClasses("check-circle", checked && "is-checked")}
       aria-hidden="true"
     >
-      <Icon name="check" size={16} />
-    </span>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <motion.path
+          d="m5 12 4 4L19 6"
+          initial={false}
+          animate={{ pathLength: checked ? 1 : 0, opacity: checked ? 1 : 0 }}
+          transition={{ duration: reduced ? 0 : 0.3, ease: "easeOut" }}
+        />
+      </svg>
+    </motion.span>
   );
 }
 export function SegmentedControl<T extends string>({

@@ -58,7 +58,7 @@ export function Sheet({
         <div className="sheet-handle" aria-hidden="true" />
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 id={titleId} className="text-2xl font-semibold tracking-tight">
+            <h2 id={titleId} className="sheet-title text-3xl">
               {title}
             </h2>
             {description && (

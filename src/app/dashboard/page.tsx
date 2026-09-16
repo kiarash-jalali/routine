@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
 import { Sheet } from "@/components/Sheet";
+import { AnimatedList, AnimatedListItem, Collapse } from "@/components/Motion";
 import {
   Button,
   Card,
@@ -227,12 +228,12 @@ export default function DashboardPage() {
           </Button>
         }
       />
-      {error && (
+      <Collapse show={!!error}>
         <div className="mb-6">
           <ErrorNotice>{error}</ErrorNotice>
         </div>
-      )}
-      <div className="mb-7 grid grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-surface px-2 py-5 sm:px-5">
+      </Collapse>
+      <div className="stats-strip mb-7 grid grid-cols-3 divide-x divide-border rounded-2xl px-2 py-5 sm:px-5">
         <div className="px-3 sm:px-5">
           <Stat value={routines.length} label="routines today" />
         </div>
@@ -280,7 +281,9 @@ export default function DashboardPage() {
                 <ul>
                   {routines.map((routine) => (
                     <li className="list-row" key={routine.id}>
-                      <span className="icon-tile">
+                      <span
+                        className={`icon-tile ${routine.preferred_time && routine.preferred_time < "12:00" ? "amber" : ""}`}
+                      >
                         <Icon
                           name={
                             routine.preferred_time &&
@@ -298,7 +301,7 @@ export default function DashboardPage() {
                             : "Weekly"}
                         </p>
                       </div>
-                      <span className="text-sm text-muted tabular-nums">
+                      <span className="data-text text-xs text-muted">
                         {routine.preferred_time?.slice(0, 5) || "Anytime"}
                       </span>
                     </li>
@@ -335,18 +338,20 @@ export default function DashboardPage() {
                 ]}
               />
             </div>
-            {visibleTasks.length === 0 ? (
-              <EmptyState>
-                {filter === "done"
-                  ? "Your completed tasks will be here."
-                  : filter === "all"
-                    ? "Nothing here yet. Add a task when you need one."
-                    : "A little breathing room. No open tasks for today."}
-              </EmptyState>
-            ) : (
-              <ul key={filter}>
-                {visibleTasks.map((task) => (
-                  <li
+            <AnimatedList>
+              {visibleTasks.length === 0 ? (
+                <AnimatedListItem key="empty">
+                  <EmptyState>
+                    {filter === "done"
+                      ? "Your completed tasks will be here."
+                      : filter === "all"
+                        ? "Nothing here yet. Add a task when you need one."
+                        : "A little breathing room. No open tasks for today."}
+                  </EmptyState>
+                </AnimatedListItem>
+              ) : (
+                visibleTasks.map((task) => (
+                  <AnimatedListItem
                     key={task.id}
                     className={`list-row ${task.is_done ? "is-done" : ""}`}
                   >
@@ -374,13 +379,15 @@ export default function DashboardPage() {
                     >
                       <Icon name="trash" size={17} />
                     </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+                  </AnimatedListItem>
+                ))
+              )}
+            </AnimatedList>
           </Card>
           <p className="min-h-5 px-1 text-sm text-muted" role="status">
-            {announcement}
+            <span key={announcement} className="notice inline-block">
+              {announcement}
+            </span>
           </p>
         </div>
         <div className="space-y-6">
@@ -429,7 +436,7 @@ export default function DashboardPage() {
             <span className="icon-tile mb-5 bg-surface">
               <Icon name={checkedInToday ? "checkin" : "moon"} size={22} />
             </span>
-            <h2 className="text-lg font-semibold tracking-tight">
+            <h2 className="reflection-title">
               {checkedInToday
                 ? "You showed up today."
                 : "A moment for yourself."}
@@ -477,7 +484,9 @@ export default function DashboardPage() {
               disabled={creating}
             />
           </label>
-          {formError && <ErrorNotice>{formError}</ErrorNotice>}
+          <Collapse show={!!formError}>
+            <ErrorNotice>{formError}</ErrorNotice>
+          </Collapse>
           <Button
             className="w-full"
             variant="primary"

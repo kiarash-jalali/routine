@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { Link } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
+import { AnimatedList, AnimatedListItem } from "@/components/Motion";
 import {
   Button,
   LoadingState,
@@ -284,13 +285,13 @@ export default function HistoryPage() {
                 title="Recent check-ins"
                 description="Your real check-ins, just as they happened."
               />
-              <div className="mt-6 divide-y divide-border">
+              <AnimatedList className="mt-6 divide-y divide-border">
                 {(showAll ? history : history.slice(0, 7)).map((entry) => {
                   const summary = summarizeCheckin(entry);
                   return (
-                    <article
+                    <AnimatedListItem
                       key={entry.id}
-                      className="notice py-4 first:pt-0 last:pb-0"
+                      className="py-4 first:pt-0 last:pb-0"
                     >
                       <div className="flex items-center gap-4">
                         <span className="icon-tile green">
@@ -306,7 +307,7 @@ export default function HistoryPage() {
                               : `${summary.routineCompletedCount}/${summary.routineTotalCount} routines · ${summary.taskCompletedCount}/${summary.taskTotalCount} tasks`}
                           </p>
                         </div>
-                        <span className="text-sm text-primary tabular-nums">
+                        <span className="data-text text-xs text-primary">
                           {summary.totalCount
                             ? `${summary.completionPercent}%`
                             : "✓"}
@@ -320,10 +321,10 @@ export default function HistoryPage() {
                           />
                         </div>
                       )}
-                    </article>
+                    </AnimatedListItem>
                   );
                 })}
-              </div>
+              </AnimatedList>
               {history.length > 7 && (
                 <Button
                   className="mt-5 w-full"
@@ -355,15 +356,20 @@ export default function HistoryPage() {
                 completed check-in.
               </p>
               <div className="mt-5 border-t border-primary/10 pt-5">
-                {repairableDays.length === 0 ? (
-                  <p className="text-sm leading-6 text-muted">
-                    No gaps to repair. A missed day becomes available after your
-                    next check-in.
-                  </p>
-                ) : (
-                  <div className="space-y-4">
-                    {repairableDays.map((day) => (
-                      <div className="rounded-2xl bg-surface p-4" key={day}>
+                <AnimatedList className="space-y-4">
+                  {repairableDays.length === 0 ? (
+                    <AnimatedListItem key="no-gaps">
+                      <p className="text-sm leading-6 text-muted">
+                        No gaps to repair. A missed day becomes available after
+                        your next check-in.
+                      </p>
+                    </AnimatedListItem>
+                  ) : (
+                    repairableDays.map((day) => (
+                      <AnimatedListItem
+                        className="rounded-2xl bg-surface p-4"
+                        key={day}
+                      >
                         <p className="mb-3 text-sm font-medium">
                           {formatHistoryDate(day)}
                         </p>
@@ -380,16 +386,17 @@ export default function HistoryPage() {
                             ? "Repairing…"
                             : `Repair · ${STREAK_REPAIR_COST_POINTS} pts`}
                         </Button>
-                      </div>
-                    ))}
-                    {pointBalance < STREAK_REPAIR_COST_POINTS && (
-                      <p className="text-sm text-muted">
-                        {STREAK_REPAIR_COST_POINTS - pointBalance} more points
-                        to repair a day.
-                      </p>
-                    )}
-                  </div>
-                )}
+                      </AnimatedListItem>
+                    ))
+                  )}
+                </AnimatedList>
+                {repairableDays.length > 0 &&
+                  pointBalance < STREAK_REPAIR_COST_POINTS && (
+                    <p className="text-sm text-muted">
+                      {STREAK_REPAIR_COST_POINTS - pointBalance} more points to
+                      repair a day.
+                    </p>
+                  )}
               </div>
             </Card>
           </div>

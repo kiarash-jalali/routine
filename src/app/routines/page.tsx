@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
 import { Sheet } from "@/components/Sheet";
+import {
+  AnimatedList,
+  AnimatedListItem,
+  AnimatedNumber,
+} from "@/components/Motion";
 import { RoutineForm } from "@/components/routines/RoutineForm";
 import {
   Button,
@@ -41,6 +46,7 @@ export default function RoutinesPage() {
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [editorVersion, setEditorVersion] = useState(0);
   const [editingRoutine, setEditingRoutine] = useState<Routine | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Routine | null>(null);
   const [saving, setSaving] = useState(false);
@@ -101,6 +107,7 @@ export default function RoutinesPage() {
   }
 
   function openEditor(routine: Routine | null) {
+    setEditorVersion((version) => version + 1);
     setEditingRoutine(routine);
     setFormError(null);
     setEditorOpen(true);
@@ -205,30 +212,33 @@ export default function RoutinesPage() {
           ]}
         />
         <span className="text-sm text-muted">
-          {activeCount} active · {routines.length} total
+          <AnimatedNumber value={activeCount} /> active ·{" "}
+          <AnimatedNumber value={routines.length} /> total
         </span>
       </div>
       <Card>
-        {visible.length === 0 ? (
-          <EmptyState>
-            {filter === "paused"
-              ? "No paused routines."
-              : filter === "active"
-                ? "No active routines. Start again whenever you’re ready."
-                : "Start small. A glass of water, a walk, a few pages."}
-            {routines.length === 0 && (
-              <div className="mt-4">
-                <Button onClick={() => openEditor(null)} disabled={!userId}>
-                  <Icon name="plus" size={16} />
-                  Create your first routine
-                </Button>
-              </div>
-            )}
-          </EmptyState>
-        ) : (
-          <ul key={filter}>
-            {visible.map((routine) => (
-              <li
+        <AnimatedList>
+          {visible.length === 0 ? (
+            <AnimatedListItem key="empty">
+              <EmptyState>
+                {filter === "paused"
+                  ? "No paused routines."
+                  : filter === "active"
+                    ? "No active routines. Start again whenever you’re ready."
+                    : "Start small. A glass of water, a walk, a few pages."}
+                {routines.length === 0 && (
+                  <div className="mt-4">
+                    <Button onClick={() => openEditor(null)} disabled={!userId}>
+                      <Icon name="plus" size={16} />
+                      Create your first routine
+                    </Button>
+                  </div>
+                )}
+              </EmptyState>
+            </AnimatedListItem>
+          ) : (
+            visible.map((routine) => (
+              <AnimatedListItem
                 key={routine.id}
                 className="list-row flex-wrap sm:flex-nowrap"
               >
@@ -292,13 +302,15 @@ export default function RoutinesPage() {
                     <Icon name="trash" size={17} />
                   </button>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
+              </AnimatedListItem>
+            ))
+          )}
+        </AnimatedList>
       </Card>
       <p className="mt-4 min-h-6 px-1 text-sm text-muted" role="status">
-        {announcement || "Pause a routine whenever you need a little space."}
+        <span key={announcement} className="notice inline-block">
+          {announcement || "Pause a routine whenever you need a little space."}
+        </span>
       </p>
       <Sheet
         open={editorOpen}
@@ -307,21 +319,19 @@ export default function RoutinesPage() {
         title={editingRoutine ? "Edit routine" : "A new routine"}
         description="Make it small enough to come back to."
       >
-        {editorOpen && (
-          <RoutineForm
-            key={editingRoutine?.id ?? "new"}
-            initialValues={
-              editingRoutine
-                ? routineToFormValues(editingRoutine)
-                : getDefaultRoutineFormValues()
-            }
-            submitLabel={editingRoutine ? "Save changes" : "Create routine"}
-            submittingLabel="Saving…"
-            isSubmitting={saving}
-            onSubmit={saveRoutine}
-            onCancel={() => setEditorOpen(false)}
-          />
-        )}
+        <RoutineForm
+          key={`${editingRoutine?.id ?? "new"}-${editorVersion}`}
+          initialValues={
+            editingRoutine
+              ? routineToFormValues(editingRoutine)
+              : getDefaultRoutineFormValues()
+          }
+          submitLabel={editingRoutine ? "Save changes" : "Create routine"}
+          submittingLabel="Saving…"
+          isSubmitting={saving}
+          onSubmit={saveRoutine}
+          onCancel={() => setEditorOpen(false)}
+        />
         {formError && (
           <div className="mt-4">
             <ErrorNotice>{formError}</ErrorNotice>

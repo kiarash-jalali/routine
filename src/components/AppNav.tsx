@@ -1,10 +1,12 @@
 "use client";
 
-import Link, { useLinkStatus } from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useLinkStatus } from "next/link";
+import { Link, useTransitionRouter as useRouter } from "next-view-transitions";
+import { usePathname } from "next/navigation";
 import { useState, type CSSProperties } from "react";
 import { BrandMark, Icon } from "@/components/Icon";
 import { supabaseBrowser } from "@/lib/supabaseClient";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navItems = [
   { href: "/dashboard", label: "Today", icon: "today" },
@@ -75,6 +77,7 @@ export function AppNav() {
         ))}
       </nav>
       <div className="nav-footer">
+        <ThemeToggle />
         {error && (
           <p role="alert" className="text-sm text-danger">
             Couldn’t log out. Try again.

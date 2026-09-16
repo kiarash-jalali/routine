@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Button, Input, SegmentedControl } from "@/components/ui";
+import { Collapse } from "@/components/Motion";
 import { ROUTINE_DAYS } from "@/lib/routineSchedule";
 import type { RoutineFormValues } from "@/types/routine";
 
@@ -77,8 +78,8 @@ export function RoutineForm({
             disabled={isSubmitting}
           />
         </div>
-        {values.frequency === "weekly" && (
-          <fieldset className="notice">
+        <Collapse show={values.frequency === "weekly"}>
+          <fieldset>
             <legend className="mb-3 text-sm font-medium">
               Days of the week
             </legend>
@@ -97,7 +98,7 @@ export function RoutineForm({
             </div>
             <p className="mt-2 text-sm text-muted">Choose at least one day.</p>
           </fieldset>
-        )}
+        </Collapse>
         <label className="grid gap-2 text-sm font-medium">
           Preferred time
           <Input

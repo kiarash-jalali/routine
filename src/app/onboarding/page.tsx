@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { AnimatedSwap } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
 import { RoutineForm } from "@/components/routines/RoutineForm";
 import {
@@ -172,9 +173,7 @@ export default function OnboardingPage() {
     <PageShell className="max-w-xl">
       <div className="mb-8 text-center">
         <BrandMark className="mb-6" />
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Your space, your pace.
-        </h1>
+        <h1 className="display-title text-4xl">Your space, your pace.</h1>
         <p className="mt-3 text-sm text-muted">
           Step {stepNumber} of 3 ·{" "}
           {step === "name"
@@ -196,7 +195,7 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      <div key={step} className="route-view">
+      <AnimatedSwap value={step}>
         {step === "name" && (
           <Card>
             <SectionHeading
@@ -324,7 +323,7 @@ export default function OnboardingPage() {
             </div>
           </Card>
         )}
-      </div>
+      </AnimatedSwap>
     </PageShell>
   );
 }

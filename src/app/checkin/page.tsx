@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { Link } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
+import { AnimatedNumber, AnimatedSwap, Collapse } from "@/components/Motion";
 import {
   Button,
   CheckCircle,
@@ -67,7 +68,9 @@ function CheckinChoice({
       <span className="min-w-0 flex-1">
         <span className="block text-[15px] font-medium">{title}</span>
         {detail && (
-          <span className="mt-1 block text-[13px] text-muted">{detail}</span>
+          <span className="data-text mt-1 block text-xs text-muted">
+            {detail}
+          </span>
         )}
       </span>
     </button>
@@ -266,16 +269,14 @@ export default function CheckinPage() {
           <ErrorNotice>{errorMessage}</ErrorNotice>
         </div>
       )}
-      {hasFinishedToday && !editingFinishedCheckin && (
-        <Card tone="accent" className="notice mb-6">
+      <Collapse show={hasFinishedToday && !editingFinishedCheckin}>
+        <Card tone="accent" className="mb-6">
           <div className="flex flex-wrap items-center gap-4">
             <span className="success-mark" aria-hidden="true">
               <Icon name="check" size={25} />
             </span>
             <div className="min-w-0 flex-1" role="status">
-              <h2 className="text-lg font-semibold">
-                A day worth acknowledging.
-              </h2>
+              <h2 className="reflection-title">A day worth acknowledging.</h2>
               <p className="mt-1 text-sm leading-6 text-muted">
                 Your check-in is saved. Come back to it if anything changes.
               </p>
@@ -285,7 +286,7 @@ export default function CheckinPage() {
             </Button>
           </div>
         </Card>
-      )}
+      </Collapse>
       <div className="space-y-6">
         <Card>
           <SectionHeading
@@ -354,48 +355,56 @@ export default function CheckinPage() {
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm text-muted">
                   <span className="font-semibold text-foreground">
-                    {completedCount}
+                    <AnimatedNumber value={completedCount} />
                   </span>{" "}
                   of {totalCount} completed
                 </p>
-                <span className="text-xs font-medium text-primary">
-                  {completionPercent}%
+                <span className="data-text text-xs text-primary">
+                  <AnimatedNumber value={`${completionPercent}%`} />
                 </span>
               </div>
               <ProgressBar value={completedCount} max={totalCount} />
             </div>
-            {hasFinishedToday && !editingFinishedCheckin ? (
-              <Link href="/dashboard" className="btn btn-secondary">
-                Back to today
-                <Icon name="arrow" size={16} />
-              </Link>
-            ) : (
-              <div className="flex gap-2">
-                {editingFinishedCheckin && (
+            <AnimatedSwap
+              value={
+                hasFinishedToday && !editingFinishedCheckin
+                  ? "finished"
+                  : "editing"
+              }
+            >
+              {hasFinishedToday && !editingFinishedCheckin ? (
+                <Link href="/dashboard" className="btn btn-secondary">
+                  Back to today
+                  <Icon name="arrow" size={16} />
+                </Link>
+              ) : (
+                <div className="flex gap-2">
+                  {editingFinishedCheckin && (
+                    <Button
+                      variant="ghost"
+                      disabled={saving}
+                      onClick={cancelFinishedCheckinEdit}
+                    >
+                      Cancel
+                    </Button>
+                  )}
                   <Button
-                    variant="ghost"
-                    disabled={saving}
-                    onClick={cancelFinishedCheckinEdit}
+                    variant="primary"
+                    className="flex-1 sm:min-w-36"
+                    disabled={saving || !userId}
+                    onClick={finishDay}
+                    busy={saving}
                   >
-                    Cancel
+                    {saving
+                      ? "Saving…"
+                      : editingFinishedCheckin
+                        ? "Save changes"
+                        : "Finish day"}
+                    {!saving && <Icon name="check" size={17} />}
                   </Button>
-                )}
-                <Button
-                  variant="primary"
-                  className="flex-1 sm:min-w-36"
-                  disabled={saving || !userId}
-                  onClick={finishDay}
-                  busy={saving}
-                >
-                  {saving
-                    ? "Saving…"
-                    : editingFinishedCheckin
-                      ? "Save changes"
-                      : "Finish day"}
-                  {!saving && <Icon name="check" size={17} />}
-                </Button>
-              </div>
-            )}
+                </div>
+              )}
+            </AnimatedSwap>
           </div>
         </div>
         <p className="text-center text-sm text-muted">

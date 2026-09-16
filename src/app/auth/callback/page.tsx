@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { ErrorNotice, PageShell } from "@/components/ui";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
@@ -63,7 +63,7 @@ export default function AuthCallbackPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
               Routine Helper
             </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+            <h1 className="display-title mt-2 text-3xl text-foreground">
               Confirming your account…
             </h1>
             <p className="mt-2 text-sm leading-6 text-muted">

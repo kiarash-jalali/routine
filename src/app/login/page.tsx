@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { AnimatedSwap, Collapse } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
 import { Button, ErrorNotice, Input, SegmentedControl } from "@/components/ui";
 import { getProfile } from "@/lib/db/profile";
@@ -75,124 +76,134 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <BrandMark className="mb-6 h-14 w-14 rounded-[18px]" />
           <p className="mb-3 text-sm font-medium text-muted">Routine Helper</p>
-          <h1 className="text-[34px] font-semibold tracking-[-1px]">
-            {confirmationSent
-              ? "Check your inbox."
-              : mode === "login"
-                ? "Welcome back."
-                : "Start with something small."}
-          </h1>
-          <p className="mx-auto mt-3 max-w-xs text-[15px] leading-6 text-muted">
-            {confirmationSent
-              ? "One quick confirmation and you’re in."
-              : mode === "login"
-                ? "Your space to find a little rhythm."
-                : "Make room for the routines that matter to you."}
-          </p>
+          <AnimatedSwap value={confirmationSent ? "confirmation" : mode}>
+            <h1 className="display-title text-[40px] leading-tight">
+              {confirmationSent
+                ? "Check your inbox."
+                : mode === "login"
+                  ? "Welcome back."
+                  : "Start with something small."}
+            </h1>
+            <p className="mx-auto mt-3 max-w-xs text-[15px] leading-6 text-muted">
+              {confirmationSent
+                ? "One quick confirmation and you’re in."
+                : mode === "login"
+                  ? "Your space to find a little rhythm."
+                  : "Make room for the routines that matter to you."}
+            </p>
+          </AnimatedSwap>
         </div>
         <div className="card bg-surface p-7 sm:p-8">
-          {confirmationSent ? (
-            <div className="notice space-y-5" role="status">
-              <span className="icon-tile mx-auto flex">
-                <Icon name="mail" />
-              </span>
-              <p className="text-center text-sm leading-6 text-muted">
-                We sent a confirmation link to{" "}
-                <strong className="text-foreground">{email}</strong>. Open it to
-                confirm your account and set up your space.
-              </p>
-              <p className="text-center text-sm leading-6 text-muted">
-                Can’t see it? Check your spam folder or wait a minute.
-              </p>
-              <Button
-                className="w-full"
-                onClick={() => setConfirmationSent(false)}
-              >
-                Back to sign up
-              </Button>
-            </div>
-          ) : (
-            <>
-              <SegmentedControl
-                value={mode}
-                label="Account access"
-                onChange={switchMode}
-                disabled={loading}
-                options={[
-                  { value: "login", label: "Log in" },
-                  { value: "signup", label: "Sign up" },
-                ]}
-              />
-              <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
-                <label className="grid gap-2 text-sm font-medium">
-                  Email
-                  <Input
-                    placeholder="you@example.com"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    required
-                    autoComplete="email"
-                    disabled={loading}
-                  />
-                </label>
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="mb-2 block text-sm font-medium"
-                  >
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      className="pr-14"
-                      placeholder={
-                        mode === "signup"
-                          ? "At least 6 characters"
-                          : "Your password"
-                      }
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      required
-                      minLength={6}
-                      autoComplete={
-                        mode === "login" ? "current-password" : "new-password"
-                      }
-                      disabled={loading}
-                    />
-                    <button
-                      type="button"
-                      className="icon-button absolute right-1 top-0.5"
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                      aria-pressed={showPassword}
-                    >
-                      <Icon name="eye" size={18} />
-                    </button>
-                  </div>
-                </div>
-                {errorMessage && <ErrorNotice>{errorMessage}</ErrorNotice>}
+          <AnimatedSwap value={confirmationSent ? "confirmation" : "form"}>
+            {confirmationSent ? (
+              <div className="notice space-y-5" role="status">
+                <span className="icon-tile mx-auto flex">
+                  <Icon name="mail" />
+                </span>
+                <p className="text-center text-sm leading-6 text-muted">
+                  We sent a confirmation link to{" "}
+                  <strong className="text-foreground">{email}</strong>. Open it
+                  to confirm your account and set up your space.
+                </p>
+                <p className="text-center text-sm leading-6 text-muted">
+                  Can’t see it? Check your spam folder or wait a minute.
+                </p>
                 <Button
-                  variant="primary"
                   className="w-full"
-                  disabled={loading}
-                  busy={loading}
-                  type="submit"
+                  onClick={() => setConfirmationSent(false)}
                 >
-                  {loading
-                    ? "Please wait…"
-                    : mode === "login"
-                      ? "Log in"
-                      : "Create account"}
-                  {!loading && <Icon name="arrow" size={17} />}
+                  Back to sign up
                 </Button>
-              </form>
-            </>
-          )}
+              </div>
+            ) : (
+              <>
+                <SegmentedControl
+                  value={mode}
+                  label="Account access"
+                  onChange={switchMode}
+                  disabled={loading}
+                  options={[
+                    { value: "login", label: "Log in" },
+                    { value: "signup", label: "Sign up" },
+                  ]}
+                />
+                <AnimatedSwap value={mode}>
+                  <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
+                    <label className="grid gap-2 text-sm font-medium">
+                      Email
+                      <Input
+                        placeholder="you@example.com"
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        required
+                        autoComplete="email"
+                        disabled={loading}
+                      />
+                    </label>
+                    <div>
+                      <label
+                        htmlFor="password"
+                        className="mb-2 block text-sm font-medium"
+                      >
+                        Password
+                      </label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          className="pr-14"
+                          placeholder={
+                            mode === "signup"
+                              ? "At least 6 characters"
+                              : "Your password"
+                          }
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(event) => setPassword(event.target.value)}
+                          required
+                          minLength={6}
+                          autoComplete={
+                            mode === "login"
+                              ? "current-password"
+                              : "new-password"
+                          }
+                          disabled={loading}
+                        />
+                        <button
+                          type="button"
+                          className="icon-button absolute right-1 top-0.5"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                          aria-pressed={showPassword}
+                        >
+                          <Icon name="eye" size={18} />
+                        </button>
+                      </div>
+                    </div>
+                    <Collapse show={!!errorMessage}>
+                      <ErrorNotice>{errorMessage}</ErrorNotice>
+                    </Collapse>
+                    <Button
+                      variant="primary"
+                      className="w-full"
+                      disabled={loading}
+                      busy={loading}
+                      type="submit"
+                    >
+                      {loading
+                        ? "Please wait…"
+                        : mode === "login"
+                          ? "Log in"
+                          : "Create account"}
+                      {!loading && <Icon name="arrow" size={17} />}
+                    </Button>
+                  </form>
+                </AnimatedSwap>
+              </>
+            )}
+          </AnimatedSwap>
         </div>
         <p className="mt-7 text-center text-sm text-muted">
           A little, every day.
