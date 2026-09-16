@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { MomentSource } from "@/components/MomentPopup";
 import { Button, Input, SegmentedControl } from "@/components/ui";
 import { Collapse } from "@/components/Motion";
 import { ROUTINE_DAYS } from "@/lib/routineSchedule";
@@ -14,6 +15,7 @@ type RoutineFormProps = {
   onSubmit: (values: RoutineFormValues) => Promise<void>;
   onCancel?: () => void;
   shineSubmit?: boolean;
+  momentSourceId?: string;
 };
 
 export function RoutineForm({
@@ -24,6 +26,7 @@ export function RoutineForm({
   onSubmit,
   onCancel,
   shineSubmit = false,
+  momentSourceId,
 }: RoutineFormProps) {
   const [values, setValues] = useState<RoutineFormValues>(initialValues);
   const canSubmit = Boolean(
@@ -46,6 +49,18 @@ export function RoutineForm({
     if (!canSubmit || isSubmitting) return;
     await onSubmit({ ...values, title: values.title.trim() });
   }
+
+  const submitButton = (
+    <Button
+      type="submit"
+      variant="primary"
+      className={`flex-1 ${shineSubmit ? "moment-shine" : ""}`}
+      disabled={!canSubmit || isSubmitting}
+      busy={isSubmitting}
+    >
+      {isSubmitting ? submittingLabel : submitLabel}
+    </Button>
+  );
 
   return (
     <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
@@ -125,15 +140,13 @@ export function RoutineForm({
             Cancel
           </Button>
         )}
-        <Button
-          type="submit"
-          variant="primary"
-          className={`flex-1 ${shineSubmit ? "moment-shine" : ""}`}
-          disabled={!canSubmit || isSubmitting}
-          busy={isSubmitting}
-        >
-          {isSubmitting ? submittingLabel : submitLabel}
-        </Button>
+        {momentSourceId ? (
+          <MomentSource id={momentSourceId} className="flex flex-1">
+            {submitButton}
+          </MomentSource>
+        ) : (
+          submitButton
+        )}
       </div>
     </form>
   );
