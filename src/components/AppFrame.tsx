@@ -11,6 +11,7 @@ const appPaths = [
   "/checkin",
   "/history",
   "/settings",
+  "/feedback",
 ];
 
 export function AppFrame({ children }: { children: ReactNode }) {
