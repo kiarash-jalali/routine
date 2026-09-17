@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link } from "next-view-transitions";
 import { BrandMark, Icon } from "@/components/Icon";
 import { Button, PageHeader, PageShell } from "@/components/ui";
@@ -101,22 +101,31 @@ export default function DesignLabPage() {
   const [mode, setMode] = useState<PaletteMode>("light");
   const [palettes, setPalettes] = useState<PaletteState>(DEFAULT_PALETTES);
   const [copied, setCopied] = useState(false);
+  const storageReadyRef = useRef(false);
 
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
-      const parsed = JSON.parse(saved) as Partial<PaletteState>;
-      setPalettes({
-        light: { ...DEFAULT_PALETTES.light, ...parsed.light },
-        dark: { ...DEFAULT_PALETTES.dark, ...parsed.dark },
-      });
-    } catch {
-      // A malformed local draft should never make the design lab unusable.
-    }
+    const timeout = window.setTimeout(() => {
+      try {
+        const saved = window.localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved) as Partial<PaletteState>;
+          setPalettes({
+            light: { ...DEFAULT_PALETTES.light, ...parsed.light },
+            dark: { ...DEFAULT_PALETTES.dark, ...parsed.dark },
+          });
+        }
+      } catch {
+        // A malformed local draft should never make the design lab unusable.
+      } finally {
+        storageReadyRef.current = true;
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
+    if (!storageReadyRef.current) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(palettes));
   }, [palettes]);
 
@@ -280,7 +289,7 @@ export default function DesignLabPage() {
               </div>
 
               <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-4">
-                {[['3', 'routines'], ['2', 'open tasks'], ['6', 'days in rhythm']].map(([value, label]) => (
+                {[["3", "routines"], ["2", "open tasks"], ["6", "days in rhythm"]].map(([value, label]) => (
                   <div
                     key={label}
                     className="rounded-2xl p-4 text-center"
