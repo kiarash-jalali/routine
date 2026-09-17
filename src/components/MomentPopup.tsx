@@ -68,7 +68,11 @@ export function MomentPopup({
   const dismissRef = useRef(onDismiss);
 
   useEffect(() => {
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
