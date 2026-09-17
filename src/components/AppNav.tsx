@@ -27,14 +27,10 @@ export function AppNav() {
 
   return (
     <aside className="app-navigation">
-      <Link
-        href="/dashboard"
-        className="brand-link"
-        aria-label="Routine Helper home"
-      >
+      <Link href="/dashboard" className="brand-link" aria-label="rootine home">
         <BrandMark />
         <span>
-          routine<span className="brand-caption">A little, every day.</span>
+          rootine<span className="brand-caption">A little, every day.</span>
         </span>
       </Link>
       <nav

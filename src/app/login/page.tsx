@@ -83,7 +83,7 @@ export default function LoginPage() {
       <div className="auth-card">
         <div className="mb-8 text-center">
           <BrandMark className="mb-6 h-14 w-14 rounded-[18px]" />
-          <p className="mb-3 text-sm font-medium text-muted">Routine Helper</p>
+          <p className="mb-3 text-sm font-medium text-muted">rootine</p>
           <AnimatedSwap value={confirmationSent ? "confirmation" : mode}>
             <h1 className="display-title text-[40px] leading-tight">
               {confirmationSent

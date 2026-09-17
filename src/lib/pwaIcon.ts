@@ -10,12 +10,9 @@ export function routineIconResponse({
   size,
   maskable = false,
 }: RoutineIconOptions): ImageResponse {
-  const tileSize = Math.round(size * (maskable ? 0.54 : 0.72));
-  const tileRadius = Math.round(tileSize * 0.27);
-  const checkWidth = Math.round(tileSize * 0.22);
-  const checkHeight = Math.round(tileSize * 0.43);
-  const checkStroke = Math.max(2, Math.round(tileSize * 0.075));
-  const checkColor = maskable ? "#286e5e" : "#ffffff";
+  const markSize = Math.round(size * (maskable ? 0.7 : 0.76));
+  const strokeWidth = maskable ? 10 : 11;
+  const rootStrokeWidth = maskable ? 5 : 5.5;
 
   return new ImageResponse(
     createElement(
@@ -27,33 +24,36 @@ export function routineIconResponse({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: maskable ? "#286e5e" : "#f5f5ee",
+          background: "#286e5e",
         },
       },
       createElement(
-        "div",
+        "svg",
         {
-          style: {
-            width: tileSize,
-            height: tileSize,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: tileRadius,
-            background: maskable ? "#f5f5ee" : "#286e5e",
-            boxShadow: maskable
-              ? "0 0 0 1px rgba(255,255,255,0.14)"
-              : "0 10px 30px rgba(40,110,94,0.18)",
-          },
+          width: markSize,
+          height: markSize,
+          viewBox: "0 0 100 100",
+          fill: "none",
         },
-        createElement("div", {
-          style: {
-            width: checkWidth,
-            height: checkHeight,
-            borderRight: `${checkStroke}px solid ${checkColor}`,
-            borderBottom: `${checkStroke}px solid ${checkColor}`,
-            transform: "translateY(-8%) rotate(45deg)",
-          },
+        createElement("path", {
+          d: "M18 48 L40 67 L76 29",
+          fill: "none",
+          stroke: "#f5f5ee",
+          strokeWidth,
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+        }),
+        createElement("path", {
+          d: "M40 66 C40 75 35 82 29 87 M41 70 C47 77 49 83 48 89 M41 72 C51 77 58 81 63 87",
+          fill: "none",
+          stroke: "#f5f5ee",
+          strokeWidth: rootStrokeWidth,
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+        }),
+        createElement("path", {
+          d: "M70 31 C70 24 74 21 79 21 C79 26 76 30 70 31 Z",
+          fill: "#a4ddbe",
         }),
       ),
     ),

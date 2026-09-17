@@ -12,6 +12,8 @@ const paths = {
   arrow: "M5 12h14m-5-5 5 5-5 5",
   close: "m6 6 12 12M6 18 18 6",
   check: "m5 12 4 4L19 6",
+  rootine:
+    "M4.5 10.8 9.1 15 18.5 5.7M9.1 15c0 2-1 3.7-2.7 5M9.2 16.2c1.2 1.2 1.8 2.5 1.6 4M9.3 16.1c2.2 1.1 3.7 2.4 4.4 4.1",
   clock: "M12 8v4l3 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0",
   trash: "M3 6h18M9 6V4h6v2m4 0-1 14H6L5 6m5 4v6m4-6v6",
   edit: "m16 3 5 5M4 20l4-1L21 6l-4-4L4 15l-1 6 5-2",
@@ -52,7 +54,7 @@ export function Icon({
 export function BrandMark({ className = "" }: { className?: string }) {
   return (
     <span className={`brand-mark ${className}`} aria-hidden="true">
-      <Icon name="checkin" size={25} />
+      <Icon name="rootine" size={25} />
     </span>
   );
 }

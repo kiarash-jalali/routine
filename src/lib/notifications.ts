@@ -88,7 +88,7 @@ export async function disablePushNotifications() {
 
 export async function showNotificationTest() {
   const registration = await getServiceWorkerRegistration();
-  await registration.showNotification("Routine", {
+  await registration.showNotification("rootine", {
     body: "Notifications are ready. We’ll keep reminders gentle.",
     icon: "/pwa/icon-192",
     badge: "/pwa/icon-192",

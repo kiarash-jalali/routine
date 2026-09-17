@@ -10,16 +10,16 @@ import "./globals.css";
 import "./stability-polish.css";
 
 export const metadata: Metadata = {
-  title: "Routine Helper",
+  title: "rootine",
   description: "A calm, routine-first way to shape each day.",
-  applicationName: "Routine Helper",
+  applicationName: "rootine",
   manifest: "/manifest.webmanifest",
   formatDetection: {
     telephone: false,
   },
   appleWebApp: {
     capable: true,
-    title: "Routine",
+    title: "rootine",
     statusBarStyle: "black-translucent",
   },
 };

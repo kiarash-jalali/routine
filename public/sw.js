@@ -1,6 +1,6 @@
 self.addEventListener("push", (event) => {
   event.waitUntil(
-    self.registration.showNotification("Routine", {
+    self.registration.showNotification("rootine", {
       body: "A gentle reminder to check in with your day.",
       icon: "/pwa/icon-192",
       badge: "/pwa/icon-192",
