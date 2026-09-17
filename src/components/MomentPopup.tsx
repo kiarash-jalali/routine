@@ -40,18 +40,14 @@ export function MomentSource({
   className?: string;
   children: ReactNode;
 }) {
-  const reduced = useReducedMotion();
-  const isMobile = useMobileMomentLayout();
-
+  // Keep the real control completely outside popup layout animation. Matching
+  // the source and popup with a shared layoutId made buttons, checkboxes and
+  // list rows visibly travel toward the popup on desktop. The popup now has
+  // its own independent entrance motion on every screen size.
   return (
-    <motion.span
-      className={className}
-      data-moment-source={id}
-      layoutId={!reduced && !isMobile ? `moment-${id}` : undefined}
-      transition={{ type: "spring", stiffness: 360, damping: 32 }}
-    >
+    <span className={className} data-moment-source={id}>
       {children}
-    </motion.span>
+    </span>
   );
 }
 
@@ -107,15 +103,9 @@ export function MomentPopup({
           role="status"
           aria-live="polite"
         >
-          <motion.button
+          <button
             type="button"
             className={`moment-popup moment-${notice.tone ?? "success"}`}
-            layoutId={
-              !reduced && !isMobile && notice.sourceId
-                ? `moment-${notice.sourceId}`
-                : undefined
-            }
-            transition={{ type: "spring", stiffness: 360, damping: 32 }}
             onClick={onDismiss}
             aria-label={`${notice.title}${notice.detail ? ` ${notice.detail}` : ""}. Tap to dismiss.`}
           >
@@ -128,7 +118,7 @@ export function MomentPopup({
                 <span className="moment-popup-detail">{notice.detail}</span>
               )}
             </span>
-          </motion.button>
+          </button>
         </motion.div>
       )}
     </AnimatePresence>,
