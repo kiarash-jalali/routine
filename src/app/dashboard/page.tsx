@@ -38,24 +38,23 @@ import { supabaseBrowser } from "@/lib/supabaseClient";
 import { calculateStreakMetrics } from "@/lib/streak";
 import {
   filterTasksForToday,
-  formatFriendlyDate,
   getLocalDateKey,
 } from "@/lib/today";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
 
-function formatDueTime(task: Task) {
-  if (!task.due_at) return "Anytime";
-  return new Date(task.due_at).toLocaleString([], {
+function formatDueTime(task: Task, locale: string, anytime: string) {
+  if (!task.due_at) return anytime;
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+  }).format(new Date(task.due_at));
 }
 
 export default function DashboardPage() {
-  const { t } = useLanguage();
+  const { t, locale, date, time, number, weekday } = useLanguage();
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -245,7 +244,11 @@ export default function DashboardPage() {
   return (
     <PageShell>
       <PageHeader
-        eyebrow={formatFriendlyDate(today)}
+        eyebrow={date(today, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        })}
         title={t("nav.today")}
         description={t("product.todayBody")}
         actions={
@@ -272,16 +275,18 @@ export default function DashboardPage() {
       </Collapse>
       <div className="stats-strip mb-7 grid grid-cols-3 divide-x divide-border rounded-2xl px-2 py-5 sm:px-5">
         <div className="px-3 sm:px-5">
-          <Stat value={routines.length} label="routines today" />
+          <Stat value={number(routines.length)} label={t("dashboard.routinesTodayCount")} />
         </div>
         <div className="px-3 sm:px-5">
-          <Stat value={todayTasks.length} label="open tasks" />
+          <Stat value={number(todayTasks.length)} label={t("dashboard.openTasksCount")} />
         </div>
         <div className="px-3 sm:px-5">
           <Stat
-            value={checkinDays ? streak.currentDays : "—"}
+            value={checkinDays ? number(streak.currentDays) : "—"}
             label={
-              streak.currentDays === 1 ? "day in rhythm" : "days in rhythm"
+              streak.currentDays === 1
+                ? t("dashboard.dayRhythm")
+                : t("dashboard.daysRhythm")
             }
           />
         </div>
@@ -296,7 +301,7 @@ export default function DashboardPage() {
                   className="inline-flex min-h-8 items-center gap-1 text-sm text-primary"
                   href="/routines"
                 >
-                  Manage
+                  {t("common.manage")}
                   <Icon name="chevron" size={15} />
                 </Link>
               }
@@ -310,7 +315,7 @@ export default function DashboardPage() {
                     className="mt-2 inline-flex min-h-11 items-center text-primary"
                     href="/routines"
                   >
-                    Add a small routine
+                    {t("routine.addSmall")}
                     <Icon name="arrow" size={16} className="ml-2" />
                   </Link>
                 </EmptyState>
@@ -334,12 +339,14 @@ export default function DashboardPage() {
                         <p className="row-title">{routine.title}</p>
                         <p className="row-detail">
                           {routine.frequency === "daily"
-                            ? "Every day"
-                            : "Weekly"}
+                            ? t("routine.everyDay")
+                            : t("routine.weekly")}
                         </p>
                       </div>
                       <span className="data-text text-xs text-muted">
-                        {routine.preferred_time?.slice(0, 5) || "Anytime"}
+                        {routine.preferred_time
+                          ? time(routine.preferred_time)
+                          : t("common.anytime")}
                       </span>
                     </li>
                   ))}
@@ -353,7 +360,7 @@ export default function DashboardPage() {
               action={
                 <button
                   className="icon-button -mr-2 -mt-2"
-                  aria-label="Add a task"
+                  aria-label={t("product.addTask")}
                   onClick={() => {
                     setFormError(null);
                     setShowTaskForm(true);
@@ -367,11 +374,11 @@ export default function DashboardPage() {
               <SegmentedControl
                 value={filter}
                 onChange={setFilter}
-                label="Task filter"
+                label={t("task.filter")}
                 options={[
-                  { value: "today", label: "Today" },
+                  { value: "today", label: t("common.today") },
                   { value: "all", label: t("common.all") },
-                  { value: "done", label: "Done" },
+                  { value: "done", label: t("task.done") },
                 ]}
               />
             </div>
@@ -380,10 +387,10 @@ export default function DashboardPage() {
                 <AnimatedListItem key="empty">
                   <EmptyState>
                     {filter === "done"
-                      ? "Your completed tasks will be here."
+                      ? t("task.emptyDone")
                       : filter === "all"
-                        ? "Nothing here yet. Add a task when you need one."
-                        : "A little breathing room. No open tasks for today."}
+                        ? t("task.emptyAll")
+                        : t("task.emptyToday")}
                   </EmptyState>
                 </AnimatedListItem>
               ) : (
@@ -396,7 +403,10 @@ export default function DashboardPage() {
                       <button
                         className="check-control -ml-2"
                         aria-pressed={task.is_done}
-                        aria-label={`${task.is_done ? "Reopen" : "Complete"} ${task.title}`}
+                        aria-label={t(
+                          task.is_done ? "task.reopenNamed" : "task.completeNamed",
+                          { name: task.title },
+                        )}
                         disabled={pendingIds.includes(task.id)}
                         onClick={() => toggleDone(task)}
                       >
@@ -405,11 +415,13 @@ export default function DashboardPage() {
                     </MomentSource>
                     <div className="min-w-0 flex-1">
                       <p className="row-title">{task.title}</p>
-                      <p className="row-detail">{formatDueTime(task)}</p>
+                      <p className="row-detail">
+                      {formatDueTime(task, locale, t("common.anytime"))}
+                    </p>
                     </div>
                     <button
                       className="icon-button danger -mr-2"
-                      aria-label={`Delete ${task.title}`}
+                      aria-label={t("task.deleteNamed", { name: task.title })}
                       disabled={pendingIds.includes(task.id)}
                       onClick={() => {
                         setFormError(null);
@@ -428,10 +440,7 @@ export default function DashboardPage() {
           <Card>
             <SectionHeading title={t("product.week")} />
             <p className="mt-1 text-sm text-muted">
-              {today.toLocaleDateString(undefined, {
-                month: "long",
-                year: "numeric",
-              })}
+              {date(today, { month: "long", year: "numeric" })}
             </p>
             <div className="week-strip mt-4">
               {weekDays.map((date) => {
@@ -442,12 +451,14 @@ export default function DashboardPage() {
                   <div
                     key={dateKey}
                     className={`week-day ${isToday ? "is-today" : ""}`}
-                    aria-label={`${formatFriendlyDate(date)}${isToday ? ", today" : ""}${checked ? ", checked in" : ""}`}
+                    aria-label={`${new Intl.DateTimeFormat(locale, {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                    }).format(date)}${isToday ? `, ${t("common.today")}` : ""}${checked ? `, ${t("dashboard.checkedIn")}` : ""}`}
                   >
                     <span>
-                      {date.toLocaleDateString(undefined, {
-                        weekday: "narrow",
-                      })}
+                      {weekday(date.getDay() === 0 ? 7 : date.getDay(), "narrow")}
                     </span>
                     <strong>{date.getDate()}</strong>
                     <span
@@ -462,7 +473,7 @@ export default function DashboardPage() {
               href="/history"
               className="mt-4 flex min-h-11 items-center justify-between border-t border-border pt-4 text-sm text-muted"
             >
-              View your rhythm
+              {t("dashboard.viewRhythm")}
               <Icon name="arrow" size={16} />
             </Link>
           </Card>
@@ -472,16 +483,18 @@ export default function DashboardPage() {
             </span>
             <h2 className="reflection-title">
               {checkedInToday
-                ? "You showed up today."
-                : "A moment for yourself."}
+                ? t("dashboard.showedUp")
+                : t("dashboard.moment")}
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted">
               {checkedInToday
-                ? "Your check-in is saved. You can still make changes."
-                : "Take a breath and reflect on what happened today."}
+                ? t("dashboard.checkinSaved")
+                : t("dashboard.reflect")}
             </p>
             <Link href="/checkin" className="btn btn-primary mt-5 w-full">
-              {checkedInToday ? "View check-in" : "Check in today"}
+              {checkedInToday
+                ? t("dashboard.viewCheckin")
+                : t("dashboard.checkinToday")}
               <Icon name="arrow" size={17} />
             </Link>
           </Card>
@@ -536,10 +549,10 @@ export default function DashboardPage() {
       <Sheet
         open={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
-        title="Delete this task?"
+        title={t("task.deleteTitle")}
         description={
           deleteTarget
-            ? `“${deleteTarget.title}” will be removed from your tasks.`
+            ? t("task.deleteBody", { name: deleteTarget.title })
             : undefined
         }
         busy={deleting}
@@ -566,7 +579,7 @@ export default function DashboardPage() {
             disabled={deleting}
             busy={deleting}
           >
-            Delete task
+            {t("task.deleteAction")}
           </Button>
         </div>
       </Sheet>
