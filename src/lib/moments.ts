@@ -1,3 +1,5 @@
+import type { Language } from "@/lib/i18n";
+
 export type MomentCopyKey =
   | "task_added"
   | "task_completed"
@@ -90,7 +92,38 @@ const englishMoments: Record<MomentCopyKey, readonly MomentLine[]> = {
   ],
 };
 
-export function getMomentCopy(key: MomentCopyKey): MomentLine {
-  const options = englishMoments[key];
+const persianMoments: Record<MomentCopyKey, readonly MomentLine[]> = {
+  task_added: [{ title: "کار اضافه شد.", detail: "دیگر لازم نیست در ذهنت نگهش داری." }],
+  task_completed: [{ title: "انجام شد.", detail: "بردهای کوچک هم حساب می‌شوند." }],
+  task_reopened: [{ title: "دوباره باز شد.", detail: "برنامه‌ها تغییر می‌کنند." }],
+  task_deleted: [{ title: "کار حذف شد.", detail: "کمی فضای خلوت‌تر." }],
+  routine_added: [{ title: "روتین اضافه شد.", detail: "یک ریتم کوچک از همین‌جا شروع می‌شود." }],
+  routine_updated: [{ title: "روتین به‌روز شد.", detail: "برنامه می‌تواند با زندگی‌ات تغییر کند." }],
+  routine_paused: [{ title: "روتین متوقف شد.", detail: "استراحت هم بخشی از یک ریتم خوب است." }],
+  routine_resumed: [{ title: "روتین دوباره فعال شد.", detail: "خوش برگشتی." }],
+  routine_deleted: [{ title: "روتین حذف شد.", detail: "فقط چیزهایی را نگه دار که کمک می‌کنند." }],
+  checkin_task_completed: [{ title: "کار ثبت شد.", detail: "یک کار کمتر روی دوشت." }],
+  checkin_routine_completed: [{ title: "روتین ثبت شد.", detail: "تکرارهای کوچک جمع می‌شوند." }],
+  day_saved: [{ title: "روزت ثبت شد.", detail: "لازم نیست بی‌نقص باشد." }],
+  feedback_sent: [{ title: "بازخورد ارسال شد.", detail: "ممنون؛ همین‌ها روتین را بهتر می‌کنند." }],
+  profile_saved: [{ title: "پروفایل به‌روز شد." }],
+  email_saved: [{ title: "ایمیل به‌روز شد." }],
+  password_saved: [{ title: "رمز عبور به‌روز شد." }],
+  reminder_enabled: [{ title: "یادآوری فعال شد.", detail: "روتین آرام یادت می‌اندازد." }],
+  reminder_saved: [{ title: "زمان یادآوری ذخیره شد." }],
+  reminder_disabled: [{ title: "یادآوری خاموش شد.", detail: "سکوت، با انتخاب خودت." }],
+};
+
+function currentMomentLanguage(): Language {
+  return typeof document !== "undefined" && document.documentElement.lang === "fa"
+    ? "fa"
+    : "en";
+}
+
+export function getMomentCopy(
+  key: MomentCopyKey,
+  language: Language = currentMomentLanguage(),
+): MomentLine {
+  const options = language === "fa" ? persianMoments[key] : englishMoments[key];
   return options[Math.floor(Math.random() * options.length)] ?? options[0];
 }
