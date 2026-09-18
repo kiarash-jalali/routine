@@ -452,7 +452,7 @@ export default function DashboardPage() {
                     <span>
                       {weekday(date.getDay() === 0 ? 7 : date.getDay(), "narrow")}
                     </span>
-                    <strong>{date.getDate()}</strong>
+                    <strong>{new Intl.DateTimeFormat(locale, { day: "numeric" }).format(date)}</strong>
                     <span
                       className={`week-dot ${checked ? "filled" : ""}`}
                       aria-hidden="true"

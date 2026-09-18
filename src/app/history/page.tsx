@@ -38,23 +38,23 @@ import {
   STREAK_REPAIR_COST_POINTS,
 } from "@/lib/points";
 import { getSessionUser } from "@/lib/session";
-import { calculateStreakMetrics, formatDayCount } from "@/lib/streak";
+import { calculateStreakMetrics } from "@/lib/streak";
 import { useToday } from "@/lib/useToday";
 import type { CheckinHistoryEntry } from "@/types/history";
 import type { StreakRepair } from "@/types/points";
 
 const weekdayReferenceMonday = new Date(2026, 0, 5);
 
-function getWeekdayLabels() {
+function getWeekdayLabels(locale: string) {
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(weekdayReferenceMonday);
     date.setDate(weekdayReferenceMonday.getDate() + index);
-    return new Intl.DateTimeFormat(undefined, { weekday: "narrow" }).format(date);
+    return new Intl.DateTimeFormat(locale, { weekday: "narrow" }).format(date);
   });
 }
 
 export default function HistoryPage() {
-  const { t } = useLanguage();
+  const { t, locale, number } = useLanguage();
   const router = useRouter();
   const today = useToday();
   const [loading, setLoading] = useState(true);
@@ -99,7 +99,7 @@ export default function HistoryPage() {
           setErrorMessage(
             getErrorMessage(
               error,
-              "Your check-in history could not be loaded.",
+              t("history.loadError"),
             ),
           );
         }
@@ -129,8 +129,8 @@ export default function HistoryPage() {
     [checkinDays, repairedDays],
   );
   const calendarDays = useMemo(
-    () => buildMonthCalendarDays(history, checkinDays, today),
-    [checkinDays, history, today],
+    () => buildMonthCalendarDays(history, checkinDays, today, locale),
+    [checkinDays, history, locale, today],
   );
   const checkedInLastSeven = useMemo(
     () => countRecentCheckins(history, 7, today),
@@ -146,13 +146,13 @@ export default function HistoryPage() {
   );
   const monthLabel = useMemo(
     () =>
-      new Intl.DateTimeFormat(undefined, {
+      new Intl.DateTimeFormat(locale, {
         month: "long",
         year: "numeric",
       }).format(today),
-    [today],
+    [locale, today],
   );
-  const weekdayLabels = useMemo(() => getWeekdayLabels(), []);
+  const weekdayLabels = useMemo(() => getWeekdayLabels(locale), [locale]);
 
   async function repairDay(day: string) {
     setRepairingDay(day);
@@ -171,7 +171,7 @@ export default function HistoryPage() {
       ]);
     } catch (error: unknown) {
       setErrorMessage(
-        getErrorMessage(error, "That missed day could not be repaired."),
+        getErrorMessage(error, t("history.repairError")),
       );
     } finally {
       setRepairingDay(null);
@@ -195,12 +195,12 @@ export default function HistoryPage() {
       ) : history.length === 0 ? (
         <Card>
           <EmptyState>
-            Your story starts with a check-in.
+            {t("history.emptyTitle")}
             <br />
-            Finish your first day and it will appear here.
+            {t("history.emptyBody")}
             <div className="mt-4">
               <Link href="/checkin" className="btn btn-primary">
-                Check in today
+                {t("dashboard.checkinToday")}
                 <Icon name="arrow" size={16} />
               </Link>
             </div>
@@ -211,20 +211,20 @@ export default function HistoryPage() {
           <Card>
             <div className="grid grid-cols-2 gap-x-5 gap-y-6 sm:grid-cols-4">
               <Stat
-                value={formatDayCount(streak.currentDays)}
-                label="current rhythm"
+                value={streak.currentDays === 1 ? t("history.oneDay") : t("history.days", { count: number(streak.currentDays) })}
+                label={t("history.currentRhythm")}
               />
               <Stat
-                value={formatDayCount(streak.bestDays)}
-                label="longest rhythm"
+                value={streak.bestDays === 1 ? t("history.oneDay") : t("history.days", { count: number(streak.bestDays) })}
+                label={t("history.longestRhythm")}
               />
               <Stat
-                value={`${checkedInLastSeven} / 7`}
-                label="check-ins this week"
+                value={`${number(checkedInLastSeven)} / ${number(7)}`}
+                label={t("history.checkinsWeek")}
               />
               <Stat
-                value={`${averageCompletion}%`}
-                label="average completion"
+                value={new Intl.NumberFormat(locale, { style: "percent" }).format(averageCompletion / 100)}
+                label={t("history.averageCompletion")}
               />
             </div>
           </Card>
@@ -248,14 +248,16 @@ export default function HistoryPage() {
                 const repaired = repairedDaySet.has(day.dateKey);
                 const complete = day.checkedIn && day.completionPercent === 100;
                 const status = day.future
-                  ? "Future day"
+                  ? t("history.futureDay")
                   : repaired
-                    ? "Rhythm repaired; no check-in recorded"
+                    ? t("history.repairedStatus")
                     : day.checkedIn
                       ? day.completionPercent === 100
-                        ? "Checked in; all completed"
-                        : `Checked in; ${day.completionPercent}% completed`
-                      : "No check-in";
+                        ? t("history.checkedAll")
+                        : t("history.checkedPercent", {
+                            percent: number(day.completionPercent),
+                          })
+                      : t("history.noCheckin");
 
                 return (
                   <div
@@ -265,7 +267,7 @@ export default function HistoryPage() {
                     aria-label={
                       day.hidden || day.dayNumber === null
                         ? undefined
-                        : `${formatHistoryDate(day.dateKey)}: ${status}`
+                        : `${formatHistoryDate(day.dateKey, locale)}: ${status}`
                     }
                     className={`month-calendar-cell${day.hidden || day.dayNumber === null ? " is-hidden" : ""}${day.future ? " is-future" : ""}${day.today ? " is-today" : ""}${day.checkedIn ? " is-checked" : ""}${complete ? " is-complete" : ""}${repaired ? " is-repaired" : ""}`}
                   >
@@ -275,11 +277,11 @@ export default function HistoryPage() {
                         {!day.hidden && !day.future && (
                           <span className="month-calendar-status">
                             {repaired
-                              ? "repaired"
+                              ? t("history.repaired")
                               : day.checkedIn
                                 ? day.completionPercent === 100
-                                  ? "complete"
-                                  : `${day.completionPercent}%`
+                                  ? t("history.complete")
+                                  : new Intl.NumberFormat(locale, { style: "percent" }).format(day.completionPercent / 100)
                                 : "—"}
                           </span>
                         )}
@@ -292,23 +294,23 @@ export default function HistoryPage() {
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
               <span className="inline-flex items-center gap-2">
                 <span className="h-3 w-3 rounded border border-dashed border-border bg-surface-soft opacity-60" />
-                Ahead
+                {t("history.ahead")}
               </span>
               <span className="inline-flex items-center gap-2">
                 <span className="h-3 w-3 rounded border border-border bg-surface-soft" />
-                No check-in
+                {t("history.noCheckin")}
               </span>
               <span className="inline-flex items-center gap-2">
                 <span className="h-3 w-3 rounded border border-primary/30 bg-primary-soft" />
-                Checked in
+                {t("history.checkedInLegend")}
               </span>
               <span className="inline-flex items-center gap-2">
                 <span className="h-3 w-3 rounded bg-primary" />
-                All completed
+                {t("history.allCompletedLegend")}
               </span>
               <span className="inline-flex items-center gap-2">
                 <span className="h-3 w-3 rounded border border-dashed border-primary bg-primary-soft" />
-                Repaired
+                {t("history.repaired")}
               </span>
             </div>
           </Card>
@@ -333,17 +335,20 @@ export default function HistoryPage() {
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="text-[15px] font-medium">
-                            {formatHistoryDate(entry.day)}
+                            {formatHistoryDate(entry.day, locale)}
                           </p>
                           <p className="mt-1 text-xs text-muted">
                             {summary.totalCount === 0
-                              ? "You took a moment to check in."
-                              : `${summary.routineCompletedCount}/${summary.routineTotalCount} routines · ${summary.taskCompletedCount}/${summary.taskTotalCount} tasks`}
+                              ? t("history.noItems")
+                              : t("history.summary", {
+                                  routines: `${number(summary.routineCompletedCount)}/${number(summary.routineTotalCount)}`,
+                                  tasks: `${number(summary.taskCompletedCount)}/${number(summary.taskTotalCount)}`,
+                                })}
                           </p>
                         </div>
                         <span className="data-text text-xs text-primary">
                           {summary.totalCount
-                            ? `${summary.completionPercent}%`
+                            ? new Intl.NumberFormat(locale, { style: "percent" }).format(summary.completionPercent / 100)
                             : "✓"}
                         </span>
                       </div>
@@ -367,8 +372,8 @@ export default function HistoryPage() {
                   aria-expanded={showAll}
                 >
                   {showAll
-                    ? "Show less"
-                    : `Show all ${history.length} check-ins`}
+                    ? t("history.showLess")
+                    : t("history.showAll", { count: number(history.length) })}
                 </Button>
               )}
             </Card>
@@ -378,24 +383,23 @@ export default function HistoryPage() {
               </span>
               <SectionHeading title={t("product.return")} />
               <div className="mt-4">
-                <Stat value={pointBalance} label="recovery points" />
+                <Stat value={number(pointBalance)} label={t("history.recoveryPoints")} />
               </div>
               <p className="mt-4 text-sm leading-6 text-muted">
-                Each daily check-in earns {CHECKIN_REWARD_POINTS} points once.
-                Use {STREAK_REPAIR_COST_POINTS} points to reconnect a missed day
-                in your rhythm.
+                {t("history.pointsBody", {
+                  reward: number(CHECKIN_REWARD_POINTS),
+                  cost: number(STREAK_REPAIR_COST_POINTS),
+                })}
               </p>
               <p className="mt-3 text-sm leading-6 text-muted">
-                A repaired day keeps its original history. It won’t count as a
-                completed check-in.
+                {t("history.repairedBody")}
               </p>
               <div className="mt-5 border-t border-primary/10 pt-5">
                 <AnimatedList className="space-y-4">
                   {repairableDays.length === 0 ? (
                     <AnimatedListItem key="no-gaps">
                       <p className="text-sm leading-6 text-muted">
-                        No gaps to repair. A missed day becomes available after
-                        your next check-in.
+                        {t("history.noGaps")}
                       </p>
                     </AnimatedListItem>
                   ) : (
@@ -405,7 +409,7 @@ export default function HistoryPage() {
                         key={day}
                       >
                         <p className="mb-3 text-sm font-medium">
-                          {formatHistoryDate(day)}
+                          {formatHistoryDate(day, locale)}
                         </p>
                         <Button
                           className="w-full"
@@ -417,8 +421,8 @@ export default function HistoryPage() {
                           busy={repairingDay === day}
                         >
                           {repairingDay === day
-                            ? "Repairing…"
-                            : `Repair · ${STREAK_REPAIR_COST_POINTS} pts`}
+                            ? t("history.repairing")
+                            : t("history.repair", { cost: number(STREAK_REPAIR_COST_POINTS) })}
                         </Button>
                       </AnimatedListItem>
                     ))
@@ -427,8 +431,9 @@ export default function HistoryPage() {
                 {repairableDays.length > 0 &&
                   pointBalance < STREAK_REPAIR_COST_POINTS && (
                     <p className="text-sm text-muted">
-                      {STREAK_REPAIR_COST_POINTS - pointBalance} more points to
-                      repair a day.
+                      {t("history.morePoints", {
+                        count: number(STREAK_REPAIR_COST_POINTS - pointBalance),
+                      })}
                     </p>
                   )}
               </div>
