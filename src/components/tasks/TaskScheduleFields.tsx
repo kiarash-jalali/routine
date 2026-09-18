@@ -1,6 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { getLocalDateKey } from "@/lib/today";
 
 function splitLocalDateTime(value: string) {
@@ -26,20 +27,21 @@ export function TaskScheduleFields({
   onChange: (value: string) => void;
   disabled?: boolean;
 }) {
+  const { t } = useLanguage();
   const { date, time } = splitLocalDateTime(value);
 
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-sm font-medium">Due</p>
+        <p className="text-sm font-medium">{t("task.due")}</p>
         <p className="mt-1 text-sm font-normal text-muted">
-          Optional. Pick a day, a time, or both.
+          {t("task.dueBody")}
         </p>
       </div>
 
       <div className="task-schedule-grid">
         <label className="grid gap-2 text-sm font-medium">
-          <span className="text-xs font-medium text-muted">Date</span>
+          <span className="text-xs font-medium text-muted">{t("task.date")}</span>
           <Input
             type="date"
             value={date}
@@ -51,7 +53,7 @@ export function TaskScheduleFields({
         </label>
 
         <label className="grid gap-2 text-sm font-medium">
-          <span className="text-xs font-medium text-muted">Time</span>
+          <span className="text-xs font-medium text-muted">{t("task.time")}</span>
           <Input
             type="time"
             value={time}
@@ -64,7 +66,7 @@ export function TaskScheduleFields({
       </div>
 
       <p className="text-xs leading-5 text-muted">
-        If you choose only a time, it is planned for today.
+        {t("task.timeOnlyBody")}
       </p>
     </div>
   );
