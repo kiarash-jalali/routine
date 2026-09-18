@@ -36,7 +36,6 @@ import { getMomentCopy } from "@/lib/moments";
 import { getSessionUser } from "@/lib/session";
 import {
   filterTasksForToday,
-  formatFriendlyDate,
   getLocalDateKey,
 } from "@/lib/today";
 import { useToday } from "@/lib/useToday";
@@ -98,26 +97,16 @@ function createCompletionMap(items: CheckinItem[]): CheckinCompletionMap {
   );
 }
 
-function formatRoutineTime(routine: Routine): string | undefined {
-  if (!routine.preferred_time) return undefined;
-  return `Preferred at ${routine.preferred_time.slice(0, 5)}`;
-}
-
-function formatTaskTime(task: Task): string {
-  if (!task.due_at) return "Flexible — no set time";
-
-  return `Due at ${new Date(task.due_at).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  })}`;
-}
-
 export default function CheckinPage() {
-  const { t } = useLanguage();
+  const { t, date, time, number } = useLanguage();
   const router = useRouter();
   const todayDate = useToday();
   const today = getLocalDateKey(todayDate);
-  const todayLabel = formatFriendlyDate(todayDate);
+  const todayLabel = date(todayDate, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -174,7 +163,7 @@ export default function CheckinPage() {
       } catch (error: unknown) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, "Today's check-in could not be loaded."),
+            getErrorMessage(error, t("checkin.loadError")),
           );
         }
       } finally {
@@ -267,7 +256,7 @@ export default function CheckinPage() {
       });
     } catch (error: unknown) {
       setErrorMessage(
-        getErrorMessage(error, "Today's check-in could not be saved."),
+        getErrorMessage(error, t("checkin.saveError")),
       );
     } finally {
       setSaving(false);
@@ -349,7 +338,13 @@ export default function CheckinPage() {
                 >
                   <CheckinChoice
                     title={routine.title}
-                    detail={formatRoutineTime(routine)}
+                    detail={
+                      routine.preferred_time
+                        ? t("routine.preferredAt", {
+                            time: time(routine.preferred_time),
+                          })
+                        : undefined
+                    }
                     completed={isItemCompleted("routine", routine.id)}
                     locked={checkinLocked}
                     onToggle={() => toggleItem("routine", routine.id)}
@@ -384,7 +379,16 @@ export default function CheckinPage() {
                 >
                   <CheckinChoice
                     title={task.title}
-                    detail={formatTaskTime(task)}
+                    detail={
+                      task.due_at
+                        ? t("task.dueAt", {
+                            time: date(task.due_at, {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }),
+                          })
+                        : t("task.flexible")
+                    }
                     completed={isItemCompleted("task", task.id)}
                     locked={checkinLocked}
                     onToggle={() => toggleItem("task", task.id)}
@@ -402,7 +406,10 @@ export default function CheckinPage() {
                   <span className="font-semibold text-foreground">
                     <AnimatedNumber value={completedCount} />
                   </span>{" "}
-                  of {totalCount} completed
+                  {t("product.completedOf", {
+                    completed: number(completedCount),
+                    total: number(totalCount),
+                  })}
                 </p>
                 <span className="data-text text-xs text-primary">
                   <AnimatedNumber value={`${completionPercent}%`} />
@@ -419,7 +426,7 @@ export default function CheckinPage() {
             >
               {hasFinishedToday && !editingFinishedCheckin ? (
                 <Link href="/dashboard" className="btn btn-secondary">
-                  Back to today
+                  {t("product.backToday")}
                   <Icon name="arrow" size={16} />
                 </Link>
               ) : (
@@ -442,10 +449,10 @@ export default function CheckinPage() {
                       busy={saving}
                     >
                       {saving
-                        ? "Saving…"
+                        ? t("common.saving")
                         : editingFinishedCheckin
                           ? t("product.saveChanges")
-                          : "Finish day"}
+                          : t("product.finishCheckin")}
                       {!saving && <Icon name="check" size={17} />}
                     </Button>
                   </MomentSource>
@@ -455,7 +462,7 @@ export default function CheckinPage() {
           </div>
         </div>
         <p className="text-center text-sm text-muted">
-          An unfinished day is still a day you showed up.
+          {t("product.unfinishedCounts")}
         </p>
       </div>
 
