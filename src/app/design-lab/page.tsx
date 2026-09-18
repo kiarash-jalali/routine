@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Link } from "next-view-transitions";
 import { Icon, type IconName } from "@/components/Icon";
 import { PageHeader, PageShell } from "@/components/ui";
@@ -18,7 +19,7 @@ type Theme = {
   accent: string;
 };
 
-const themes: Record<ThemeName, Theme> = {
+const defaultThemes: Readonly<Record<ThemeName, Readonly<Theme>>> = {
   morning: {
     label: "Morning",
     icon: "sun",
@@ -64,6 +65,26 @@ const themes: Record<ThemeName, Theme> = {
     accent: "#f0c786",
   },
 };
+
+const colorFields = [
+  "background",
+  "surface",
+  "text",
+  "muted",
+  "primary",
+  "accent",
+] as const;
+
+type ThemeColor = (typeof colorFields)[number];
+
+function createEditableThemes(): Record<ThemeName, Theme> {
+  return {
+    morning: { ...defaultThemes.morning },
+    day: { ...defaultThemes.day },
+    evening: { ...defaultThemes.evening },
+    night: { ...defaultThemes.night },
+  };
+}
 
 function ThemePreview({ theme }: { theme: Theme }) {
   return (
@@ -120,23 +141,86 @@ function ThemePreview({ theme }: { theme: Theme }) {
 }
 
 export default function DesignLabPage() {
+  const [themes, setThemes] = useState(createEditableThemes);
+
+  function updateColor(name: ThemeName, color: ThemeColor, value: string) {
+    setThemes((current) => ({
+      ...current,
+      [name]: { ...current[name], [color]: value },
+    }));
+  }
+
+  function resetTheme(name: ThemeName) {
+    setThemes((current) => ({
+      ...current,
+      [name]: { ...defaultThemes[name] },
+    }));
+  }
+
   return (
     <PageShell className="max-w-[1500px]">
       <PageHeader
-        eyebrow="Private design tool"
+        eyebrow="Developer preview tool"
         title="Design lab"
-        description="Compare every automatic Rootine theme together: morning, day, evening and night."
+        description="Experiment with all four theme palettes. Changes affect only these previews and disappear after refresh."
         actions={
-          <Link href="/settings" className="btn">
-            <Icon name="chevron" size={16} className="rotate-180" />
-            Back
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setThemes(createEditableThemes())}
+            >
+              Reset all themes
+            </button>
+            <Link href="/settings" className="btn">
+              <Icon name="chevron" size={16} className="rotate-180" />
+              Back
+            </Link>
+          </div>
         }
       />
 
       <div className="grid gap-6 md:grid-cols-2">
         {(Object.keys(themes) as ThemeName[]).map((name) => (
-          <ThemePreview key={name} theme={themes[name]} />
+          <section key={name} className="min-w-0 space-y-4">
+            <ThemePreview theme={themes[name]} />
+            <fieldset className="rounded-2xl border border-border p-4">
+              <legend className="px-2 font-semibold">
+                {themes[name].label} colors
+              </legend>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {colorFields.map((color) => (
+                  <label
+                    key={color}
+                    className="flex items-center justify-between gap-3 text-sm"
+                  >
+                    <span className="capitalize">{color}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="font-mono text-xs">
+                        {themes[name][color]}
+                      </span>
+                      <input
+                        type="color"
+                        value={themes[name][color]}
+                        aria-label={`${themes[name].label} ${color}`}
+                        onChange={(event) =>
+                          updateColor(name, color, event.target.value)
+                        }
+                        className="h-10 w-12 cursor-pointer rounded border border-border bg-transparent p-1"
+                      />
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="btn mt-4"
+                onClick={() => resetTheme(name)}
+              >
+                Reset {themes[name].label.toLowerCase()} theme
+              </button>
+            </fieldset>
+          </section>
         ))}
       </div>
     </PageShell>
