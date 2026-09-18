@@ -4,6 +4,12 @@ The production database predates a fully synchronized local migration workflow, 
 
 Do not rename or rewrite the historical migration files just to make the timestamps match. They are useful as source history, and changing them after production has already been migrated can make future reconciliation harder.
 
+## Fresh-database bootstrap
+
+`00000000000000_initial_core_schema.sql` is a bootstrap snapshot of the live core tables (`tasks`, `routines`, `daily_checkins`, and `checkin_items`) and their indexes/update triggers. Those tables predate the migration history, so the bootstrap intentionally sorts first and makes a new database replayable.
+
+The bootstrap is **not** a migration to apply retroactively to the existing production database. Before using Supabase CLI `db push` against production, reconcile the historical versions with Supabase's migration-repair workflow. For a fresh local or staging database, replay the repository migrations from the beginning.
+
 ## Production-recorded migrations
 
 | Supabase version | Migration name | Repository file |

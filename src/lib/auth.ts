@@ -1,6 +1,6 @@
 export const MIN_PASSWORD_LENGTH = 10;
 
-const AUTH_CALLBACK_PATHS = new Set(["/onboarding", "/dashboard"]);
+const AUTH_CALLBACK_PATHS = new Set(["/onboarding", "/dashboard", "/reset-password"]);
 const AUTH_CALLBACK_ORIGIN = "https://routine.invalid";
 
 export function getSafeAuthCallbackPath(value: string | null): string {

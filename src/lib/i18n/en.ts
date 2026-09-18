@@ -147,6 +147,33 @@ export const en = {
     "We sent a confirmation link to {email}. Open it to set up your space.",
   "login.spam": "Can’t see it? Check your spam folder or wait a minute.",
   "login.back": "Back to sign up",
+  "login.forgot": "Forgot password?",
+  "passwordReset.requestTitle": "Reset your password.",
+  "passwordReset.requestBody":
+    "Enter your email and we’ll send you a secure reset link.",
+  "passwordReset.send": "Send reset link",
+  "passwordReset.sentTitle": "Check your inbox.",
+  "passwordReset.sentBody":
+    "If {email} is linked to an account, we sent a password reset link.",
+  "passwordReset.back": "Back to log in",
+  "passwordReset.newTitle": "Choose a new password.",
+  "passwordReset.newBody": "Use at least {count} characters.",
+  "passwordReset.newPassword": "New password",
+  "passwordReset.confirm": "Confirm new password",
+  "passwordReset.update": "Update password",
+  "passwordReset.updating": "Updating…",
+  "passwordReset.successTitle": "Password updated.",
+  "passwordReset.successBody":
+    "Your new password is ready. Log in again to continue.",
+  "passwordReset.mismatch": "Passwords do not match.",
+  "passwordReset.tooShort": "Use at least {count} characters.",
+  "passwordReset.invalid":
+    "This reset link is invalid or expired. Request a new one.",
+  "passwordReset.requestAgain": "Request a new reset link",
+  "passwordReset.failedRequest":
+    "Couldn’t send the reset email. Try again in a moment.",
+  "passwordReset.failedUpdate":
+    "Couldn’t update your password. Request a new link and try again.",
   "settings.title": "Settings",
   "settings.description": "Make rootine feel like yours.",
   "settings.profile": "Profile",

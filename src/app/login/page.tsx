@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { Link, useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap, Collapse } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
 import { Button, ErrorNotice, Input, SegmentedControl } from "@/components/ui";
@@ -161,7 +161,7 @@ export default function LoginPage() {
                       <div className="relative">
                         <Input
                           id="password"
-                          className="pr-14"
+                          className="pe-14"
                           placeholder={
                             mode === "signup"
                               ? t("login.passwordHint", {
@@ -185,7 +185,7 @@ export default function LoginPage() {
                         />
                         <button
                           type="button"
-                          className="icon-button absolute right-1 top-0.5"
+                          className="icon-button absolute end-1 top-0.5"
                           onClick={() => setShowPassword(!showPassword)}
                           aria-label={
                             showPassword ? t("login.hide") : t("login.show")
@@ -195,6 +195,16 @@ export default function LoginPage() {
                           <Icon name="eye" size={18} />
                         </button>
                       </div>
+                      {mode === "login" && (
+                        <div className="mt-2 flex justify-end">
+                          <Link
+                            href="/forgot-password"
+                            className="text-sm font-medium text-primary hover:underline"
+                          >
+                            {t("login.forgot")}
+                          </Link>
+                        </div>
+                      )}
                     </div>
                     <Collapse show={!!errorMessage}>
                       <ErrorNotice>{errorMessage}</ErrorNotice>

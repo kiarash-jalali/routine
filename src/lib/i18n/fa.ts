@@ -147,6 +147,33 @@ export const fa: Record<TranslationKey, string> = {
     "پیوند تأیید به {email} فرستادیم. برای راه‌اندازی فضایت آن را باز کن.",
   "login.spam": "پیدا نمی‌کنی؟ پوشهٔ هرزنامه را ببین یا کمی صبر کن.",
   "login.back": "بازگشت به ثبت‌نام",
+  "login.forgot": "رمز عبورت را فراموش کرده‌ای؟",
+  "passwordReset.requestTitle": "رمز عبورت را بازنشانی کن.",
+  "passwordReset.requestBody":
+    "ایمیلت را وارد کن تا یک لینک امن برای بازنشانی رمز بفرستیم.",
+  "passwordReset.send": "ارسال لینک بازنشانی",
+  "passwordReset.sentTitle": "ایمیلت را بررسی کن.",
+  "passwordReset.sentBody":
+    "اگر {email} به حسابی متصل باشد، لینک بازنشانی رمز برایش فرستاده شد.",
+  "passwordReset.back": "بازگشت به ورود",
+  "passwordReset.newTitle": "یک رمز عبور تازه انتخاب کن.",
+  "passwordReset.newBody": "حداقل {count} نویسه استفاده کن.",
+  "passwordReset.newPassword": "رمز عبور تازه",
+  "passwordReset.confirm": "تکرار رمز عبور تازه",
+  "passwordReset.update": "به‌روزرسانی رمز عبور",
+  "passwordReset.updating": "در حال به‌روزرسانی…",
+  "passwordReset.successTitle": "رمز عبور به‌روزرسانی شد.",
+  "passwordReset.successBody":
+    "رمز تازه آماده است. دوباره وارد شو تا ادامه بدهی.",
+  "passwordReset.mismatch": "دو رمز عبور یکسان نیستند.",
+  "passwordReset.tooShort": "حداقل {count} نویسه استفاده کن.",
+  "passwordReset.invalid":
+    "این لینک بازنشانی نامعتبر است یا منقضی شده. یک لینک تازه درخواست کن.",
+  "passwordReset.requestAgain": "درخواست لینک تازه",
+  "passwordReset.failedRequest":
+    "ایمیل بازنشانی ارسال نشد. کمی بعد دوباره تلاش کن.",
+  "passwordReset.failedUpdate":
+    "رمز عبور به‌روزرسانی نشد. یک لینک تازه درخواست کن و دوباره تلاش کن.",
   "settings.title": "تنظیمات",
   "settings.description": "روتین را مطابق سلیقهٔ خودت تنظیم کن.",
   "settings.profile": "پروفایل",

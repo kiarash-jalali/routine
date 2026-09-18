@@ -64,6 +64,7 @@ npm run lint      # ESLint code-quality checks
 npx tsc --noEmit  # TypeScript type check
 npm run build     # Production build check
 npm run verify    # Lint + type generation/typecheck + production build
+npm run archive:safe # Create a source archive from tracked Git files only
 ```
 
 ## Routes
@@ -71,6 +72,8 @@ npm run verify    # Lint + type generation/typecheck + production build
 | Route | Responsibility |
 | --- | --- |
 | `/login` | Email/password login and signup |
+| `/forgot-password` | Request a password-reset email |
+| `/reset-password` | Choose a new password after recovery |
 | `/dashboard` | Task management and today's overview |
 | `/routines` | Create, edit, pause, resume, and delete daily/weekly routines |
 | `/checkin` | Daily completion ritual for today's items |
