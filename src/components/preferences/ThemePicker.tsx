@@ -1,12 +1,16 @@
 "use client";
 import { useSyncExternalStore } from "react";
+import { Icon } from "@/components/Icon";
 import { useLanguage } from "./LanguageProvider";
 import {
-  isThemeMode,
   setThemeMode,
   subscribeTheme,
   themeSnapshot,
+  type ThemeMode,
 } from "@/lib/theme";
+
+const order: ThemeMode[] = ["auto", "light", "dark"];
+
 export function ThemePicker() {
   const { t } = useLanguage();
   const mode = useSyncExternalStore(
@@ -14,24 +18,27 @@ export function ThemePicker() {
     themeSnapshot,
     () => "auto" as const,
   );
+
+  function cycle() {
+    const index = order.indexOf(mode);
+    setThemeMode(order[(index + 1) % order.length]);
+  }
+
+  const icon = mode === "dark" ? "moon" : mode === "light" ? "sun" : "clock";
+
   return (
-    <label className="grid gap-2 text-sm">
+    <div className="grid gap-2 text-sm">
       <span>{t("theme.title")}</span>
-      <select
+      <button
+        type="button"
+        className="btn justify-start"
         aria-label={t("theme.title")}
-        className="field"
-        value={mode}
-        onChange={(e) => {
-          if (isThemeMode(e.target.value)) setThemeMode(e.target.value);
-        }}
+        onClick={cycle}
       >
-        {(["auto", "light", "dark"] as const).map((value) => (
-          <option key={value} value={value}>
-            {t(`theme.${value}`)}
-          </option>
-        ))}
-      </select>
+        <Icon name={icon} size={18} />
+        {t(`theme.${mode}`)}
+      </button>
       <span className="text-muted">{t("theme.description")}</span>
-    </label>
+    </div>
   );
 }
