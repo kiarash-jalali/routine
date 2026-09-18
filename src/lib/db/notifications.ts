@@ -27,7 +27,10 @@ export async function getNotificationPreference(userId: string) {
 
 export async function saveNotificationPreference(
   userId: string,
-  values: Pick<NotificationPreference, "enabled" | "reminder_time" | "timezone">,
+  values: Pick<
+    NotificationPreference,
+    "enabled" | "reminder_time" | "timezone"
+  >,
 ) {
   const { error } = await supabaseBrowser()
     .from("notification_preferences")
@@ -58,9 +61,9 @@ async function getAccessToken() {
 }
 
 async function readApiError(response: Response, fallback: string) {
-  const payload = (await response.json().catch(() => null)) as
-    | { error?: string }
-    | null;
+  const payload = (await response.json().catch(() => null)) as {
+    error?: string;
+  } | null;
   return payload?.error ?? fallback;
 }
 
@@ -100,7 +103,18 @@ export async function removePushSubscription(endpoint: string) {
 
   if (!response.ok) {
     throw new Error(
-      await readApiError(response, "The push subscription could not be removed."),
+      await readApiError(
+        response,
+        "The push subscription could not be removed.",
+      ),
     );
   }
+}
+
+export async function claimReminderIntroduction(): Promise<boolean> {
+  const { data, error } = await supabaseBrowser().rpc(
+    "claim_reminder_introduction",
+  );
+  if (error) return false; // Setup remains available in Settings if the prompt cannot be claimed.
+  return data === true;
 }

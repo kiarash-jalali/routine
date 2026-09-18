@@ -1,3 +1,4 @@
+import { translate, type Language } from "@/lib/i18n";
 import type { StoredPushSubscription } from "@/lib/db/notifications";
 
 function decodeBase64Url(value: string) {
@@ -27,9 +28,9 @@ export async function getServiceWorkerRegistration() {
   }
 
   const existing = await navigator.serviceWorker.getRegistration("/");
-  if (existing) return existing;
-
-  return navigator.serviceWorker.register("/sw.js", { scope: "/" });
+  if (existing?.active) return existing;
+  await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+  return navigator.serviceWorker.ready;
 }
 
 export async function enablePushNotifications() {
@@ -37,15 +38,14 @@ export async function enablePushNotifications() {
     throw new Error("Notifications are not supported on this device.");
   }
 
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") {
-    throw new Error("Notification permission was not granted.");
-  }
-
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  if (!publicKey) {
-    throw new Error("Push notifications are not configured yet.");
-  }
+  if (!publicKey) throw new Error("Push notifications are not configured.");
+  const permission =
+    Notification.permission === "granted"
+      ? "granted"
+      : await Notification.requestPermission();
+  if (permission !== "granted")
+    throw new Error("Notification permission was not granted.");
 
   const registration = await getServiceWorkerRegistration();
   let subscription = await registration.pushManager.getSubscription();
@@ -86,10 +86,10 @@ export async function disablePushNotifications() {
   return endpoint;
 }
 
-export async function showNotificationTest() {
+export async function showNotificationTest(language: Language = "en") {
   const registration = await getServiceWorkerRegistration();
   await registration.showNotification("rootine", {
-    body: "Notifications are ready. We’ll keep reminders gentle.",
+    body: translate(language, "reminder.test"),
     icon: "/pwa/icon-192",
     badge: "/pwa/icon-192",
     tag: "routine-notification-test",

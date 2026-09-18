@@ -181,5 +181,38 @@ export const en = {
   "product.newTaskBody": "One thing to remember. Keep it simple.",
   "product.calendarBody":
     "Your month like a wall calendar: the story begins where you began.",
+  "reminder.title": "A little help remembering",
+  "reminder.body":
+    "Choose a daily check-in time. If you already checked in, we stay quiet. Your routine times remain a gentle plan.",
+  "reminder.time": "Reminder time",
+  "reminder.enable": "Enable on this device",
+  "reminder.enabled": "Reminders are ready on this device.",
+  "reminder.permission":
+    "Your browser will ask for permission after you choose Enable. You can change this in Settings anytime.",
+  "reminder.unsupported":
+    "This browser cannot receive push notifications. On iPhone or iPad, add rootine to the Home Screen in Safari, then open the installed app.",
+  "reminder.denied":
+    "Notifications are blocked. You can allow them in your browser or device settings, then try again.",
+  "reminder.failed":
+    "Reminders could not be enabled. Your plans are saved. Check your connection and try again.",
+  "reminder.unconfigured":
+    "Notifications are temporarily unavailable. Please try again later.",
+  "reminder.settingsTitle": "Daily check-in reminder",
+  "reminder.off": "Turn off daily check-in reminder",
+  "reminder.offDone":
+    "Daily check-in reminders are off. Health and workout reminders keep their own settings.",
+  "reminder.device": "Device notifications",
+  "reminder.deviceBody":
+    "Receive private reminders for your saved plans. Notification previews never include medication names, doses or notes.",
+  "reminder.deviceOff": "Turn off all notifications on this device",
+  "reminder.deviceOffDone": "Notifications are off on this device.",
+  "reminder.reliability":
+    "Delivery depends on your connection and device settings. Open the app to see your schedule.",
+  "reminder.test": "Notifications are ready. We’ll keep reminders gentle.",
+  "reminder.generic": "A gentle reminder to check in with your day.",
+  "reminder.genericHealth":
+    "You have a scheduled reminder. Open rootine to view it.",
+  "reminder.genericWorkout":
+    "A little time to move. Your plan is ready in rootine.",
 } as const;
 export type TranslationKey = keyof typeof en;

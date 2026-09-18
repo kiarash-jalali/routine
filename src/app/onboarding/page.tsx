@@ -1,4 +1,6 @@
 "use client";
+import { ReminderPrompt } from "@/components/notifications/ReminderPrompt";
+import { claimReminderIntroduction } from "@/lib/db/notifications";
 import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap } from "@/components/Motion";
@@ -56,6 +58,7 @@ const screens = [
 ] as const;
 export default function OnboardingPage() {
   const router = useRouter();
+  const [reminderOpen, setReminderOpen] = useState(false);
   const { t, number } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -133,6 +136,7 @@ export default function OnboardingPage() {
         preferred_time: formatPreferredTimeForDatabase(values.preferredTime),
       });
       setStep("ready");
+      setReminderOpen(await claimReminderIntroduction());
     });
   }
   if (loading)
@@ -272,6 +276,11 @@ export default function OnboardingPage() {
       >
         {t("onboarding.skipAll")}
       </Button>
+      <ReminderPrompt
+        userId={userId}
+        open={reminderOpen}
+        onClose={() => setReminderOpen(false)}
+      />
     </PageShell>
   );
 }

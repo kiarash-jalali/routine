@@ -22,27 +22,11 @@ import {
   SectionHeading,
 } from "@/components/ui";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
-import {
-  getNotificationPreference,
-  removePushSubscription,
-  saveNotificationPreference,
-  savePushSubscription,
-} from "@/lib/db/notifications";
+import { ReminderSettings } from "@/components/notifications/ReminderSettings";
 import { getProfile, saveDisplayName } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
-import {
-  currentNotificationPermission,
-  disablePushNotifications,
-  enablePushNotifications,
-  notificationsSupported,
-  showNotificationTest,
-} from "@/lib/notifications";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-
-function getDeviceTimeZone() {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-}
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -55,12 +39,6 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
-  const [reminderEnabled, setReminderEnabled] = useState(false);
-  const [reminderTime, setReminderTime] = useState("20:00");
-  const [reminderTimeZone, setReminderTimeZone] = useState("UTC");
-  const [notificationPermission, setNotificationPermission] = useState<
-    "default" | "denied" | "granted" | "unsupported"
-  >("unsupported");
   const [busyAction, setBusyAction] = useState<
     | "profile"
     | "email"
@@ -113,19 +91,6 @@ export default function SettingsPage() {
         setDisplayName(profile?.display_name ?? "");
         setEmail(user.email ?? "");
         setNewEmail(user.email ?? "");
-        setReminderTimeZone(getDeviceTimeZone());
-        setNotificationPermission(currentNotificationPermission());
-
-        try {
-          const preference = await getNotificationPreference(user.id);
-          if (!cancelled && preference) {
-            setReminderEnabled(preference.enabled);
-            setReminderTime(preference.reminder_time.slice(0, 5));
-            setReminderTimeZone(preference.timezone || getDeviceTimeZone());
-          }
-        } catch {
-          // Keep the rest of Settings usable if reminder storage is unavailable.
-        }
       } catch (loadError: unknown) {
         if (!cancelled) {
           setError(getErrorMessage(loadError, "Settings could not be loaded."));
@@ -231,96 +196,6 @@ export default function SettingsPage() {
     }
   }
 
-  async function enableReminder() {
-    if (!userId || busyAction) return;
-    beginAction("notifications");
-
-    try {
-      const timeZone = getDeviceTimeZone();
-      const { storedSubscription } = await enablePushNotifications();
-      await savePushSubscription(userId, storedSubscription);
-      await saveNotificationPreference(userId, {
-        enabled: true,
-        reminder_time: reminderTime,
-        timezone: timeZone,
-      });
-
-      setReminderEnabled(true);
-      setReminderTimeZone(timeZone);
-      setNotificationPermission("granted");
-      await showNotificationTest();
-      showMoment("reminder_enabled", "settings-reminder", "checkin");
-    } catch (notificationError: unknown) {
-      setNotificationPermission(currentNotificationPermission());
-      setError(
-        getErrorMessage(
-          notificationError,
-          "Notifications could not be enabled.",
-        ),
-      );
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
-  async function saveReminderSchedule(event: React.FormEvent) {
-    event.preventDefault();
-    if (!userId || !reminderEnabled || busyAction) return;
-    beginAction("notifications");
-
-    try {
-      const timeZone = getDeviceTimeZone();
-      await saveNotificationPreference(userId, {
-        enabled: true,
-        reminder_time: reminderTime,
-        timezone: timeZone,
-      });
-      setReminderTimeZone(timeZone);
-      showMoment(
-        "reminder_saved",
-        "settings-reminder",
-        "clock",
-        `Your daily reminder is set for ${reminderTime}.`,
-      );
-    } catch (notificationError: unknown) {
-      setError(
-        getErrorMessage(
-          notificationError,
-          "The reminder time could not be saved.",
-        ),
-      );
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
-  async function disableReminder() {
-    if (!userId || busyAction) return;
-    beginAction("notifications");
-
-    try {
-      const endpoint = await disablePushNotifications();
-      if (endpoint) await removePushSubscription(endpoint);
-      await saveNotificationPreference(userId, {
-        enabled: false,
-        reminder_time: reminderTime,
-        timezone: getDeviceTimeZone(),
-      });
-      setReminderEnabled(false);
-      setNotificationPermission(currentNotificationPermission());
-      showMoment("reminder_disabled", "settings-reminder-off", "moon");
-    } catch (notificationError: unknown) {
-      setError(
-        getErrorMessage(
-          notificationError,
-          "The reminder could not be turned off.",
-        ),
-      );
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
   async function logout() {
     if (busyAction) return;
     beginAction("logout");
@@ -380,8 +255,6 @@ export default function SettingsPage() {
       </PageShell>
     );
   }
-
-  const notificationAvailable = notificationsSupported();
 
   return (
     <PageShell>
@@ -519,67 +392,7 @@ export default function SettingsPage() {
             </div>
           </Card>
 
-          <Card>
-            <SectionHeading
-              title="Daily check-in reminder"
-              description="One gentle notification at a time you choose. If you already checked in that day, Routine stays quiet."
-            />
-            <form className="mt-6 space-y-4" onSubmit={saveReminderSchedule}>
-              <label className="grid gap-2 text-sm font-medium">
-                Reminder time
-                <Input
-                  type="time"
-                  value={reminderTime}
-                  disabled={Boolean(busyAction)}
-                  onChange={(event) => setReminderTime(event.target.value)}
-                />
-              </label>
-              <p className="text-sm leading-6 text-muted">
-                Device timezone: {reminderTimeZone}. Permission:{" "}
-                {notificationPermission}.
-              </p>
-              {!notificationAvailable ? (
-                <p className="text-sm leading-6 text-muted">
-                  Push notifications are not available in this browser. On
-                  iPhone, open the installed Home Screen app.
-                </p>
-              ) : reminderEnabled ? (
-                <div className="flex flex-wrap gap-3">
-                  <MomentSource id="settings-reminder">
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      disabled={Boolean(busyAction) || !reminderTime}
-                      busy={busyAction === "notifications"}
-                    >
-                      Save reminder time
-                    </Button>
-                  </MomentSource>
-                  <MomentSource id="settings-reminder-off">
-                    <Button
-                      type="button"
-                      onClick={disableReminder}
-                      disabled={Boolean(busyAction)}
-                    >
-                      Turn off
-                    </Button>
-                  </MomentSource>
-                </div>
-              ) : (
-                <MomentSource id="settings-reminder">
-                  <Button
-                    type="button"
-                    variant="primary"
-                    onClick={enableReminder}
-                    disabled={Boolean(busyAction) || !reminderTime}
-                    busy={busyAction === "notifications"}
-                  >
-                    Enable reminders
-                  </Button>
-                </MomentSource>
-              )}
-            </form>
-          </Card>
+          {userId && <ReminderSettings userId={userId} />}
 
           <Card>
             <SectionHeading
