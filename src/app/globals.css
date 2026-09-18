@@ -267,7 +267,8 @@
   }
   .app-navigation {
     position: fixed;
-    inset: 0 auto 0 0;
+    inset-block: 0;
+    inset-inline-start: 0;
     z-index: 20;
     width: 236px;
     padding: 39px 22px 24px;
@@ -276,7 +277,7 @@
       background-color 450ms,
       border-color 450ms;
     view-transition-name: navigation;
-    border-right: 1px solid var(--border);
+    border-inline-end: 1px solid var(--border);
     backdrop-filter: blur(24px);
     display: flex;
     flex-direction: column;
@@ -310,8 +311,7 @@
   .nav-indicator {
     position: absolute;
     height: 48px;
-    left: 0;
-    right: 0;
+    inset-inline: 0;
     top: 0;
     border-radius: 14px;
     background: var(--primary-soft);
@@ -325,7 +325,7 @@
   .nav-pending {
     width: 7px;
     height: 7px;
-    margin-left: auto;
+    margin-inline-start: auto;
     border-radius: 50%;
     background: currentColor;
     animation: breathe 1s ease-in-out infinite alternate;
@@ -348,7 +348,7 @@
     color: var(--foreground);
   }
   .app-frame {
-    padding-left: 236px;
+    padding-inline-start: 236px;
   }
   .route-view {
     view-transition-name: routine-page;
@@ -558,7 +558,7 @@
     position: absolute;
     top: 4px;
     bottom: 4px;
-    left: 4px;
+    inset-inline-start: 4px;
     width: calc((100% - 8px) / var(--segment-count));
     background: var(--glass-strong);
     border: 1px solid var(--glass-border);
@@ -675,7 +675,7 @@
     content: "";
     position: absolute;
     top: 11px;
-    left: 3px;
+    inset-inline-start: 3px;
     width: 22px;
     height: 22px;
     background: var(--thumb);
@@ -1126,7 +1126,7 @@
       padding-inline: 18px;
     }
     .app-frame {
-      padding-left: 210px;
+      padding-inline-start: 210px;
     }
     .page-shell {
       padding: 40px 28px 48px;
@@ -1134,7 +1134,7 @@
   }
   @media (max-width: 767px) {
     .app-frame {
-      padding-left: 0;
+      padding-inline-start: 0;
     }
     .app-navigation {
       position: relative;
@@ -1181,8 +1181,7 @@
       position: fixed;
       z-index: 30;
       bottom: 0;
-      left: 0;
-      right: 0;
+      inset-inline: 0;
       margin: 0;
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1203,15 +1202,15 @@
     }
     .nav-indicator {
       top: 9px;
-      left: 12px;
-      right: auto;
+      inset-inline-start: 12px;
+      inset-inline-end: auto;
       width: calc((100% - 24px) / 4);
       height: 52px;
       transform: translateX(calc(var(--active-tab) * 100%));
     }
     .nav-pending {
       position: absolute;
-      right: 14px;
+      inset-inline-end: 14px;
       top: 10px;
     }
     .page-shell {
