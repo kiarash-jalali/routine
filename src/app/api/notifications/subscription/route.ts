@@ -1,3 +1,4 @@
+import { isValidPushEndpoint as isValidEndpoint } from "@/lib/pushEndpoint";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -8,23 +9,6 @@ type SubscriptionPayload = {
   p256dh?: unknown;
   auth?: unknown;
 };
-
-function isValidEndpoint(value: unknown): value is string {
-  if (
-    typeof value !== "string" ||
-    !value ||
-    value.length > 4096 ||
-    value.trim() !== value
-  ) {
-    return false;
-  }
-
-  try {
-    return new URL(value).protocol === "https:";
-  } catch {
-    return false;
-  }
-}
 
 function isValidSubscriptionKey(
   value: unknown,
@@ -74,7 +58,10 @@ async function getAuthenticatedUser(request: Request) {
   const accessToken = getAccessToken(request);
   if (!accessToken) {
     return {
-      error: NextResponse.json({ error: "Not authenticated." }, { status: 401 }),
+      error: NextResponse.json(
+        { error: "Not authenticated." },
+        { status: 401 },
+      ),
       admin,
       user: null,
     };
@@ -107,9 +94,17 @@ export async function POST(request: Request) {
   try {
     payload = (await request.json()) as SubscriptionPayload;
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
   }
 
+  if (!payload || typeof payload !== "object" || Array.isArray(payload))
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
   const { endpoint, p256dh, auth: authKey } = payload;
   if (
     !isValidEndpoint(endpoint) ||
@@ -155,11 +150,17 @@ export async function DELETE(request: Request) {
   try {
     payload = (await request.json()) as { endpoint?: unknown };
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
   }
 
-  if (!isValidEndpoint(payload.endpoint)) {
-    return NextResponse.json({ error: "Invalid push endpoint." }, { status: 400 });
+  if (!payload || !isValidEndpoint(payload.endpoint)) {
+    return NextResponse.json(
+      { error: "Invalid push endpoint." },
+      { status: 400 },
+    );
   }
 
   const { error } = await auth.admin

@@ -1,4 +1,5 @@
 "use client";
+import { LifeLinks } from "@/components/life/LifeLinks";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 import { Link } from "next-view-transitions";
@@ -258,6 +259,7 @@ export default function DashboardPage() {
               }}
             >
               <Icon name="plus" size={18} />
+      <LifeLinks />
               Add task
             </Button>
           </MomentSource>

@@ -215,4 +215,37 @@ export const fa: Record<TranslationKey, string> = {
     "یک یادآوری برنامه‌ریزی‌شده داری. برای دیدنش rootine را باز کن.",
   "reminder.genericWorkout":
     "کمی وقت برای تحرک. برنامه‌ات در rootine آماده است.",
+  "health.title": "سلامت و دارو",
+  "health.body": "برنامه‌های خودت، آرام و یک‌جا.",
+  "health.add": "افزودن دارو",
+  "health.edit": "ویرایش دارو",
+  "health.name": "نام دارو",
+  "health.dose": "متن مقدار مصرف (اختیاری)",
+  "health.doseBody":
+    "مقدار را همان‌طور که می‌دانی بنویس، مثلاً 10 mg. rootine آن را تفسیر نمی‌کند.",
+  "health.times": "زمان‌های هر روز",
+  "health.timeNumber": "زمان یادآوری {number}",
+  "health.addTime": "افزودن زمان",
+  "health.privacy":
+    "این جزئیات در حسابت فقط برای تو قابل مشاهده‌اند. اعلان‌ها جزئیات دارو را روی صفحهٔ قفل نشان نمی‌دهند.",
+  "health.tracking":
+    "فقط برای ثبت برنامهٔ خودت. «ثبت‌نشده» یعنی زمان برنامه گذشته و مصرف ثبت نشده؛ دستور مصرف دارو نیست.",
+  "health.upcoming": "پیش رو",
+  "health.taken": "مصرف ثبت‌شده",
+  "health.missed": "گذشته · ثبت‌نشده",
+  "health.take": "ثبت مصرف",
+  "health.undo": "لغو ثبت مصرف",
+  "health.todayEmpty": "برای امروز یادآوری دارویی نداری.",
+  "health.plans": "داروهای تو",
+  "health.empty": "دارویی اضافه کن و زمان‌های یادآوری‌اش را انتخاب کن.",
+  "health.history": "سابقهٔ دارو",
+  "health.historyEmpty":
+    "یادآوری‌های برنامه‌ریزی‌شده و مصرف‌های ثبت‌شده اینجا نمایش داده می‌شوند.",
+  "health.recorded": "ثبت در {time}",
+  "schedule.timezoneBody":
+    "زمان‌ها حتی هنگام سفر با همین منطقهٔ زمانی محاسبه می‌شوند. نامی مانند Asia/Tehran وارد کن.",
+  "schedule.reminders": "ارسال اعلان برای این برنامه",
+  "schedule.updated": "تغییرات از الان اعمال می‌شوند؛ سوابق قبلی حفظ می‌شوند.",
+  "schedule.more": "نمایش سوابق قدیمی‌تر",
+  "schedule.none": "هنوز برنامه‌ای ثبت نشده.",
 };

@@ -214,5 +214,39 @@ export const en = {
     "You have a scheduled reminder. Open rootine to view it.",
   "reminder.genericWorkout":
     "A little time to move. Your plan is ready in rootine.",
+  "health.title": "Health & medication",
+  "health.body": "Your own plans, quietly kept in one place.",
+  "health.add": "Add medication",
+  "health.edit": "Edit medication",
+  "health.name": "Medication name",
+  "health.dose": "Dose text (optional)",
+  "health.doseBody":
+    "Copy the dose as you know it, for example 10 mg. rootine does not interpret it.",
+  "health.times": "Times each day",
+  "health.timeNumber": "Reminder time {number}",
+  "health.addTime": "Add time",
+  "health.privacy":
+    "Only you can see these details in your account. Reminders never show medication details on your lock screen.",
+  "health.tracking":
+    "For recording your own schedule only. “Missed” means the scheduled time passed without a taken record; it is not an instruction to take a dose.",
+  "health.upcoming": "Upcoming",
+  "health.taken": "Taken",
+  "health.missed": "Missed · not recorded",
+  "health.take": "Mark as taken",
+  "health.undo": "Undo taken record",
+  "health.todayEmpty": "No medication reminders for today.",
+  "health.plans": "Your medications",
+  "health.empty": "Add a medication and choose the times you want to remember.",
+  "health.history": "Medication history",
+  "health.historyEmpty":
+    "Your scheduled reminders and taken records will appear here.",
+  "health.recorded": "Recorded {time}",
+  "schedule.timezoneBody":
+    "Times stay in this timezone, including when you travel. Use an IANA name such as Asia/Tehran.",
+  "schedule.reminders": "Send reminders for this plan",
+  "schedule.updated":
+    "Changes apply from now; earlier records stay as they were.",
+  "schedule.more": "Show older records",
+  "schedule.none": "Nothing scheduled yet.",
 } as const;
 export type TranslationKey = keyof typeof en;
