@@ -15,7 +15,6 @@ export function ThemeToggle() {
     () => "auto" as const,
   );
   const reduced = useReducedMotion();
-  const dark = mode === "dark";
   const theme = mode;
   function toggle() {
     setThemeMode(
@@ -49,7 +48,10 @@ export function ThemeToggle() {
             }}
             transition={{ duration: reduced ? 0 : 0.18 }}
           >
-            <Icon name={dark ? "moon" : "sun"} size={19} />
+            <Icon
+              name={mode === "auto" ? "clock" : mode === "dark" ? "moon" : "sun"}
+              size={19}
+            />
           </motion.span>
         </AnimatePresence>
       </span>
