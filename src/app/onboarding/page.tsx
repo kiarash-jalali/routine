@@ -55,6 +55,14 @@ const screens = [
       { key: "reminders", icon: "clock" },
     ],
   },
+  {
+    title: "intro.life",
+    body: "intro.lifeBody",
+    items: [
+      { key: "health", icon: "checkin" },
+      { key: "workout", icon: "sun" },
+    ],
+  },
 ] as const;
 export default function OnboardingPage() {
   const router = useRouter();
@@ -191,10 +199,14 @@ export default function OnboardingPage() {
                 busy={busy}
                 disabled={busy || !userId}
                 onClick={() =>
-                  Number(step) < 2 ? setStep(Number(step) + 1) : void setup()
+                  Number(step) < screens.length - 1
+                    ? setStep(Number(step) + 1)
+                    : void setup()
                 }
               >
-                {Number(step) < 2 ? t("common.continue") : t("intro.setup")}
+                {Number(step) < screens.length - 1
+                  ? t("common.continue")
+                  : t("intro.setup")}
               </Button>
               {Number(step) > 0 && (
                 <Button
