@@ -1,14 +1,14 @@
 "use client";
 
 import { Link } from "next-view-transitions";
-import { Icon } from "@/components/Icon";
+import { Icon, type IconName } from "@/components/Icon";
 import { PageHeader, PageShell } from "@/components/ui";
 
 type ThemeName = "morning" | "day" | "evening" | "night";
 
 type Theme = {
   label: string;
-  icon: string;
+  icon: IconName;
   description: string;
   background: string;
   surface: string;
@@ -85,16 +85,25 @@ function ThemePreview({ theme }: { theme: Theme }) {
         </div>
 
         <div className="space-y-3">
-          <div className="rounded-2xl p-4" style={{ background: theme.surface }}>
+          <div
+            className="rounded-2xl p-4"
+            style={{ background: theme.surface }}
+          >
             <p className="font-semibold">Today</p>
             <p className="text-sm" style={{ color: theme.muted }}>
               Small progress every day.
             </p>
           </div>
 
-          <div className="rounded-2xl p-4" style={{ background: theme.surface }}>
+          <div
+            className="rounded-2xl p-4"
+            style={{ background: theme.surface }}
+          >
             <p className="font-semibold">3 routines completed</p>
-            <div className="mt-3 h-2 rounded-full" style={{ background: theme.accent }} />
+            <div
+              className="mt-3 h-2 rounded-full"
+              style={{ background: theme.accent }}
+            />
           </div>
 
           <button
