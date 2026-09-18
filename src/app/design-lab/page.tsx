@@ -78,6 +78,8 @@ const colorFields = [
 
 type ThemeColor = (typeof colorFields)[number];
 
+// Design Lab edits stay local to this page so production theme behavior is untouched.
+
 function createEditableThemes(): Record<ThemeName, Theme> {
   return {
     morning: { ...defaultThemes.morning },
