@@ -39,6 +39,7 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
   const [busyAction, setBusyAction] = useState<
     | "profile"
     | "email"
@@ -210,7 +211,7 @@ export default function SettingsPage() {
   }
 
   async function deleteAccount() {
-    if (deleteConfirmation !== "DELETE" || busyAction) return;
+    if (deleteConfirmation !== "DELETE" || !deletePassword || busyAction) return;
 
     beginAction("delete");
     try {
@@ -228,7 +229,9 @@ export default function SettingsPage() {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({ password: deletePassword }),
       });
 
       if (!response.ok) {
@@ -427,11 +430,23 @@ export default function SettingsPage() {
                 disabled={Boolean(busyAction)}
                 onChange={(event) => setDeleteConfirmation(event.target.value)}
               />
+              <label className="grid gap-2 text-sm font-medium">
+                {t("settings.currentPassword")}
+                <Input
+                  type="password"
+                  value={deletePassword}
+                  autoComplete="current-password"
+                  disabled={Boolean(busyAction)}
+                  onChange={(event) => setDeletePassword(event.target.value)}
+                />
+              </label>
               <Button
                 variant="danger"
                 onClick={deleteAccount}
                 disabled={
-                  Boolean(busyAction) || deleteConfirmation !== "DELETE"
+                  Boolean(busyAction) ||
+                  deleteConfirmation !== "DELETE" ||
+                  !deletePassword
                 }
                 busy={busyAction === "delete"}
               >

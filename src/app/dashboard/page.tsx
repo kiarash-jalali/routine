@@ -28,18 +28,17 @@ import {
   SegmentedControl,
   Stat,
 } from "@/components/ui";
-import { listCheckinDays } from "@/lib/db/history";
-import { listStreakRepairs } from "@/lib/db/points";
+import { getRhythmSummary, type RhythmSummary } from "@/lib/db/rhythm";
 import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import { calculateStreakMetrics } from "@/lib/streak";
 import {
   filterTasksForToday,
   getLocalDateKey,
 } from "@/lib/today";
+import { useToday } from "@/lib/useToday";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
 
@@ -60,8 +59,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [routines, setRoutines] = useState<Routine[]>([]);
-  const [checkinDays, setCheckinDays] = useState<string[] | null>(null);
-  const [repairedDays, setRepairedDays] = useState<string[]>([]);
+  const [rhythm, setRhythm] = useState<RhythmSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -74,7 +72,8 @@ export default function DashboardPage() {
   const [moment, setMoment] = useState<MomentNotice | null>(null);
   const pending = useRef(new Set<string>());
   const [filter, setFilter] = useState<"today" | "all" | "done">("today");
-  const [today] = useState(() => new Date());
+  const today = useToday();
+  const todayKey = getLocalDateKey(today);
 
   function showMoment(
     key: MomentCopyKey,
@@ -104,18 +103,15 @@ export default function DashboardPage() {
         setUserId(data.user.id);
         const results = await Promise.allSettled([
           listTasks(),
-          listTodaysRoutines(),
-          listCheckinDays(data.user.id),
-          listStreakRepairs(data.user.id),
+          listTodaysRoutines(today),
+          getRhythmSummary(todayKey, 7),
         ]);
         if (cancelled) return;
-        const [taskResult, routineResult, daysResult, repairsResult] = results;
+        const [taskResult, routineResult, rhythmResult] = results;
         if (taskResult.status === "fulfilled") setTasks(taskResult.value);
         if (routineResult.status === "fulfilled")
           setRoutines(routineResult.value);
-        if (daysResult.status === "fulfilled") setCheckinDays(daysResult.value);
-        if (repairsResult.status === "fulfilled")
-          setRepairedDays(repairsResult.value.map((repair) => repair.day));
+        if (rhythmResult.status === "fulfilled") setRhythm(rhythmResult.value);
         if (results.some((result) => result.status === "rejected"))
           setError(
             "Some of your day couldn’t be loaded. Refresh to try again.",
@@ -131,7 +127,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, today, todayKey]);
 
   async function createTask(event: React.FormEvent) {
     event.preventDefault();
@@ -223,11 +219,7 @@ export default function DashboardPage() {
       : filter === "done"
         ? tasks.filter((task) => task.is_done)
         : tasks;
-  const streak = calculateStreakMetrics([
-    ...(checkinDays ?? []),
-    ...repairedDays,
-  ]);
-  const checkedInToday = checkinDays?.includes(getLocalDateKey(today));
+  const checkedInToday = rhythm?.checkedInToday ?? false;
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
     date.setDate(today.getDate() - ((today.getDay() + 6) % 7) + index);
@@ -282,7 +274,7 @@ export default function DashboardPage() {
         </div>
         <div className="px-3 sm:px-5">
           <Stat
-            value={checkinDays ? number(streak.currentDays) : "—"}
+            value={rhythm ? number(rhythm.currentDays) : "—"}
             label={
               streak.currentDays === 1
                 ? t("dashboard.dayRhythm")
@@ -446,7 +438,7 @@ export default function DashboardPage() {
               {weekDays.map((date) => {
                 const dateKey = getLocalDateKey(date);
                 const isToday = dateKey === getLocalDateKey(today);
-                const checked = checkinDays?.includes(dateKey);
+                const checked = rhythm?.recentCheckinDays.includes(dateKey);
                 return (
                   <div
                     key={dateKey}

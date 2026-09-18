@@ -196,6 +196,7 @@ export const en = {
     "Permanently remove your account and its data. This cannot be undone.",
   "settings.typeDelete": "Type DELETE to confirm.",
   "settings.deleteMine": "Delete my account",
+  "settings.currentPassword": "Current password",
   "settings.space": "Your space",
   "settings.passwordMismatch": "The two password fields do not match.",
   "settings.emailConfirm": "Check your inbox to finish the email change.",

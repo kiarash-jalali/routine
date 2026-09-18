@@ -13,6 +13,7 @@
   --muted: #607168;
   --muted-soft: #697a70;
   --border: #50776820;
+  --border-interactive: #507768cc;
   --border-strong: #6a8474;
   --primary: #286e5e;
   --primary-strong: #205a4d;
@@ -52,6 +53,7 @@
   --muted: #b2c5b8;
   --muted-soft: #a6bdaf;
   --border: #aecaba21;
+  --border-interactive: #aecaba99;
   --border-strong: #779c88;
   --primary: #a4ddbe;
   --primary-strong: #b6e8ce;
@@ -486,7 +488,7 @@
     min-height: 48px;
     width: 100%;
     min-width: 0;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-interactive);
     background: var(--surface-soft);
     color: var(--foreground);
     padding: 12px 14px;

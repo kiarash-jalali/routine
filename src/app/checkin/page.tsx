@@ -39,6 +39,7 @@ import {
   formatFriendlyDate,
   getLocalDateKey,
 } from "@/lib/today";
+import { useToday } from "@/lib/useToday";
 import type {
   CheckinCompletionMap,
   CheckinItem,
@@ -114,8 +115,9 @@ function formatTaskTime(task: Task): string {
 export default function CheckinPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const [today] = useState(() => getLocalDateKey());
-  const [todayLabel] = useState(() => formatFriendlyDate());
+  const todayDate = useToday();
+  const today = getLocalDateKey(todayDate);
+  const todayLabel = formatFriendlyDate(todayDate);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -153,8 +155,9 @@ export default function CheckinPage() {
           return;
         }
 
+        const dayDate = new Date(`${today}T12:00:00`);
         const [todaysRoutines, allTasks, existingCheckin] = await Promise.all([
-          listTodaysRoutines(),
+          listTodaysRoutines(dayDate),
           listTasks(),
           findDailyCheckin(user.id, today),
         ]);
@@ -169,7 +172,7 @@ export default function CheckinPage() {
         setUserId(user.id);
         setDailyCheckinId(existingCheckin?.id ?? null);
         setRoutines(todaysRoutines);
-        setTasks(filterTasksForToday(allTasks));
+        setTasks(filterTasksForToday(allTasks, dayDate));
         setCompletionByItem(existingCompletionMap);
         setSavedCompletionByItem(existingCompletionMap);
         setHasFinishedToday(Boolean(existingCheckin));

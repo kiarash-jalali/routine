@@ -42,10 +42,8 @@ export function filterTasksForToday(
     const dueDate = new Date(task.due_at);
     if (Number.isNaN(dueDate.getTime())) return false;
 
-    return (
-      dueDate.getFullYear() === date.getFullYear() &&
-      dueDate.getMonth() === date.getMonth() &&
-      dueDate.getDate() === date.getDate()
-    );
+    const endOfToday = new Date(date);
+    endOfToday.setHours(23, 59, 59, 999);
+    return dueDate <= endOfToday;
   });
 }

@@ -39,6 +39,7 @@ import {
 } from "@/lib/points";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import { calculateStreakMetrics, formatDayCount } from "@/lib/streak";
+import { useToday } from "@/lib/useToday";
 import type { CheckinHistoryEntry } from "@/types/history";
 import type { StreakRepair } from "@/types/points";
 
@@ -55,7 +56,7 @@ function getWeekdayLabels() {
 export default function HistoryPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const [today] = useState(() => new Date());
+  const today = useToday();
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [history, setHistory] = useState<CheckinHistoryEntry[]>([]);
