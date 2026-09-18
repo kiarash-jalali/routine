@@ -141,6 +141,7 @@ function ThemePreview({ theme }: { theme: Theme }) {
 }
 
 export default function DesignLabPage() {
+  // Developer-only editor state is intentionally ephemeral and resets on refresh.
   const [themes, setThemes] = useState(createEditableThemes);
 
   function updateColor(name: ThemeName, color: ThemeColor, value: string) {
