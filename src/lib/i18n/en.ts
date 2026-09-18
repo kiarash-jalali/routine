@@ -248,5 +248,28 @@ export const en = {
     "Changes apply from now; earlier records stay as they were.",
   "schedule.more": "Show older records",
   "schedule.none": "Nothing scheduled yet.",
+  "workout.title": "Workout & sport",
+  "workout.body": "Make a little room to move. Showing up is the goal.",
+  "workout.add": "Plan a workout",
+  "workout.edit": "Edit workout",
+  "workout.name": "Workout name",
+  "workout.activity": "Activity type",
+  "workout.duration": "Duration (minutes)",
+  "workout.exercises": "Exercises or plan (optional)",
+  "workout.log": "Log a session",
+  "workout.plans": "Your weekly plans",
+  "workout.empty": "Choose a day and a small activity to start with.",
+  "workout.todayEmpty":
+    "Nothing planned for today. You can still log a session.",
+  "workout.historyEmpty":
+    "Completed sessions and earlier plans will appear here.",
+  "workout.complete": "Complete session",
+  "workout.completed": "Completed",
+  "workout.undo": "Undo completion",
+  "workout.upcoming": "Upcoming",
+  "workout.missed": "Not completed",
+  "workout.minutes": "{count} minutes",
+  "workout.date": "Session date",
+  "workout.actual": "How long did you move?",
 } as const;
 export type TranslationKey = keyof typeof en;

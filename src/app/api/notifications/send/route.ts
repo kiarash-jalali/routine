@@ -102,6 +102,33 @@ export async function POST(request: Request) {
       if (error) counts.failed++;
     }
   }
+  const { error: workoutSyncError } = await admin.rpc("sync_workout_sessions");
+  if (workoutSyncError)
+    return NextResponse.json(
+      { error: "Scheduled sessions could not be prepared." },
+      { status: 500 },
+    );
+  const { data: workouts, error: workoutError } = await admin
+    .from("workout_sessions")
+    .select("id,user_id,workout_plans!inner(is_active,reminders_enabled)")
+    .is("completed_at", null)
+    .is("notified_at", null)
+    .eq("workout_plans.is_active", true)
+    .eq("workout_plans.reminders_enabled", true)
+    .lte("scheduled_at", now.toISOString())
+    .gte("scheduled_at", new Date(now.getTime() - 60 * 60 * 1000).toISOString())
+    .order("scheduled_at")
+    .limit(100);
+  if (workoutError) counts.failed++;
+  for (const session of workouts ?? []) {
+    if (await deliver(session.user_id, "workout", session.id)) {
+      const { error } = await admin
+        .from("workout_sessions")
+        .update({ notified_at: now.toISOString() })
+        .eq("id", session.id);
+      if (error) counts.failed++;
+    }
+  }
   // Transport metadata has no product-history purpose beyond a short retry window.
   await admin
     .from("push_deliveries")
