@@ -19,6 +19,7 @@ type Theme = {
   accent: string;
 };
 
+// Keep the preview defaults in one place so every reset returns to the same palette.
 const defaultThemes: Readonly<Record<ThemeName, Readonly<Theme>>> = {
   morning: {
     label: "Morning",
