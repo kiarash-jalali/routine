@@ -23,7 +23,7 @@ import {
 } from "@/lib/db/feedback";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy } from "@/lib/moments";
-import { supabaseBrowser } from "@/lib/supabaseClient";
+import { getSessionUser } from "@/lib/session";
 
 const feedbackCategories: ReadonlyArray<{
   value: FeedbackCategory;
@@ -49,13 +49,10 @@ export default function FeedbackPage() {
     let cancelled = false;
 
     async function loadUser() {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabaseBrowser().auth.getUser();
+      const user = await getSessionUser();
 
       if (cancelled) return;
-      if (userError || !user) {
+      if (!user) {
         router.replace("/login");
         return;
       }

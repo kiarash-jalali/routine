@@ -26,7 +26,7 @@ import { ReminderSettings } from "@/components/notifications/ReminderSettings";
 import { getProfile, saveDisplayName } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
-import { supabaseBrowser } from "@/lib/supabaseClient";
+import { supabaseBrowser } from "@/lib/supabaseClient";\nimport { getSessionUser } from "@/lib/session";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -74,13 +74,9 @@ export default function SettingsPage() {
 
     async function loadSettings() {
       try {
-        const supabase = supabaseBrowser();
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+        const user = await getSessionUser();
 
-        if (userError || !user) {
+        if (!user) {
           router.replace("/login");
           return;
         }
