@@ -18,6 +18,7 @@ export function ThemePicker() {
     <label className="grid gap-2 text-sm">
       <span>{t("theme.title")}</span>
       <select
+        aria-label={t("theme.title")}
         className="field"
         value={mode}
         onChange={(e) => {

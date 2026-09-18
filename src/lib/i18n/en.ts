@@ -271,5 +271,17 @@ export const en = {
   "workout.minutes": "{count} minutes",
   "workout.date": "Session date",
   "workout.actual": "How long did you move?",
+  "product.addTask": "Add task",
+  "product.task": "Task",
+  "product.taskPlaceholder": "What’s on your mind?",
+  "product.editCheckin": "Edit check-in",
+  "product.finishCheckin": "Finish check-in",
+  "product.checkinSavedTitle": "A day worth acknowledging.",
+  "product.checkinSavedBody":
+    "Your check-in is saved. Come back to it if anything changes.",
+  "product.noRoutines": "No routines planned for today.",
+  "product.noTasks": "No unfinished tasks planned for today.",
+  "product.saveChanges": "Save changes",
+  "product.keepTask": "Keep task",
 } as const;
 export type TranslationKey = keyof typeof en;

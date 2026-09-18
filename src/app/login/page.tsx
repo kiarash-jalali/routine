@@ -207,7 +207,7 @@ export default function LoginPage() {
                       type="submit"
                     >
                       {loading
-                        ? "Please wait…"
+                        ? t("login.wait")
                         : mode === "login"
                           ? t("login.login")
                           : t("login.create")}
@@ -220,7 +220,7 @@ export default function LoginPage() {
           </AnimatedSwap>
         </div>
         <p className="mt-7 text-center text-sm text-muted">
-          A little, every day.
+          {t("nav.tagline")}
         </p>
       </div>
     </main>

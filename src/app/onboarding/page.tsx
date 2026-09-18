@@ -23,7 +23,7 @@ import {
   markIntroSeen,
   saveDisplayName,
 } from "@/lib/db/profile";
-import { addRoutine } from "@/lib/db/routines";
+import { addRoutine, listRoutines } from "@/lib/db/routines";
 import {
   formatPreferredTimeForDatabase,
   getDefaultRoutineFormValues,
@@ -79,7 +79,10 @@ export default function OnboardingPage() {
           router.replace("/login");
           return;
         }
-        const profile = await getProfile(user.id);
+        const [profile, existingRoutines] = await Promise.all([
+          getProfile(user.id),
+          listRoutines(),
+        ]);
         if (!profile) throw new Error("profile");
         if (profile.onboarding_completed) {
           router.replace("/dashboard");
@@ -89,7 +92,13 @@ export default function OnboardingPage() {
           setUserId(user.id);
           setName(profile.display_name ?? "");
           if (profile.intro_seen)
-            setStep(profile.display_name ? "routine" : "name");
+            setStep(
+              existingRoutines.length
+                ? "ready"
+                : profile.display_name
+                  ? "routine"
+                  : "name",
+            );
         }
       } catch {
         if (!cancelled) setError(true);

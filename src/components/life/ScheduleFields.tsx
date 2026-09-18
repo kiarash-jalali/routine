@@ -20,7 +20,7 @@ export function ScheduleFields({
   onStart?: (value: string) => void;
   onEnd?: (value: string) => void;
 }) {
-  const { t, weekday } = useLanguage();
+  const { t, weekday, language } = useLanguage();
   return (
     <>
       <fieldset>
@@ -31,6 +31,8 @@ export function ScheduleFields({
               key={day}
               type="button"
               className="day-chip"
+              aria-label={weekday(day, "long")}
+              title={weekday(day, "long")}
               aria-pressed={days.includes(day)}
               onClick={() =>
                 onDays(
@@ -40,7 +42,7 @@ export function ScheduleFields({
                 )
               }
             >
-              {weekday(day)}
+              {weekday(day, language === "fa" ? "narrow" : "short")}
             </button>
           ))}
         </div>

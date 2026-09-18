@@ -11,6 +11,7 @@ export function LanguagePicker() {
       <label className="grid gap-2 text-sm font-medium">
         {t("language.title")}
         <select
+          aria-label={t("language.title")}
           className="field"
           value={language}
           disabled={busy}

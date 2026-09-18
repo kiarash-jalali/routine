@@ -26,7 +26,7 @@ export function WorkoutForm({
         duration_minutes: 30,
         exercises: "",
         days_of_week: [1, 3, 5],
-        preferred_time: "18:00",
+        preferred_time: onLog ? localClock(new Date(), timezone).time : "18:00",
         timezone,
         is_active: true,
         reminders_enabled: false,

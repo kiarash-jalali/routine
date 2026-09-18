@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { NotificationWorker } from "@/components/notifications/NotificationWorker";
 import { AppFrame } from "@/components/AppFrame";
 import { ViewTransitions } from "next-view-transitions";
 import { MotionProvider } from "@/components/Motion";
@@ -55,6 +56,7 @@ export default function RootLayout({
         <body className="antialiased">
           <LanguageProvider>
             <ThemeController />
+            <NotificationWorker />
             <MotionProvider>
               <AppFrame>{children}</AppFrame>
             </MotionProvider>

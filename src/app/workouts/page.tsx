@@ -173,8 +173,10 @@ export default function WorkoutsPage() {
                         <bdi>{plan.name}</bdi>
                       </h3>
                       <p className="mt-2 text-sm text-muted">
-                        {plan.days_of_week.map(weekday).join(" · ")} ·{" "}
-                        {time(plan.preferred_time)}
+                        {plan.days_of_week
+                          .map((day) => weekday(day))
+                          .join(" · ")}{" "}
+                        · {time(plan.preferred_time)}
                       </p>
                       <p className="text-sm text-muted">
                         <bdi>{plan.activity_type}</bdi> ·{" "}

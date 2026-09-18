@@ -27,3 +27,13 @@ Supabase's schema-discovery advisor warns that authenticated roles can discover 
 ## Next extensions
 
 Future doctors, allergies or medical records should receive their own owner-scoped tables in a new reviewed migration, not overloaded routine/task fields or public document storage. Health data remains excluded from the proposed assistant tools. See `agent-architecture.md` for the confirmation boundary that must be implemented before enabling agent writes.
+
+## Release checks (18 September 2026)
+
+- `npm run verify` passed after each phase and after integration fixes (ESLint, generated route types/TypeScript, optimized Next build).
+- Four executable contract tests passed: AI action allowlist/bounds; automatic-theme boundaries and preservation of explicit preferences; timezone midnight/non-hour offsets; push endpoint SSRF restrictions.
+- Both rolled-back SQL suites passed against the connected Supabase project. Security advisors were reviewed as described above.
+- A temporary synthetic account exercised the real browser → Supabase path: three intro screens, first routine, contextual reminder skip without requesting permission, returning-user redirect, medication create/edit/taken/reload/pause, workout completion with actual duration, manual session logging, and persisted Persian preference.
+- Desktop and 390px mobile Persian rendering were checked for horizontal overflow, dialog layering and keyboard dismissal. The shared sheet now portals to the document body, traps focus and supports reduced-motion scrolling. Persian day chips use compact labels with full accessible names.
+- New worker registration happens without requesting notification permission and activates the updated generic-payload handler for existing installations.
+- Actual delivery to a physical iPhone/Android/desktop push service was not exercised in this environment; permission is blocked in the headless browser. The existing production VAPID configuration and five-minute scheduler are retained. Test from an installed app with permission granted before relying on reminders.

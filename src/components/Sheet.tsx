@@ -1,5 +1,8 @@
 "use client";
 
+import { createPortal } from "react-dom";
+import { Icon } from "@/components/Icon";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 
 export function Sheet({
@@ -21,6 +24,7 @@ export function Sheet({
   compact?: boolean;
   children: ReactNode;
 }) {
+  const { t } = useLanguage();
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const onCloseRef = useRef(onClose);
@@ -49,6 +53,7 @@ export function Sheet({
     const previousFocus = document.activeElement as HTMLElement | null;
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
     const visualViewport = window.visualViewport;
+    const focusTimers: number[] = [];
 
     function syncViewport() {
       const height = visualViewport?.height ?? window.innerHeight;
@@ -67,14 +72,50 @@ export function Sheet({
       if (!target.matches("input, textarea, select")) return;
 
       [80, 280, 520].forEach((delay) => {
-        window.setTimeout(() => {
-          syncViewport();
-          target.scrollIntoView({ block: "center", behavior: "smooth" });
-        }, delay);
+        focusTimers.push(
+          window.setTimeout(() => {
+            syncViewport();
+            target.scrollIntoView({
+              block: "center",
+              behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+                .matches
+                ? "instant"
+                : "smooth",
+            });
+          }, delay),
+        );
       });
     }
 
     function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Tab") {
+        const items = Array.from(
+          panelElement.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]',
+          ),
+        ).filter((item) => item.getClientRects().length);
+        const first = items[0],
+          last = items[items.length - 1];
+        if (!first) {
+          event.preventDefault();
+          panelElement.focus();
+        } else if (
+          event.shiftKey &&
+          (document.activeElement === first ||
+            !panelElement.contains(document.activeElement) ||
+            document.activeElement === panelElement)
+        ) {
+          event.preventDefault();
+          last.focus();
+        } else if (
+          !event.shiftKey &&
+          (document.activeElement === last ||
+            !panelElement.contains(document.activeElement))
+        ) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
       if (event.key === "Escape" && !busyRef.current) {
         onCloseRef.current();
       }
@@ -90,6 +131,7 @@ export function Sheet({
     panelElement.addEventListener("focusin", keepFocusedFieldVisible);
     document.addEventListener("keydown", handleKeyDown);
 
+    panelElement.focus({ preventScroll: true });
     if (!isMobile && keyboardAssist) {
       panelElement
         .querySelector<HTMLElement>(
@@ -99,6 +141,7 @@ export function Sheet({
     }
 
     return () => {
+      focusTimers.forEach(clearTimeout);
       visualViewport?.removeEventListener("resize", syncViewport);
       visualViewport?.removeEventListener("scroll", syncViewport);
       window.removeEventListener("resize", syncViewport);
@@ -113,13 +156,13 @@ export function Sheet({
     };
   }, [keyboardAssist, open]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
   function closeSheet() {
     if (!busy) onClose();
   }
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
       className="sheet-overlay"
@@ -132,11 +175,21 @@ export function Sheet({
       <section
         ref={panelRef}
         className="sheet"
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
       >
+        <button
+          type="button"
+          className="sheet-close"
+          disabled={busy}
+          onClick={closeSheet}
+          aria-label={t("common.cancel")}
+        >
+          <Icon name="close" />
+        </button>
         <div className="sheet-body">
           <div>
             <h2 id={titleId} className="sheet-title text-3xl">
@@ -154,6 +207,7 @@ export function Sheet({
           {children}
         </div>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }

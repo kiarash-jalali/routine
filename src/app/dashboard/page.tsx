@@ -259,12 +259,12 @@ export default function DashboardPage() {
               }}
             >
               <Icon name="plus" size={18} />
-      <LifeLinks />
-              Add task
+              {t("product.addTask")}
             </Button>
           </MomentSource>
         }
       />
+      <LifeLinks />
       <Collapse show={!!error}>
         <div className="mb-6">
           <ErrorNotice>{error}</ErrorNotice>
@@ -304,7 +304,7 @@ export default function DashboardPage() {
             <div className="mt-6">
               {routines.length === 0 ? (
                 <EmptyState>
-                  No routines planned for today.
+                  {t("product.noRoutines")}
                   <br />
                   <Link
                     className="mt-2 inline-flex min-h-11 items-center text-primary"
@@ -370,7 +370,7 @@ export default function DashboardPage() {
                 label="Task filter"
                 options={[
                   { value: "today", label: "Today" },
-                  { value: "all", label: "All" },
+                  { value: "all", label: t("common.all") },
                   { value: "done", label: "Done" },
                 ]}
               />
@@ -499,10 +499,10 @@ export default function DashboardPage() {
       >
         <form onSubmit={createTask} className="mt-6 space-y-5">
           <label className="grid gap-2 text-sm font-medium">
-            Task
+            {t("product.task")}
             <Input
               autoFocus
-              placeholder="What’s on your mind?"
+              placeholder={t("product.taskPlaceholder")}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               required
@@ -519,7 +519,7 @@ export default function DashboardPage() {
           </Collapse>
           <div className="flex gap-3">
             <Button onClick={closeTaskForm} disabled={creating}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               className="moment-shine flex-1"
@@ -528,7 +528,7 @@ export default function DashboardPage() {
               disabled={creating || !title.trim()}
               busy={creating}
             >
-              {creating ? "Adding…" : "Add task"}
+              {creating ? t("common.saving") : t("product.addTask")}
             </Button>
           </div>
         </form>
@@ -557,7 +557,7 @@ export default function DashboardPage() {
             onClick={() => setDeleteTarget(null)}
             disabled={deleting}
           >
-            Keep task
+            {t("product.keepTask")}
           </Button>
           <Button
             className="flex-1"

@@ -228,7 +228,7 @@ export default function RoutinesPage() {
               disabled={!userId}
             >
               <Icon name="plus" size={18} />
-              New routine
+              {t("routine.new")}
             </Button>
           </MomentSource>
         }
@@ -244,9 +244,9 @@ export default function RoutinesPage() {
           onChange={setFilter}
           label={t("routine.filter")}
           options={[
-            { value: "all", label: "All" },
-            { value: "active", label: "Active" },
-            { value: "paused", label: "Paused" },
+            { value: "all", label: t("common.all") },
+            { value: "active", label: t("common.active") },
+            { value: "paused", label: t("common.paused") },
           ]}
         />
         <span className="text-sm text-muted">
@@ -260,10 +260,10 @@ export default function RoutinesPage() {
             <AnimatedListItem key="empty">
               <EmptyState>
                 {filter === "paused"
-                  ? "No paused routines."
+                  ? t("routine.emptyPaused")
                   : filter === "active"
-                    ? "No active routines. Start again whenever you’re ready."
-                    : "Start small. A glass of water, a walk, a few pages."}
+                    ? t("routine.emptyActive")
+                    : t("routine.empty")}
                 {routines.length === 0 && (
                   <div className="mt-4">
                     <Button
@@ -272,7 +272,7 @@ export default function RoutinesPage() {
                       disabled={!userId}
                     >
                       <Icon name="plus" size={16} />
-                      Create your first routine
+                      {t("routine.first")}
                     </Button>
                   </div>
                 )}
@@ -308,7 +308,9 @@ export default function RoutinesPage() {
                 </div>
                 <div className="hidden sm:block">
                   <Pill muted={!routine.is_active}>
-                    {routine.is_active ? "Active" : "Paused"}
+                    {routine.is_active
+                      ? t("common.active")
+                      : t("common.paused")}
                   </Pill>
                 </div>
                 <div className="flex w-full items-center justify-end gap-2 pl-14 sm:w-auto sm:pl-0">
@@ -319,7 +321,7 @@ export default function RoutinesPage() {
                     aria-label={`Edit ${routine.title}`}
                   >
                     <Icon name="edit" size={16} />
-                    <span>Edit</span>
+                    <span>{t("common.edit")}</span>
                   </Button>
                   <MomentSource id={`routine-toggle-${routine.id}`}>
                     <span className="switch-target">
@@ -365,7 +367,7 @@ export default function RoutinesPage() {
         open={editorOpen}
         onClose={() => setEditorOpen(false)}
         busy={saving}
-        title={editingRoutine ? "Edit routine" : "A new routine"}
+        title={editingRoutine ? t("routine.edit") : t("routine.new")}
         description={t("routine.formBody")}
       >
         <RoutineForm
@@ -375,8 +377,10 @@ export default function RoutinesPage() {
               ? routineToFormValues(editingRoutine)
               : getDefaultRoutineFormValues()
           }
-          submitLabel={editingRoutine ? "Save changes" : "Create routine"}
-          submittingLabel="Saving…"
+          submitLabel={
+            editingRoutine ? t("product.saveChanges") : t("routine.create")
+          }
+          submittingLabel={t("common.saving")}
           isSubmitting={saving}
           onSubmit={saveRoutine}
           onCancel={() => setEditorOpen(false)}
@@ -392,7 +396,7 @@ export default function RoutinesPage() {
         open={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
         busy={saving}
-        title="Delete this routine?"
+        title={t("routine.delete")}
         description={
           deleteTarget
             ? `“${deleteTarget.title}” will be removed. You can pause it instead if you only need a break.`
@@ -412,7 +416,7 @@ export default function RoutinesPage() {
             onClick={() => setDeleteTarget(null)}
             disabled={saving}
           >
-            Keep routine
+            {t("routine.keep")}
           </Button>
           <Button
             className="flex-1"

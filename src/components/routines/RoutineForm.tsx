@@ -30,7 +30,7 @@ export function RoutineForm({
   shineSubmit = false,
   momentSourceId,
 }: RoutineFormProps) {
-  const { t, weekday } = useLanguage();
+  const { t, weekday, language } = useLanguage();
   const [values, setValues] = useState<RoutineFormValues>(initialValues);
   const canSubmit = Boolean(
     values.title.trim() &&
@@ -109,10 +109,12 @@ export function RoutineForm({
                   key={day.value}
                   className="day-chip"
                   type="button"
+                  aria-label={weekday(day.value, "long")}
+                  title={weekday(day.value, "long")}
                   aria-pressed={values.daysOfWeek.includes(day.value)}
                   onClick={() => toggleDay(day.value)}
                 >
-                  {weekday(day.value)}
+                  {weekday(day.value, language === "fa" ? "narrow" : "short")}
                 </button>
               ))}
             </div>

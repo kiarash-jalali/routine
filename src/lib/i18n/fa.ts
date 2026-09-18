@@ -270,4 +270,16 @@ export const fa: Record<TranslationKey, string> = {
   "workout.minutes": "{count} دقیقه",
   "workout.date": "تاریخ جلسه",
   "workout.actual": "چه مدت فعالیت کردی؟",
+  "product.addTask": "افزودن کار",
+  "product.task": "کار",
+  "product.taskPlaceholder": "چه کاری در ذهن داری؟",
+  "product.editCheckin": "ویرایش مرور",
+  "product.finishCheckin": "ثبت مرور روزانه",
+  "product.checkinSavedTitle": "روزی که ارزش دیده شدن دارد.",
+  "product.checkinSavedBody":
+    "مرور امروزت ذخیره شد. اگر چیزی تغییر کرد، می‌توانی ویرایشش کنی.",
+  "product.noRoutines": "برای امروز روتینی نداری.",
+  "product.noTasks": "برای امروز کار انجام‌نشده‌ای نداری.",
+  "product.saveChanges": "ذخیرهٔ تغییرات",
+  "product.keepTask": "نگه داشتن کار",
 };

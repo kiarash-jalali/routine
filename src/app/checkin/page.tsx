@@ -312,13 +312,15 @@ export default function CheckinPage() {
               <Icon name="check" size={25} />
             </span>
             <div className="min-w-0 flex-1" role="status">
-              <h2 className="reflection-title">A day worth acknowledging.</h2>
+              <h2 className="reflection-title">
+                {t("product.checkinSavedTitle")}
+              </h2>
               <p className="mt-1 text-sm leading-6 text-muted">
-                Your check-in is saved. Come back to it if anything changes.
+                {t("product.checkinSavedBody")}
               </p>
             </div>
             <Button onClick={() => setEditingFinishedCheckin(true)}>
-              Edit check-in
+              {t("product.editCheckin")}
             </Button>
           </div>
         </Card>
@@ -340,7 +342,7 @@ export default function CheckinPage() {
           />
           <div className="mt-5 space-y-2.5">
             {routines.length === 0 ? (
-              <EmptyState>No routines planned for today.</EmptyState>
+              <EmptyState>{t("product.noRoutines")}</EmptyState>
             ) : (
               routines.map((routine) => (
                 <MomentSource
@@ -375,7 +377,7 @@ export default function CheckinPage() {
           />
           <div className="mt-5 space-y-2.5">
             {tasks.length === 0 ? (
-              <EmptyState>No unfinished tasks planned for today.</EmptyState>
+              <EmptyState>{t("product.noTasks")}</EmptyState>
             ) : (
               tasks.map((task) => (
                 <MomentSource
@@ -431,7 +433,7 @@ export default function CheckinPage() {
                       disabled={saving}
                       onClick={cancelFinishedCheckinEdit}
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </Button>
                   )}
                   <MomentSource id="finish-day" className="flex flex-1">
@@ -445,7 +447,7 @@ export default function CheckinPage() {
                       {saving
                         ? "Saving…"
                         : editingFinishedCheckin
-                          ? "Save changes"
+                          ? t("product.saveChanges")
                           : "Finish day"}
                       {!saving && <Icon name="check" size={17} />}
                     </Button>

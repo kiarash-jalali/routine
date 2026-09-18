@@ -78,8 +78,8 @@ function makeValue(language: Language) {
         hour: "2-digit",
         minute: "2-digit",
       }).format(new Date(`2000-01-01T${value.slice(0, 5)}:00`)),
-    weekday: (isoDay: number) =>
-      new Intl.DateTimeFormat(locale, { weekday: "short" }).format(
+    weekday: (isoDay: number, format: "short" | "long" | "narrow" = "short") =>
+      new Intl.DateTimeFormat(locale, { weekday: format }).format(
         new Date(2024, 0, isoDay),
       ),
   };

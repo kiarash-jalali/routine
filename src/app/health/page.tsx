@@ -160,7 +160,9 @@ export default function HealthPage() {
                         {plan.times.map(time).join(" · ")}
                       </p>
                       <p className="text-sm text-muted">
-                        {plan.days_of_week.map(weekday).join(" · ")}
+                        {plan.days_of_week
+                          .map((day) => weekday(day))
+                          .join(" · ")}
                       </p>
                       {plan.notes && (
                         <p className="mt-3 whitespace-pre-wrap text-sm">
@@ -220,18 +222,19 @@ export default function HealthPage() {
             initial={editor === "new" ? undefined : editor}
             busy={busy}
             onSave={async (values) => {
-              if (
-                await act(() =>
-                  saveMedication(
-                    userId,
-                    values,
-                    editor === "new" ? undefined : editor.id,
-                  ),
-                )
-              ) {
+              await act(async () => {
+                await saveMedication(
+                  userId,
+                  values,
+                  editor === "new" ? undefined : editor.id,
+                );
                 setEditor(null);
-                if (values.reminders_enabled) setNotificationOpen(true);
-              }
+                if (
+                  values.reminders_enabled &&
+                  (editor === "new" || !editor.reminders_enabled)
+                )
+                  setNotificationOpen(true);
+              });
             }}
           />
         )}
