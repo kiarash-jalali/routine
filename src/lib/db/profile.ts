@@ -2,7 +2,7 @@ import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { Profile } from "@/types/profile";
 
 const PROFILE_COLUMNS =
-  "user_id,display_name,onboarding_completed,created_at,updated_at";
+  "user_id,display_name,onboarding_completed,locale,intro_seen,created_at,updated_at";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   const supabase = supabaseBrowser();
@@ -38,9 +38,18 @@ export async function completeOnboarding(userId: string): Promise<void> {
     .from("profiles")
     .update({
       onboarding_completed: true,
+      intro_seen: true,
       updated_at: new Date().toISOString(),
     })
     .eq("user_id", userId);
 
+  if (error) throw error;
+}
+
+export async function markIntroSeen(userId: string): Promise<void> {
+  const { error } = await supabaseBrowser()
+    .from("profiles")
+    .update({ intro_seen: true })
+    .eq("user_id", userId);
   if (error) throw error;
 }

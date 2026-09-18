@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 import { Link } from "next-view-transitions";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -53,6 +54,7 @@ function formatDueTime(task: Task) {
 }
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -235,7 +237,7 @@ export default function DashboardPage() {
   if (loading)
     return (
       <PageShell>
-        <LoadingState label="Loading your day…" />
+        <LoadingState label={t("common.loading")} />
       </PageShell>
     );
 
@@ -243,8 +245,8 @@ export default function DashboardPage() {
     <PageShell>
       <PageHeader
         eyebrow={formatFriendlyDate(today)}
-        title="Today"
-        description="A little progress, at your own pace."
+        title={t("nav.today")}
+        description={t("product.todayBody")}
         actions={
           <MomentSource id="add-task">
             <Button
@@ -286,7 +288,7 @@ export default function DashboardPage() {
         <div className="space-y-6">
           <Card>
             <SectionHeading
-              title="Your routines today"
+              title={t("product.routinesToday")}
               action={
                 <Link
                   className="inline-flex min-h-8 items-center gap-1 text-sm text-primary"
@@ -345,7 +347,7 @@ export default function DashboardPage() {
           </Card>
           <Card>
             <SectionHeading
-              title="Tasks"
+              title={t("product.tasks")}
               action={
                 <button
                   className="icon-button -mr-2 -mt-2"
@@ -422,7 +424,7 @@ export default function DashboardPage() {
         </div>
         <div className="space-y-6">
           <Card>
-            <SectionHeading title="This week" />
+            <SectionHeading title={t("product.week")} />
             <p className="mt-1 text-sm text-muted">
               {today.toLocaleDateString(undefined, {
                 month: "long",
@@ -490,8 +492,8 @@ export default function DashboardPage() {
         open={showTaskForm}
         onClose={closeTaskForm}
         busy={creating}
-        title="A new task"
-        description="One thing to remember. Keep it simple."
+        title={t("product.newTask")}
+        description={t("product.newTaskBody")}
       >
         <form onSubmit={createTask} className="mt-6 space-y-5">
           <label className="grid gap-2 text-sm font-medium">

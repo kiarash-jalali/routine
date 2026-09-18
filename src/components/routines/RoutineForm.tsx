@@ -7,6 +7,8 @@ import { Collapse } from "@/components/Motion";
 import { ROUTINE_DAYS } from "@/lib/routineSchedule";
 import type { RoutineFormValues } from "@/types/routine";
 
+import { useLanguage } from "@/components/preferences/LanguageProvider";
+
 type RoutineFormProps = {
   initialValues: RoutineFormValues;
   submitLabel: string;
@@ -28,6 +30,7 @@ export function RoutineForm({
   shineSubmit = false,
   momentSourceId,
 }: RoutineFormProps) {
+  const { t, weekday } = useLanguage();
   const [values, setValues] = useState<RoutineFormValues>(initialValues);
   const canSubmit = Boolean(
     values.title.trim() &&
@@ -66,10 +69,10 @@ export function RoutineForm({
     <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
       <fieldset disabled={isSubmitting} className="space-y-6">
         <label className="grid gap-2 text-sm font-medium">
-          Name
+          {t("common.name")}
           <Input
             autoFocus
-            placeholder="Read a few pages"
+            placeholder={t("routine.placeholder")}
             value={values.title}
             onChange={(event) =>
               setValues((current) => ({
@@ -81,13 +84,13 @@ export function RoutineForm({
           />
         </label>
         <div className="space-y-2">
-          <p className="text-sm font-medium">Repeat</p>
+          <p className="text-sm font-medium">{t("routine.repeat")}</p>
           <SegmentedControl
-            label="Routine frequency"
+            label={t("routine.frequency")}
             value={values.frequency}
             options={[
-              { value: "daily", label: "Every day" },
-              { value: "weekly", label: "Choose days" },
+              { value: "daily", label: t("common.daily") },
+              { value: "weekly", label: t("common.chooseDays") },
             ]}
             onChange={(frequency) =>
               setValues((current) => ({ ...current, frequency }))
@@ -98,7 +101,7 @@ export function RoutineForm({
         <Collapse show={values.frequency === "weekly"}>
           <fieldset>
             <legend className="mb-3 text-sm font-medium">
-              Days of the week
+              {t("common.days")}
             </legend>
             <div className="grid grid-cols-7 gap-1.5">
               {ROUTINE_DAYS.map((day) => (
@@ -109,15 +112,15 @@ export function RoutineForm({
                   aria-pressed={values.daysOfWeek.includes(day.value)}
                   onClick={() => toggleDay(day.value)}
                 >
-                  {day.label}
+                  {weekday(day.value)}
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-sm text-muted">Choose at least one day.</p>
+            <p className="mt-2 text-sm text-muted">{t("routine.chooseOne")}</p>
           </fieldset>
         </Collapse>
         <label className="grid gap-2 text-sm font-medium">
-          Preferred time
+          {t("routine.time")}
           <Input
             type="time"
             value={values.preferredTime}
@@ -130,14 +133,14 @@ export function RoutineForm({
             required
           />
           <span className="text-sm font-normal text-muted">
-            A gentle plan, not a deadline.
+            {t("routine.gentle")}
           </span>
         </label>
       </fieldset>
       <div className="flex gap-3">
         {onCancel && (
           <Button onClick={onCancel} disabled={isSubmitting}>
-            Cancel
+            {t("common.cancel")}
           </Button>
         )}
         {momentSourceId ? (

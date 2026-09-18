@@ -7,34 +7,38 @@ import { type CSSProperties } from "react";
 import { BrandMark, Icon } from "@/components/Icon";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
+import { useLanguage } from "@/components/preferences/LanguageProvider";
+
 const navItems = [
-  { href: "/dashboard", label: "Today", icon: "today" },
-  { href: "/routines", label: "Routines", icon: "routines" },
-  { href: "/checkin", label: "Check-in", icon: "checkin" },
-  { href: "/history", label: "History", icon: "history" },
+  { href: "/dashboard", label: "nav.today", icon: "today" },
+  { href: "/routines", label: "nav.routines", icon: "routines" },
+  { href: "/checkin", label: "nav.checkin", icon: "checkin" },
+  { href: "/history", label: "nav.history", icon: "history" },
 ] as const;
 
 function NavPending() {
+  const { t } = useLanguage();
   const { pending } = useLinkStatus();
   return pending ? (
-    <span className="nav-pending" aria-label="Loading page" />
+    <span className="nav-pending" aria-label={t("common.loading")} />
   ) : null;
 }
 
 export function AppNav() {
+  const { t } = useLanguage();
   const pathname = usePathname();
   const activeIndex = navItems.findIndex((item) => pathname === item.href);
 
   return (
     <aside className="app-navigation">
-      <Link href="/dashboard" className="brand-link" aria-label="rootine home">
+      <Link href="/dashboard" className="brand-link" aria-label={t("nav.home")}>
         <BrandMark />
         <span>
-          rootine<span className="brand-caption">A little, every day.</span>
+          rootine<span className="brand-caption">{t("nav.tagline")}</span>
         </span>
       </Link>
       <nav
-        aria-label="Main navigation"
+        aria-label={t("nav.main")}
         className="nav-tabs"
         style={
           activeIndex >= 0
@@ -53,7 +57,7 @@ export function AppNav() {
             aria-current={pathname === item.href ? "page" : undefined}
           >
             <Icon name={item.icon} size={21} />
-            <span>{item.label}</span>
+            <span>{t(item.label)}</span>
             <NavPending />
           </Link>
         ))}
@@ -63,19 +67,19 @@ export function AppNav() {
           href="/settings"
           className="logout-button"
           aria-current={pathname === "/settings" ? "page" : undefined}
-          aria-label="Settings"
+          aria-label={t("nav.settings")}
         >
           <Icon name="settings" size={19} />
-          <span>Settings</span>
+          <span>{t("nav.settings")}</span>
         </Link>
         <Link
           href="/feedback"
           className="logout-button"
           aria-current={pathname === "/feedback" ? "page" : undefined}
-          aria-label="Send feedback"
+          aria-label={t("nav.feedback")}
         >
           <Icon name="mail" size={19} />
-          <span>Feedback</span>
+          <span>{t("nav.feedback")}</span>
         </Link>
         <ThemeToggle />
       </div>

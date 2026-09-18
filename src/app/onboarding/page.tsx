@@ -1,11 +1,11 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap } from "@/components/Motion";
-import { BrandMark, Icon } from "@/components/Icon";
-import { MomentPopup, type MomentNotice } from "@/components/MomentPopup";
+import { BrandMark, Icon, type IconName } from "@/components/Icon";
 import { RoutineForm } from "@/components/routines/RoutineForm";
+import { LanguagePicker } from "@/components/preferences/LanguagePicker";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 import {
   Button,
   LoadingState,
@@ -13,118 +13,118 @@ import {
   ErrorNotice,
   Input,
   PageShell,
-  Pill,
   SectionHeading,
 } from "@/components/ui";
 import {
   completeOnboarding,
   getProfile,
+  markIntroSeen,
   saveDisplayName,
 } from "@/lib/db/profile";
-import { addRoutine, listRoutines } from "@/lib/db/routines";
-import { getErrorMessage } from "@/lib/errors";
-import { getMomentCopy } from "@/lib/moments";
+import { addRoutine } from "@/lib/db/routines";
 import {
   formatPreferredTimeForDatabase,
   getDefaultRoutineFormValues,
 } from "@/lib/routineSchedule";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import type { Routine, RoutineFormValues } from "@/types/routine";
-
-type OnboardingStep = "name" | "routine" | "ready";
-
+import type { RoutineFormValues } from "@/types/routine";
+const screens = [
+  {
+    title: "intro.welcome",
+    body: "intro.welcomeBody",
+    items: [
+      { key: "task", icon: "today" },
+      { key: "routine", icon: "routines" },
+    ],
+  },
+  {
+    title: "intro.checkin",
+    body: "intro.checkinBody",
+    items: [
+      { key: "rhythm", icon: "rootine" },
+      { key: "points", icon: "spark" },
+    ],
+  },
+  {
+    title: "intro.perspective",
+    body: "intro.perspectiveBody",
+    items: [
+      { key: "history", icon: "history" },
+      { key: "reminders", icon: "clock" },
+    ],
+  },
+] as const;
 export default function OnboardingPage() {
   const router = useRouter();
+  const { t, number } = useLanguage();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState("");
-  const [step, setStep] = useState<OnboardingStep>("name");
-  const [routines, setRoutines] = useState<Routine[]>([]);
-  const [routineFormVersion, setRoutineFormVersion] = useState(0);
-  const [moment, setMoment] = useState<MomentNotice | null>(null);
-
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [name, setName] = useState("");
+  const [step, setStep] = useState<number | "name" | "routine" | "ready">(0);
   useEffect(() => {
     let cancelled = false;
-
-    async function loadOnboarding() {
+    async function load() {
       try {
-        const supabase = supabaseBrowser();
         const {
           data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError) throw userError;
+          error,
+        } = await supabaseBrowser().auth.getUser();
+        if (error) throw error;
         if (!user) {
           router.replace("/login");
           return;
         }
-
-        const [profile, existingRoutines] = await Promise.all([
-          getProfile(user.id),
-          listRoutines(),
-        ]);
-
-        if (!profile) {
-          throw new Error("Your profile could not be found. Please try again.");
-        }
-
+        const profile = await getProfile(user.id);
+        if (!profile) throw new Error("profile");
         if (profile.onboarding_completed) {
           router.replace("/dashboard");
           return;
         }
-
-        if (cancelled) return;
-
-        setUserId(user.id);
-        setDisplayName(profile.display_name ?? "");
-        setRoutines(existingRoutines);
-
-        if (profile.display_name) {
-          setStep("routine");
-        }
-      } catch (error: unknown) {
         if (!cancelled) {
-          setErrorMessage(getErrorMessage(error, "Setup could not be loaded."));
+          setUserId(user.id);
+          setName(profile.display_name ?? "");
+          if (profile.intro_seen)
+            setStep(profile.display_name ? "routine" : "name");
         }
+      } catch {
+        if (!cancelled) setError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
-
-    loadOnboarding();
-
+    void load();
     return () => {
       cancelled = true;
     };
   }, [router]);
-
-  async function saveName() {
-    if (!userId || !displayName.trim() || saving) return;
-
-    setSaving(true);
-    setErrorMessage(null);
-
+  async function run(action: () => Promise<void>) {
+    if (!userId || busy) return;
+    setBusy(true);
+    setError(false);
     try {
-      await saveDisplayName(userId, displayName);
-      setDisplayName(displayName.trim());
-      setStep("routine");
-    } catch (error: unknown) {
-      setErrorMessage(getErrorMessage(error, "Your name could not be saved."));
+      await action();
+    } catch {
+      setError(true);
     } finally {
-      setSaving(false);
+      setBusy(false);
     }
   }
-
+  function finish() {
+    return run(async () => {
+      await completeOnboarding(userId);
+      router.replace("/dashboard");
+    });
+  }
+  function setup() {
+    return run(async () => {
+      await markIntroSeen(userId);
+      setStep("name");
+    });
+  }
   async function createRoutine(values: RoutineFormValues) {
-    if (!userId || saving) return;
-
-    setSaving(true);
-    setErrorMessage(null);
-
-    try {
+    await run(async () => {
       await addRoutine({
         user_id: userId,
         title: values.title,
@@ -132,211 +132,146 @@ export default function OnboardingPage() {
         days_of_week: values.frequency === "weekly" ? values.daysOfWeek : null,
         preferred_time: formatPreferredTimeForDatabase(values.preferredTime),
       });
-
-      setRoutines(await listRoutines());
-      setRoutineFormVersion((current) => current + 1);
-      const copy = getMomentCopy("routine_added");
-      setMoment({
-        id: `onboarding-routine-${Date.now()}`,
-        ...copy,
-        sourceId: "onboarding-routine-add",
-        icon: "plus",
-        tone: "success",
-      });
-    } catch (error: unknown) {
-      setErrorMessage(
-        getErrorMessage(error, "Your routine could not be created."),
-      );
-    } finally {
-      setSaving(false);
-    }
+      setStep("ready");
+    });
   }
-
-  async function finishOnboarding() {
-    if (!userId || routines.length === 0 || saving) return;
-
-    setSaving(true);
-    setErrorMessage(null);
-
-    try {
-      await completeOnboarding(userId);
-      router.replace("/dashboard");
-    } catch (error: unknown) {
-      setErrorMessage(getErrorMessage(error, "Setup could not be completed."));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (loading) {
+  if (loading)
     return (
       <PageShell className="max-w-xl">
-        <LoadingState label="Preparing your space…" />
+        <LoadingState label={t("common.loading")} />
       </PageShell>
     );
-  }
-
-  const stepNumber = step === "name" ? 1 : step === "routine" ? 2 : 3;
-
+  const intro = typeof step === "number" ? screens[step] : null;
   return (
     <PageShell className="max-w-xl">
-      <div className="mb-8 text-center">
-        <BrandMark className="mb-6" />
-        <h1 className="display-title text-4xl">Your space, your pace.</h1>
-        <p className="mt-3 text-sm text-muted">
-          Step {stepNumber} of 3 ·{" "}
-          {step === "name"
-            ? "A quick hello"
-            : step === "routine"
-              ? "Your first routine"
-              : "All set"}
-        </p>
-        <div className="onboarding-steps mt-5" aria-hidden="true">
-          {[1, 2, 3].map((number) => (
-            <span key={number} data-active={number <= stepNumber} />
-          ))}
-        </div>
+      <div className="mb-7 flex items-center justify-between gap-5">
+        <BrandMark />
+        <LanguagePicker />
       </div>
-
-      {errorMessage && (
-        <div className="mb-5">
-          <ErrorNotice>{errorMessage}</ErrorNotice>
-        </div>
-      )}
-
-      <AnimatedSwap value={step}>
+      {error && <ErrorNotice>{t("common.error")}</ErrorNotice>}
+      <AnimatedSwap value={String(step)}>
+        {intro && (
+          <Card>
+            <p className="mb-4 text-sm text-muted">
+              {t("intro.progress", { step: number(Number(step) + 1) })}
+            </p>
+            <h1 className="display-title text-4xl">{t(intro.title)}</h1>
+            <p className="mt-4 text-muted">{t(intro.body)}</p>
+            <div className="intro-illustration">
+              {intro.items.map((item) => (
+                <div key={item.key} className="intro-example">
+                  <span className="icon-tile">
+                    <Icon name={item.icon as IconName} />
+                  </span>
+                  <div>
+                    <h2 className="font-semibold">{t(`intro.${item.key}`)}</h2>
+                    <p className="mt-1 text-sm text-muted">
+                      {t(`intro.${item.key}Body`)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="primary"
+                busy={busy}
+                disabled={busy || !userId}
+                onClick={() =>
+                  Number(step) < 2 ? setStep(Number(step) + 1) : void setup()
+                }
+              >
+                {Number(step) < 2 ? t("common.continue") : t("intro.setup")}
+              </Button>
+              {Number(step) > 0 && (
+                <Button
+                  disabled={busy}
+                  onClick={() => setStep(Number(step) - 1)}
+                >
+                  {t("common.back")}
+                </Button>
+              )}
+            </div>
+          </Card>
+        )}
         {step === "name" && (
           <Card>
             <SectionHeading
-              title="What should we call you?"
-              description="Just a name for now. You can change it anytime later in Settings."
+              title={t("onboarding.name")}
+              description={t("onboarding.nameBody")}
             />
-
-            <label className="mt-6 grid gap-1.5">
-              <span className="text-sm font-medium text-foreground">
-                Your name
-              </span>
-              <Input
-                autoFocus
-                disabled={saving}
-                autoComplete="given-name"
-                maxLength={80}
-                placeholder="Your name"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") void saveName();
-                }}
-              />
-            </label>
-
-            <Button
-              variant="primary"
-              className="mt-5 w-full sm:w-auto"
-              busy={saving}
-              disabled={saving || !displayName.trim()}
-              onClick={saveName}
+            <form
+              className="mt-6 grid gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void run(async () => {
+                  if (name.trim()) await saveDisplayName(userId, name);
+                  setStep("routine");
+                });
+              }}
             >
-              {saving ? "Saving…" : "Continue"}
-              <Icon name="arrow" size={17} />
-            </Button>
+              <label className="grid gap-2">
+                {t("common.name")}
+                <Input
+                  autoComplete="given-name"
+                  maxLength={80}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </label>
+              <Button
+                type="submit"
+                busy={busy}
+                disabled={busy}
+                variant="primary"
+              >
+                {t("common.continue")}
+              </Button>
+            </form>
           </Card>
         )}
-
         {step === "routine" && (
           <Card>
             <SectionHeading
-              title="Start with one small routine."
-              description="Choose something that gives your day shape. You can edit, pause, or delete it whenever life changes."
+              title={t("onboarding.routine")}
+              description={t("onboarding.routineBody")}
             />
-
-            <Button
-              variant="ghost"
-              className="mt-3"
-              onClick={() => setStep("name")}
-              disabled={saving}
-            >
-              Back
-            </Button>
             <RoutineForm
-              key={routineFormVersion}
               initialValues={getDefaultRoutineFormValues()}
-              submitLabel="Add routine"
-              submittingLabel="Adding…"
-              isSubmitting={saving}
+              submitLabel={t("onboarding.add")}
+              submittingLabel={t("common.saving")}
+              isSubmitting={busy}
               onSubmit={createRoutine}
               shineSubmit
-              momentSourceId="onboarding-routine-add"
             />
-
-            {routines.length > 0 && (
-              <div className="mt-6 border-t border-border pt-5">
-                <p className="text-sm font-medium text-foreground">
-                  Good start. You can add another or keep it simple.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {routines.map((routine) => (
-                    <Pill key={routine.id}>{routine.title}</Pill>
-                  ))}
-                </div>
-                <Button
-                  variant="primary"
-                  className="mt-5"
-                  disabled={saving}
-                  onClick={() => setStep("ready")}
-                >
-                  Continue
-                </Button>
-              </div>
-            )}
           </Card>
         )}
-
         {step === "ready" && (
           <Card tone="accent">
             <SectionHeading
-              title={`You're ready${displayName ? `, ${displayName}` : ""}.`}
-              description="Your routines shape the day. The daily check-in records what actually happened — even when the day was imperfect."
+              title={t("onboarding.ready")}
+              description={t("onboarding.readyBody")}
             />
-
-            <div className="mt-6 space-y-4 text-sm leading-6 text-muted">
-              <p>
-                Use <span className="font-medium text-foreground">Today</span>{" "}
-                to see what is in front of you. Tasks are for one-off things;
-                routines are the repeating parts of your rhythm.
-              </p>
-              <p>
-                At the end of the day, use the daily check-in. Showing up earns
-                points once per day, regardless of how many boxes you completed.
-              </p>
-              <p>
-                History is there for perspective, not judgment. Missing a day
-                does not erase the work you already did.
-              </p>
-            </div>
-
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-              <Button
-                variant="primary"
-                busy={saving}
-                disabled={saving || routines.length === 0}
-                onClick={finishOnboarding}
-              >
-                {saving ? "Finishing setup…" : "Start today"}
-              </Button>
-              <Button
-                variant="ghost"
-                disabled={saving}
-                onClick={() => setStep("routine")}
-              >
-                Back
-              </Button>
-            </div>
+            <Button
+              className="mt-6"
+              variant="primary"
+              busy={busy}
+              disabled={busy}
+              onClick={finish}
+            >
+              {t("onboarding.start")}
+            </Button>
           </Card>
         )}
       </AnimatedSwap>
-
-      <MomentPopup notice={moment} onDismiss={() => setMoment(null)} />
+      <Button
+        className="mt-5"
+        variant="ghost"
+        disabled={busy || !userId}
+        onClick={finish}
+      >
+        {t("onboarding.skipAll")}
+      </Button>
     </PageShell>
   );
 }

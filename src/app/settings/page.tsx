@@ -8,7 +8,9 @@ import {
   MomentSource,
   type MomentNotice,
 } from "@/components/MomentPopup";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemePicker } from "@/components/preferences/ThemePicker";
+import { LanguagePicker } from "@/components/preferences/LanguagePicker";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 import {
   Button,
   Card,
@@ -43,6 +45,7 @@ function getDeviceTimeZone() {
 }
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -153,7 +156,9 @@ export default function SettingsPage() {
       setDisplayName(displayName.trim());
       showMoment("profile_saved", "settings-profile", "check");
     } catch (saveError: unknown) {
-      setError(getErrorMessage(saveError, "Your profile could not be updated."));
+      setError(
+        getErrorMessage(saveError, "Your profile could not be updated."),
+      );
     } finally {
       setBusyAction(null);
     }
@@ -166,9 +171,10 @@ export default function SettingsPage() {
 
     beginAction("email");
     try {
-      const { data, error: updateError } = await supabaseBrowser().auth.updateUser({
-        email: nextEmail,
-      });
+      const { data, error: updateError } =
+        await supabaseBrowser().auth.updateUser({
+          email: nextEmail,
+        });
       if (updateError) throw updateError;
 
       const currentEmail = data.user.email ?? nextEmail;
@@ -183,7 +189,9 @@ export default function SettingsPage() {
           : "Check your inbox to finish the email change.",
       );
     } catch (updateError: unknown) {
-      setError(getErrorMessage(updateError, "Your email could not be updated."));
+      setError(
+        getErrorMessage(updateError, "Your email could not be updated."),
+      );
     } finally {
       setBusyAction(null);
     }
@@ -215,7 +223,9 @@ export default function SettingsPage() {
       setConfirmPassword("");
       showMoment("password_saved", "settings-password", "check");
     } catch (updateError: unknown) {
-      setError(getErrorMessage(updateError, "Your password could not be updated."));
+      setError(
+        getErrorMessage(updateError, "Your password could not be updated."),
+      );
     } finally {
       setBusyAction(null);
     }
@@ -243,7 +253,10 @@ export default function SettingsPage() {
     } catch (notificationError: unknown) {
       setNotificationPermission(currentNotificationPermission());
       setError(
-        getErrorMessage(notificationError, "Notifications could not be enabled."),
+        getErrorMessage(
+          notificationError,
+          "Notifications could not be enabled.",
+        ),
       );
     } finally {
       setBusyAction(null);
@@ -271,7 +284,10 @@ export default function SettingsPage() {
       );
     } catch (notificationError: unknown) {
       setError(
-        getErrorMessage(notificationError, "The reminder time could not be saved."),
+        getErrorMessage(
+          notificationError,
+          "The reminder time could not be saved.",
+        ),
       );
     } finally {
       setBusyAction(null);
@@ -295,7 +311,10 @@ export default function SettingsPage() {
       showMoment("reminder_disabled", "settings-reminder-off", "moon");
     } catch (notificationError: unknown) {
       setError(
-        getErrorMessage(notificationError, "The reminder could not be turned off."),
+        getErrorMessage(
+          notificationError,
+          "The reminder could not be turned off.",
+        ),
       );
     } finally {
       setBusyAction(null);
@@ -338,16 +357,18 @@ export default function SettingsPage() {
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as
-          | { error?: string }
-          | null;
+        const payload = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
         throw new Error(payload?.error ?? "Your account could not be deleted.");
       }
 
       await supabase.auth.signOut({ scope: "local" });
       router.replace("/login");
     } catch (deleteError: unknown) {
-      setError(getErrorMessage(deleteError, "Your account could not be deleted."));
+      setError(
+        getErrorMessage(deleteError, "Your account could not be deleted."),
+      );
       setBusyAction(null);
     }
   }
@@ -365,9 +386,9 @@ export default function SettingsPage() {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Your space"
-        title="Settings"
-        description="Keep the account simple and make Routine feel like yours."
+        eyebrow={t("settings.space")}
+        title={t("settings.title")}
+        description={t("settings.description")}
       />
 
       {error && (
@@ -380,12 +401,12 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <Card>
             <SectionHeading
-              title="Profile"
-              description="The name Routine uses when it speaks to you."
+              title={t("settings.profile")}
+              description={t("settings.profileBody")}
             />
             <form className="mt-6 space-y-5" onSubmit={saveProfile}>
               <label className="grid gap-2 text-sm font-medium">
-                Display name
+                {t("settings.displayName")}
                 <Input
                   value={displayName}
                   maxLength={80}
@@ -401,7 +422,7 @@ export default function SettingsPage() {
                   disabled={Boolean(busyAction) || !displayName.trim()}
                   busy={busyAction === "profile"}
                 >
-                  Save profile
+                  {t("settings.saveProfile")}
                 </Button>
               </MomentSource>
             </form>
@@ -409,12 +430,12 @@ export default function SettingsPage() {
 
           <Card>
             <SectionHeading
-              title="Email"
-              description="Used to sign in to your account."
+              title={t("login.email")}
+              description={t("settings.emailBody")}
             />
             <form className="mt-6 space-y-5" onSubmit={updateEmail}>
               <label className="grid gap-2 text-sm font-medium">
-                Email address
+                {t("settings.emailAddress")}
                 <Input
                   type="email"
                   value={newEmail}
@@ -433,7 +454,7 @@ export default function SettingsPage() {
                   }
                   busy={busyAction === "email"}
                 >
-                  Update email
+                  {t("settings.updateEmail")}
                 </Button>
               </MomentSource>
             </form>
@@ -441,12 +462,14 @@ export default function SettingsPage() {
 
           <Card>
             <SectionHeading
-              title="Password"
-              description={`Choose a new password with at least ${MIN_PASSWORD_LENGTH} characters.`}
+              title={t("login.password")}
+              description={t("settings.passwordBody", {
+                count: MIN_PASSWORD_LENGTH,
+              })}
             />
             <form className="mt-6 space-y-5" onSubmit={updatePassword}>
               <label className="grid gap-2 text-sm font-medium">
-                New password
+                {t("settings.newPassword")}
                 <Input
                   type="password"
                   minLength={MIN_PASSWORD_LENGTH}
@@ -457,7 +480,7 @@ export default function SettingsPage() {
                 />
               </label>
               <label className="grid gap-2 text-sm font-medium">
-                Confirm new password
+                {t("settings.confirmPassword")}
                 <Input
                   type="password"
                   minLength={MIN_PASSWORD_LENGTH}
@@ -471,13 +494,11 @@ export default function SettingsPage() {
                 <Button
                   type="submit"
                   disabled={
-                    Boolean(busyAction) ||
-                    !newPassword ||
-                    !confirmPassword
+                    Boolean(busyAction) || !newPassword || !confirmPassword
                   }
                   busy={busyAction === "password"}
                 >
-                  Change password
+                  {t("settings.changePassword")}
                 </Button>
               </MomentSource>
             </form>
@@ -487,11 +508,14 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <Card>
             <SectionHeading
-              title="Appearance"
-              description="Switch between the daylight and evening palettes."
+              title={t("theme.title")}
+              description={t("theme.description")}
             />
             <div className="mt-6 max-w-sm">
-              <ThemeToggle />
+              <ThemePicker />
+              <div className="mt-6">
+                <LanguagePicker />
+              </div>
             </div>
           </Card>
 
@@ -516,8 +540,8 @@ export default function SettingsPage() {
               </p>
               {!notificationAvailable ? (
                 <p className="text-sm leading-6 text-muted">
-                  Push notifications are not available in this browser. On iPhone,
-                  open the installed Home Screen app.
+                  Push notifications are not available in this browser. On
+                  iPhone, open the installed Home Screen app.
                 </p>
               ) : reminderEnabled ? (
                 <div className="flex flex-wrap gap-3">
@@ -559,8 +583,8 @@ export default function SettingsPage() {
 
           <Card>
             <SectionHeading
-              title="Session"
-              description="Sign out on this device when you are finished."
+              title={t("settings.session")}
+              description={t("settings.sessionBody")}
             />
             <Button
               className="mt-6"
@@ -569,19 +593,19 @@ export default function SettingsPage() {
               busy={busyAction === "logout"}
             >
               <Icon name="logout" size={17} />
-              Log out
+              {t("settings.logout")}
             </Button>
           </Card>
 
           <Card className="border-danger-border">
             <SectionHeading
-              title="Delete account"
-              description="Permanently remove your Routine account. This cannot be undone."
+              title={t("settings.delete")}
+              description={t("settings.deleteBody")}
             />
             <div className="mt-6 space-y-4">
               <p className="text-sm leading-6 text-muted">
-                Type <span className="font-semibold text-danger">DELETE</span> to
-                confirm.
+                Type <span className="font-semibold text-danger">DELETE</span>{" "}
+                to confirm.
               </p>
               <Input
                 value={deleteConfirmation}
@@ -599,7 +623,7 @@ export default function SettingsPage() {
                 busy={busyAction === "delete"}
               >
                 <Icon name="trash" size={17} />
-                Delete my account
+                {t("settings.deleteMine")}
               </Button>
             </div>
           </Card>

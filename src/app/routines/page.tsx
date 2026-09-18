@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 import { useEffect, useRef, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
@@ -45,6 +46,7 @@ import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { Routine, RoutineFormValues } from "@/types/routine";
 
 export default function RoutinesPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -200,16 +202,16 @@ export default function RoutinesPage() {
   if (loading)
     return (
       <PageShell>
-        <LoadingState label="Loading routines…" />
+        <LoadingState label={t("common.loading")} />
       </PageShell>
     );
 
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Small things, repeated"
-        title="Routines"
-        description="A rhythm that fits your life. Adjust it as you go."
+        eyebrow={t("routine.eyebrow")}
+        title={t("nav.routines")}
+        description={t("routine.description")}
         actions={
           <MomentSource id="add-routine">
             <Button
@@ -233,7 +235,7 @@ export default function RoutinesPage() {
         <SegmentedControl
           value={filter}
           onChange={setFilter}
-          label="Routine filter"
+          label={t("routine.filter")}
           options={[
             { value: "all", label: "All" },
             { value: "active", label: "Active" },
@@ -350,7 +352,7 @@ export default function RoutinesPage() {
         onClose={() => setEditorOpen(false)}
         busy={saving}
         title={editingRoutine ? "Edit routine" : "A new routine"}
-        description="Make it small enough to come back to."
+        description={t("routine.formBody")}
       >
         <RoutineForm
           key={`${editingRoutine?.id ?? "new"}-${editorVersion}`}

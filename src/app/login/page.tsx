@@ -5,15 +5,16 @@ import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap, Collapse } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
 import { Button, ErrorNotice, Input, SegmentedControl } from "@/components/ui";
-import {
-  getFriendlySignInError,
-  MIN_PASSWORD_LENGTH,
-} from "@/lib/auth";
+import { getFriendlySignInError, MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import { getProfile } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
+import { useLanguage } from "@/components/preferences/LanguageProvider";
+import { LanguagePicker } from "@/components/preferences/LanguagePicker";
+
 export default function LoginPage() {
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -51,7 +52,7 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo },
+        options: { emailRedirectTo, data: { locale: language } },
       });
 
       if (error) throw error;
@@ -81,23 +82,26 @@ export default function LoginPage() {
   return (
     <main id="main-content" className="auth-page">
       <div className="auth-card">
+        <div className="mb-6">
+          <LanguagePicker />
+        </div>
         <div className="mb-8 text-center">
           <BrandMark className="mb-6 h-14 w-14 rounded-[18px]" />
           <p className="mb-3 text-sm font-medium text-muted">rootine</p>
           <AnimatedSwap value={confirmationSent ? "confirmation" : mode}>
             <h1 className="display-title text-[40px] leading-tight">
               {confirmationSent
-                ? "Check your inbox."
+                ? t("login.inbox")
                 : mode === "login"
-                  ? "Welcome back."
-                  : "Start with something small."}
+                  ? t("login.welcome")
+                  : t("login.start")}
             </h1>
             <p className="mx-auto mt-3 max-w-xs text-[15px] leading-6 text-muted">
               {confirmationSent
-                ? "One quick confirmation and you’re in."
+                ? t("login.confirmBody")
                 : mode === "login"
-                  ? "Your space to find a little rhythm."
-                  : "Make room for the routines that matter to you."}
+                  ? t("login.description")
+                  : t("login.signupBody")}
             </p>
           </AnimatedSwap>
         </div>
@@ -109,36 +113,34 @@ export default function LoginPage() {
                   <Icon name="mail" />
                 </span>
                 <p className="text-center text-sm leading-6 text-muted">
-                  We sent a confirmation link to{" "}
-                  <strong className="text-foreground">{email}</strong>. Open it
-                  to confirm your account and set up your space.
+                  {t("login.sent", { email })}
                 </p>
                 <p className="text-center text-sm leading-6 text-muted">
-                  Can’t see it? Check your spam folder or wait a minute.
+                  {t("login.spam")}
                 </p>
                 <Button
                   className="w-full"
                   onClick={() => setConfirmationSent(false)}
                 >
-                  Back to sign up
+                  {t("login.back")}
                 </Button>
               </div>
             ) : (
               <>
                 <SegmentedControl
                   value={mode}
-                  label="Account access"
+                  label={t("login.access")}
                   onChange={switchMode}
                   disabled={loading}
                   options={[
-                    { value: "login", label: "Log in" },
-                    { value: "signup", label: "Sign up" },
+                    { value: "login", label: t("login.login") },
+                    { value: "signup", label: t("login.signup") },
                   ]}
                 />
                 <AnimatedSwap value={mode}>
                   <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
                     <label className="grid gap-2 text-sm font-medium">
-                      Email
+                      {t("login.email")}
                       <Input
                         placeholder="you@example.com"
                         type="email"
@@ -154,7 +156,7 @@ export default function LoginPage() {
                         htmlFor="password"
                         className="mb-2 block text-sm font-medium"
                       >
-                        Password
+                        {t("login.password")}
                       </label>
                       <div className="relative">
                         <Input
@@ -162,8 +164,10 @@ export default function LoginPage() {
                           className="pr-14"
                           placeholder={
                             mode === "signup"
-                              ? `At least ${MIN_PASSWORD_LENGTH} characters`
-                              : "Your password"
+                              ? t("login.passwordHint", {
+                                  count: MIN_PASSWORD_LENGTH,
+                                })
+                              : t("login.yourPassword")
                           }
                           type={showPassword ? "text" : "password"}
                           value={password}
@@ -184,7 +188,7 @@ export default function LoginPage() {
                           className="icon-button absolute right-1 top-0.5"
                           onClick={() => setShowPassword(!showPassword)}
                           aria-label={
-                            showPassword ? "Hide password" : "Show password"
+                            showPassword ? t("login.hide") : t("login.show")
                           }
                           aria-pressed={showPassword}
                         >
@@ -205,8 +209,8 @@ export default function LoginPage() {
                       {loading
                         ? "Please wait…"
                         : mode === "login"
-                          ? "Log in"
-                          : "Create account"}
+                          ? t("login.login")
+                          : t("login.create")}
                       {!loading && <Icon name="arrow" size={17} />}
                     </Button>
                   </form>

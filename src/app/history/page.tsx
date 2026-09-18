@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 import { useEffect, useMemo, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
@@ -52,6 +53,7 @@ function getWeekdayLabels() {
 }
 
 export default function HistoryPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [today] = useState(() => new Date());
   const [loading, setLoading] = useState(true);
@@ -184,9 +186,9 @@ export default function HistoryPage() {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Every return counts"
-        title="Your rhythm"
-        description="A little perspective on the days you showed up."
+        eyebrow={t("product.historyEyebrow")}
+        title={t("product.historyTitle")}
+        description={t("product.historyBody")}
       />
       {errorMessage && (
         <div className="mb-6">
@@ -194,7 +196,7 @@ export default function HistoryPage() {
         </div>
       )}
       {loading ? (
-        <LoadingState label="Loading your history…" />
+        <LoadingState label={t("common.loading")} />
       ) : history.length === 0 ? (
         <Card>
           <EmptyState>
@@ -235,7 +237,7 @@ export default function HistoryPage() {
           <Card>
             <SectionHeading
               title={monthLabel}
-              description="Your month like a wall calendar: the story begins where you began."
+              description={t("product.calendarBody")}
             />
             <div className="month-calendar mt-6" role="grid" aria-label={monthLabel}>
               {weekdayLabels.map((label, index) => (
@@ -319,8 +321,8 @@ export default function HistoryPage() {
           <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
             <Card>
               <SectionHeading
-                title="Recent check-ins"
-                description="Your real check-ins, just as they happened."
+                title={t("product.recent")}
+                description={t("product.recentBody")}
               />
               <AnimatedList className="mt-6 divide-y divide-border">
                 {(showAll ? history : history.slice(0, 7)).map((entry) => {
@@ -379,7 +381,7 @@ export default function HistoryPage() {
               <span className="icon-tile mb-5 bg-surface">
                 <Icon name="spark" />
               </span>
-              <SectionHeading title="Room to return" />
+              <SectionHeading title={t("product.return")} />
               <div className="mt-4">
                 <Stat value={pointBalance} label="recovery points" />
               </div>

@@ -2,12 +2,17 @@ import type { Metadata, Viewport } from "next";
 import { AppFrame } from "@/components/AppFrame";
 import { ViewTransitions } from "next-view-transitions";
 import { MotionProvider } from "@/components/Motion";
+import { LanguageProvider } from "@/components/preferences/LanguageProvider";
+import { ThemeController } from "@/components/preferences/ThemeController";
+import { languageScript } from "@/lib/i18n";
 import { themeScript } from "@/lib/theme";
 import "@fontsource-variable/fraunces";
+import "@fontsource-variable/vazirmatn";
 import "@fontsource-variable/dm-sans";
 import "@fontsource/dm-mono/latin-400.css";
 import "./globals.css";
 import "./stability-polish.css";
+import "./foundations.css";
 
 export const metadata: Metadata = {
   title: "rootine",
@@ -41,12 +46,19 @@ export default function RootLayout({
     <ViewTransitions>
       <html lang="en" suppressHydrationWarning>
         <head>
-          <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: themeScript + ";" + languageScript,
+            }}
+          />
         </head>
         <body className="antialiased">
-          <MotionProvider>
-            <AppFrame>{children}</AppFrame>
-          </MotionProvider>
+          <LanguageProvider>
+            <ThemeController />
+            <MotionProvider>
+              <AppFrame>{children}</AppFrame>
+            </MotionProvider>
+          </LanguageProvider>
         </body>
       </html>
     </ViewTransitions>

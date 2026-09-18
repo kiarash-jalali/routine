@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
@@ -111,6 +112,7 @@ function formatTaskTime(task: Task): string {
 }
 
 export default function CheckinPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [today] = useState(() => getLocalDateKey());
   const [todayLabel] = useState(() => formatFriendlyDate());
@@ -287,7 +289,7 @@ export default function CheckinPage() {
   if (loading)
     return (
       <PageShell className="max-w-3xl">
-        <LoadingState label="Loading your check-in…" />
+        <LoadingState label={t("common.loading")} />
       </PageShell>
     );
 
@@ -295,8 +297,8 @@ export default function CheckinPage() {
     <PageShell className="max-w-3xl">
       <PageHeader
         eyebrow={todayLabel}
-        title="Daily check-in"
-        description="Notice what you did. Showing up is enough."
+        title={t("product.checkinTitle")}
+        description={t("product.checkinBody")}
       />
       {errorMessage && (
         <div className="mb-6">
@@ -324,7 +326,7 @@ export default function CheckinPage() {
       <div className="space-y-6">
         <Card>
           <SectionHeading
-            title="Routines"
+            title={t("nav.routines")}
             action={
               <span className="text-sm text-muted">
                 {
@@ -360,7 +362,7 @@ export default function CheckinPage() {
         </Card>
         <Card>
           <SectionHeading
-            title="Tasks"
+            title={t("product.tasks")}
             action={
               <span className="text-sm text-muted">
                 {
