@@ -276,7 +276,7 @@ export default function DashboardPage() {
           <Stat
             value={rhythm ? number(rhythm.currentDays) : "—"}
             label={
-              streak.currentDays === 1
+              rhythm?.currentDays === 1
                 ? t("dashboard.dayRhythm")
                 : t("dashboard.daysRhythm")
             }
