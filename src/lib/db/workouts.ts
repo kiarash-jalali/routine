@@ -11,8 +11,6 @@ const sessionColumns =
   "id,user_id,workout_id,name,activity_type,duration_minutes,exercises,scheduled_day,scheduled_time,scheduled_at,timezone,completed_at";
 export async function loadWorkouts(userId: string, limit = 100) {
   const db = supabaseBrowser();
-  const { error } = await db.rpc("sync_workout_sessions");
-  if (error) throw new Error("workout_sync_failed");
   const [plans, sessions] = await Promise.all([
     db
       .from("workout_plans")
@@ -42,18 +40,29 @@ export async function saveWorkout(
     ? db.from("workout_plans").update(values).eq("id", id).eq("user_id", userId)
     : db.from("workout_plans").insert({ ...values, user_id: userId }));
   if (error) throw new Error("workout_save_failed");
+
+  const { error: syncError } = await db.rpc("sync_workout_sessions", {
+    target_user_id: userId,
+  });
+  if (syncError) throw new Error("workout_sync_failed");
 }
 export async function setWorkoutActive(
   userId: string,
   id: string,
   active: boolean,
 ) {
-  const { error } = await supabaseBrowser()
+  const db = supabaseBrowser();
+  const { error } = await db
     .from("workout_plans")
     .update({ is_active: active })
     .eq("user_id", userId)
     .eq("id", id);
   if (error) throw new Error("workout_update_failed");
+
+  const { error: syncError } = await db.rpc("sync_workout_sessions", {
+    target_user_id: userId,
+  });
+  if (syncError) throw new Error("workout_sync_failed");
 }
 export async function completeWorkout(
   userId: string,

@@ -10,8 +10,6 @@ const reminderColumns =
   "id,user_id,medication_id,scheduled_day,scheduled_time,scheduled_at,timezone,name,dose,taken_at";
 export async function loadHealth(userId: string, historyLimit = 100) {
   const db = supabaseBrowser();
-  const { error: syncError } = await db.rpc("sync_medication_reminders");
-  if (syncError) throw new Error("health_sync_failed");
   const [plans, reminders] = await Promise.all([
     db
       .from("medication_plans")
@@ -46,18 +44,29 @@ export async function saveMedication(
     : db.from("medication_plans").insert({ ...values, user_id: userId });
   const { error } = await query;
   if (error) throw new Error("medication_save_failed");
+
+  const { error: syncError } = await db.rpc("sync_medication_reminders", {
+    target_user_id: userId,
+  });
+  if (syncError) throw new Error("health_sync_failed");
 }
 export async function setMedicationActive(
   userId: string,
   id: string,
   isActive: boolean,
 ) {
-  const { error } = await supabaseBrowser()
+  const db = supabaseBrowser();
+  const { error } = await db
     .from("medication_plans")
     .update({ is_active: isActive })
     .eq("id", id)
     .eq("user_id", userId);
   if (error) throw new Error("medication_update_failed");
+
+  const { error: syncError } = await db.rpc("sync_medication_reminders", {
+    target_user_id: userId,
+  });
+  if (syncError) throw new Error("health_sync_failed");
 }
 export async function setMedicationTaken(
   userId: string,

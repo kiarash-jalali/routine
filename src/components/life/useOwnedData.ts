@@ -1,7 +1,11 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { supabaseBrowser } from "@/lib/supabaseClient";
+
+const FOCUS_REFRESH_MS = 5 * 60_000;
+
 // Shared lifecycle only; each domain keeps its own data access and schema.
 export function useOwnedData<T>(
   load: (userId: string, limit: number) => Promise<T>,
@@ -13,47 +17,81 @@ export function useOwnedData<T>(
   const [busy, setBusy] = useState(false);
   const [limit, setLimit] = useState(100);
   const [now, setNow] = useState(() => new Date());
+  const lastRefresh = useRef(0);
+
   useEffect(() => {
     let cancelled = false;
-    async function refresh() {
+
+    async function loadOwner() {
       try {
         const {
           data: { user },
           error,
         } = await supabaseBrowser().auth.getUser();
+
         if (error) throw error;
         if (!user) {
           router.replace("/login");
           return;
         }
-        const result = await load(user.id, limit);
+
+        if (!cancelled) setUserId(user.id);
+      } catch {
+        if (!cancelled) setError(true);
+      }
+    }
+
+    void loadOwner();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  const refresh = useCallback(async () => {
+    if (!userId) return;
+    const result = await load(userId, limit);
+    setData(result);
+    setNow(new Date());
+    setError(false);
+    lastRefresh.current = Date.now();
+  }, [load, userId, limit]);
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+
+    async function refreshSafely() {
+      try {
+        const result = await load(userId, limit);
         if (!cancelled) {
-          setUserId(user.id);
           setData(result);
           setNow(new Date());
           setError(false);
+          lastRefresh.current = Date.now();
         }
       } catch {
         if (!cancelled) setError(true);
       }
     }
-    void refresh();
-    const timer = window.setInterval(() => void refresh(), 60_000);
-    const focus = () => {
-      if (document.visibilityState === "visible") void refresh();
-    };
-    document.addEventListener("visibilitychange", focus);
+
+    void refreshSafely();
+
+    function onVisibilityChange() {
+      if (
+        document.visibilityState === "visible" &&
+        Date.now() - lastRefresh.current >= FOCUS_REFRESH_MS
+      ) {
+        void refreshSafely();
+      }
+    }
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       cancelled = true;
-      clearInterval(timer);
-      document.removeEventListener("visibilitychange", focus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [load, limit, router]);
-  const refresh = useCallback(async () => {
-    const result = await load(userId, limit);
-    setData(result);
-    setNow(new Date());
-  }, [load, userId, limit]);
+  }, [load, limit, userId]);
+
   async function act(action: () => Promise<void>) {
     if (busy || !userId) return false;
     setBusy(true);
@@ -69,6 +107,7 @@ export function useOwnedData<T>(
       setBusy(false);
     }
   }
+
   return {
     userId,
     data,
@@ -77,6 +116,6 @@ export function useOwnedData<T>(
     now,
     act,
     limit,
-    more: () => setLimit((n) => n + 100),
+    more: () => setLimit((current) => current + 100),
   };
 }

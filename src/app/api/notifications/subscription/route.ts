@@ -1,4 +1,5 @@
 import { isValidPushEndpoint as isValidEndpoint } from "@/lib/pushEndpoint";
+import { enforceRateLimit } from "@/lib/server/rateLimit";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -90,6 +91,26 @@ export async function POST(request: Request) {
   const auth = await getAuthenticatedUser(request);
   if (auth.error || !auth.admin || !auth.user) return auth.error;
 
+  try {
+    const allowed = await enforceRateLimit(
+      auth.admin,
+      "push-subscription",
+      auth.user.id,
+      20,
+      60,
+    );
+    if (!allowed)
+      return NextResponse.json(
+        { error: "Too many subscription changes. Try again shortly." },
+        { status: 429 },
+      );
+  } catch {
+    return NextResponse.json(
+      { error: "Push subscriptions are temporarily unavailable." },
+      { status: 503 },
+    );
+  }
+
   let payload: SubscriptionPayload;
   try {
     payload = (await request.json()) as SubscriptionPayload;
@@ -145,6 +166,26 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   const auth = await getAuthenticatedUser(request);
   if (auth.error || !auth.admin || !auth.user) return auth.error;
+
+  try {
+    const allowed = await enforceRateLimit(
+      auth.admin,
+      "push-subscription",
+      auth.user.id,
+      20,
+      60,
+    );
+    if (!allowed)
+      return NextResponse.json(
+        { error: "Too many subscription changes. Try again shortly." },
+        { status: 429 },
+      );
+  } catch {
+    return NextResponse.json(
+      { error: "Push subscriptions are temporarily unavailable." },
+      { status: 503 },
+    );
+  }
 
   let payload: { endpoint?: unknown };
   try {
