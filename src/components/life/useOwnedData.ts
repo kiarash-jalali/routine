@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
-import { getSessionUser } from "@/lib/session";
+import { supabaseBrowser } from "@/lib/supabaseClient";
 
 const FOCUS_REFRESH_MS = 5 * 60_000;
 
@@ -24,8 +24,12 @@ export function useOwnedData<T>(
 
     async function loadOwner() {
       try {
-        const user = await getSessionUser();
+        const {
+          data: { user },
+          error,
+        } = await supabaseBrowser().auth.getUser();
 
+        if (error) throw error;
         if (!user) {
           router.replace("/login");
           return;

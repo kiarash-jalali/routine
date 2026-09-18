@@ -33,7 +33,7 @@ import { listTasks } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy } from "@/lib/moments";
-import { getSessionUser } from "@/lib/session";
+import { supabaseBrowser } from "@/lib/supabaseClient";
 import {
   filterTasksForToday,
   getLocalDateKey,
@@ -132,7 +132,13 @@ export default function CheckinPage() {
       setErrorMessage(null);
 
       try {
-        const user = await getSessionUser();
+        const supabase = supabaseBrowser();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) throw userError;
         if (!user) {
           router.replace("/login");
           return;

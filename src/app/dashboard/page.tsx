@@ -33,7 +33,7 @@ import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
-import { getSessionUser } from "@/lib/session";
+import { supabaseBrowser } from "@/lib/supabaseClient";
 import {
   filterTasksForToday,
   getLocalDateKey,
@@ -94,13 +94,13 @@ export default function DashboardPage() {
     let cancelled = false;
     async function load() {
       try {
-        const user = await getSessionUser();
-        if (!user) {
+        const { data, error } = await supabaseBrowser().auth.getUser();
+        if (error || !data.user) {
           router.replace("/login");
           return;
         }
         if (cancelled) return;
-        setUserId(user.id);
+        setUserId(data.user.id);
         const results = await Promise.allSettled([
           listTasks(),
           listTodaysRoutines(today),

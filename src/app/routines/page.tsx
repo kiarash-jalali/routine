@@ -44,7 +44,7 @@ import {
   getDefaultRoutineFormValues,
   routineToFormValues,
 } from "@/lib/routineSchedule";
-import { getSessionUser } from "@/lib/session";
+import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { Routine, RoutineFormValues } from "@/types/routine";
 
 export default function RoutinesPage() {
@@ -85,14 +85,14 @@ export default function RoutinesPage() {
     let cancelled = false;
     async function load() {
       try {
-        const user = await getSessionUser();
-        if (!user) {
+        const { data, error } = await supabaseBrowser().auth.getUser();
+        if (error || !data.user) {
           router.replace("/login");
           return;
         }
         const rows = await listRoutines();
         if (!cancelled) {
-          setUserId(user.id);
+          setUserId(data.user.id);
           setRoutines(rows);
         }
       } catch (error: unknown) {

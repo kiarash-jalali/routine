@@ -28,7 +28,7 @@ import {
   formatPreferredTimeForDatabase,
   getDefaultRoutineFormValues,
 } from "@/lib/routineSchedule";
-import { getSessionUser } from "@/lib/session";
+import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { RoutineFormValues } from "@/types/routine";
 const screens = [
   {
@@ -78,7 +78,11 @@ export default function OnboardingPage() {
     let cancelled = false;
     async function load() {
       try {
-        const user = await getSessionUser();
+        const {
+          data: { user },
+          error,
+        } = await supabaseBrowser().auth.getUser();
+        if (error) throw error;
         if (!user) {
           router.replace("/login");
           return;

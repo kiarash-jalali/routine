@@ -37,7 +37,7 @@ import {
   findRepairableDays,
   STREAK_REPAIR_COST_POINTS,
 } from "@/lib/points";
-import { getSessionUser } from "@/lib/session";
+import { supabaseBrowser } from "@/lib/supabaseClient";
 import { calculateStreakMetrics } from "@/lib/streak";
 import { useToday } from "@/lib/useToday";
 import type { CheckinHistoryEntry } from "@/types/history";
@@ -74,7 +74,13 @@ export default function HistoryPage() {
       setErrorMessage(null);
 
       try {
-        const user = await getSessionUser();
+        const supabase = supabaseBrowser();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) throw userError;
         if (!user) {
           router.replace("/login");
           return;
