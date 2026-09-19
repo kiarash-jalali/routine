@@ -1,5 +1,8 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import type { DailyCheckinSummary } from "@/types/checkin";
+import {
+  isCheckinItemType,
+  type DailyCheckinSummary,
+} from "@/types/checkin";
 import type {
   CheckinHistoryEntry,
   HistoricalCheckinItem,
@@ -24,7 +27,7 @@ export async function listCheckinDays(userId: string): Promise<string[]> {
 
     if (error) throw error;
 
-    const rows = (data ?? []) as Array<{ day: string }>;
+    const rows = data ?? [];
     days.push(...rows.map((row) => row.day));
 
     if (rows.length < pageSize) break;
@@ -49,7 +52,7 @@ export async function listRecentCheckinHistory(
 
   if (checkinsError) throw checkinsError;
 
-  const checkinRows = (checkins ?? []) as DailyCheckinSummary[];
+  const checkinRows: DailyCheckinSummary[] = checkins ?? [];
   if (checkinRows.length === 0) return [];
 
   const checkinIds = checkinRows.map((checkin) => checkin.id);
@@ -61,9 +64,16 @@ export async function listRecentCheckinHistory(
   if (itemsError) throw itemsError;
 
   const itemsByCheckin = new Map<string, HistoricalCheckinItem[]>();
-  for (const item of (items ?? []) as HistoricalCheckinItem[]) {
+  for (const item of items ?? []) {
+    if (!isCheckinItemType(item.item_type)) {
+      throw new Error("invalid_checkin_item_type");
+    }
+    const historicalItem: HistoricalCheckinItem = {
+      ...item,
+      item_type: item.item_type,
+    };
     const currentItems = itemsByCheckin.get(item.checkin_id) ?? [];
-    currentItems.push(item);
+    currentItems.push(historicalItem);
     itemsByCheckin.set(item.checkin_id, currentItems);
   }
 
