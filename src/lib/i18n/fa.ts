@@ -450,5 +450,10 @@ export const fa: Record<TranslationKey, string> = {
   "guide.body":
     "کارها، روتین‌ها، مرور روز، جبران، یادآورها، سلامت و تحرک در یک جا.",
   "reminder.iosInstall":
+
+  "install.title": "نصب روتین",
+  "install.body": "روتین را مثل یک اپ روی دستگاهت نصب کن تا سریع‌تر به روزت برسی.",
+  "install.iosBody": "در آیفون یا آیپد از Share → Add to Home Screen استفاده کن تا روتین مثل یک اپ باز شود.",
+  "install.action": "نصب روی این دستگاه",
     "در آیفون یا آیپد، اول rootine را در Safari از مسیر Share → Add to Home Screen به صفحهٔ اصلی اضافه کن. بعد آن را از صفحهٔ اصلی باز کن تا اعلان‌ها فعال شوند.",
 };
