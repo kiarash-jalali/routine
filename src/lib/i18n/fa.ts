@@ -41,6 +41,7 @@ export const fa: Record<TranslationKey, string> = {
   "nav.settings": "تنظیمات",
   "nav.guide": "راهنما",
   "nav.feedback": "بازخورد",
+  "nav.designLab": "آزمایشگاه طراحی",
   "nav.health": "سلامت",
   "nav.workouts": "ورزش",
   "nav.life": "زندگی روزمره",

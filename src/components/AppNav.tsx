@@ -55,6 +55,15 @@ export function AppNav() {
           <Icon name="mail" size={19} />
           <span>{t("nav.feedback")}</span>
         </Link>
+        <Link
+          href="/design-lab"
+          className="logout-button hidden lg:flex"
+          aria-current={pathname === "/design-lab" ? "page" : undefined}
+          aria-label={t("nav.designLab")}
+        >
+          <Icon name="spark" size={19} />
+          <span>{t("nav.designLab")}</span>
+        </Link>
         <div className="hidden lg:block">
           <ThemeToggle />
         </div>

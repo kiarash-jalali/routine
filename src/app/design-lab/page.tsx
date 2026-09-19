@@ -480,7 +480,23 @@ export default function DesignLabPage() {
 
   return (
     <main id="main-content" className="relative min-h-dvh">
-      <TodayPreview theme={theme} />
+      <section className="grid min-h-[70dvh] place-items-center px-6 text-center lg:hidden">
+        <div className="max-w-sm">
+          <span className="icon-tile mx-auto mb-5">
+            <Icon name="spark" size={22} />
+          </span>
+          <h1 className="display-title text-3xl">Design Lab needs a larger screen.</h1>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Open this page on a desktop, laptop, or large tablet to edit and compare theme colours.
+          </p>
+          <Link href="/dashboard" className="btn btn-secondary mt-6 inline-flex">
+            Back to Today
+          </Link>
+        </div>
+      </section>
+
+      <div className="hidden lg:block">
+        <TodayPreview theme={theme} />
 
       <aside
         className="fixed inset-x-3 bottom-3 z-40 max-h-[48dvh] overflow-y-auto rounded-[24px] border p-4 shadow-2xl backdrop-blur-2xl sm:inset-x-auto sm:end-4 sm:top-4 sm:bottom-4 sm:w-[330px] sm:max-h-none sm:p-5"
@@ -597,6 +613,7 @@ export default function DesignLabPage() {
           </button>
         </div>
       </aside>
+      </div>
     </main>
   );
 }
