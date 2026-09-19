@@ -453,6 +453,11 @@ export const en = {
   "guide.body":
     "Tasks, routines, check-ins, recovery, reminders, health and movement in one place.",
   "reminder.iosInstall":
+
+  "install.title": "Install rootine",
+  "install.body": "Install rootine on this device for quicker access to your day.",
+  "install.iosBody": "On iPhone or iPad, use Share → Add to Home Screen to open rootine like an app.",
+  "install.action": "Install on this device",
     "On iPhone or iPad, first add rootine to your Home Screen in Safari (Share → Add to Home Screen). Then open it from the Home Screen to enable notifications.",
 } as const;
 export type TranslationKey = keyof typeof en;
