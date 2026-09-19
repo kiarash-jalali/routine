@@ -89,7 +89,7 @@ export default function FeedbackPage() {
       });
     } catch (submitError: unknown) {
       setError(
-        getErrorMessage(submitError, "Your feedback could not be sent. Try again."),
+        getErrorMessage(submitError, t("feedback.failed")),
       );
     } finally {
       setSubmitting(false);
@@ -99,7 +99,7 @@ export default function FeedbackPage() {
   if (loading) {
     return (
       <PageShell className="max-w-3xl">
-        <LoadingState label="Opening feedback…" />
+        <LoadingState label={t("feedback.loading")} />
       </PageShell>
     );
   }
@@ -149,7 +149,7 @@ export default function FeedbackPage() {
               value={message}
               minLength={3}
               maxLength={2000}
-              placeholder="For example: I tried to edit my routine and expected…"
+              placeholder={t("feedback.placeholder")}
               disabled={submitting}
               onChange={(event) => setMessage(event.target.value)}
             />

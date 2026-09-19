@@ -91,7 +91,7 @@ export default function SettingsPage() {
         setNewEmail(user.email ?? "");
       } catch (loadError: unknown) {
         if (!cancelled) {
-          setError(getErrorMessage(loadError, "Settings could not be loaded."));
+          setError(getErrorMessage(loadError, t("settings.loadError")));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -120,7 +120,7 @@ export default function SettingsPage() {
       showMoment("profile_saved", "settings-profile", "check");
     } catch (saveError: unknown) {
       setError(
-        getErrorMessage(saveError, "Your profile could not be updated."),
+        getErrorMessage(saveError, t("settings.profileError")),
       );
     } finally {
       setBusyAction(null);
@@ -153,7 +153,7 @@ export default function SettingsPage() {
       );
     } catch (updateError: unknown) {
       setError(
-        getErrorMessage(updateError, "Your email could not be updated."),
+        getErrorMessage(updateError, t("settings.emailError")),
       );
     } finally {
       setBusyAction(null);
@@ -171,7 +171,7 @@ export default function SettingsPage() {
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("The two password fields do not match.");
+      setError(t("settings.passwordMismatch"));
       return;
     }
 
@@ -187,7 +187,7 @@ export default function SettingsPage() {
       showMoment("password_saved", "settings-password", "check");
     } catch (updateError: unknown) {
       setError(
-        getErrorMessage(updateError, "Your password could not be updated."),
+        getErrorMessage(updateError, t("settings.passwordError")),
       );
     } finally {
       setBusyAction(null);
@@ -202,7 +202,7 @@ export default function SettingsPage() {
       if (logoutError) throw logoutError;
       router.replace("/login");
     } catch (logoutError: unknown) {
-      setError(getErrorMessage(logoutError, "Could not log out."));
+      setError(getErrorMessage(logoutError, t("settings.logoutError")));
       setBusyAction(null);
     }
   }
@@ -219,7 +219,7 @@ export default function SettingsPage() {
       } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
       if (!session?.access_token) {
-        throw new Error("Your session has expired. Log in again.");
+        throw new Error(t("settings.sessionExpired"));
       }
 
       const response = await fetch("/api/account/delete", {
@@ -242,7 +242,7 @@ export default function SettingsPage() {
       router.replace("/login");
     } catch (deleteError: unknown) {
       setError(
-        getErrorMessage(deleteError, "Your account could not be deleted."),
+        getErrorMessage(deleteError, t("settings.deleteError")),
       );
       setBusyAction(null);
     }
@@ -251,7 +251,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <PageShell>
-        <LoadingState label="Loading settings…" />
+        <LoadingState label={t("settings.loading")} />
       </PageShell>
     );
   }

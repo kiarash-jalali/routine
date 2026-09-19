@@ -113,7 +113,7 @@ export default function HistoryPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, t]);
 
   const repairedDays = useMemo(
     () => repairs.map((repair) => repair.day),

@@ -113,12 +113,10 @@ export default function DashboardPage() {
           setRoutines(routineResult.value);
         if (rhythmResult.status === "fulfilled") setRhythm(rhythmResult.value);
         if (results.some((result) => result.status === "rejected"))
-          setError(
-            "Some of your day couldn’t be loaded. Refresh to try again.",
-          );
+          setError(t("dashboard.partialLoadError"));
       } catch (error: unknown) {
         if (!cancelled)
-          setError(getErrorMessage(error, "Your day couldn’t be loaded."));
+          setError(getErrorMessage(error, t("dashboard.loadError")));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -147,7 +145,7 @@ export default function DashboardPage() {
       setFilter("all");
       showMoment("task_added", "add-task", "plus");
     } catch (error: unknown) {
-      setFormError(getErrorMessage(error, "Your task couldn’t be added."));
+      setFormError(getErrorMessage(error, t("task.addError")));
     } finally {
       setCreating(false);
     }
@@ -184,7 +182,7 @@ export default function DashboardPage() {
           item.id === task.id ? { ...item, is_done: task.is_done } : item,
         ),
       );
-      setError(getErrorMessage(error, "Your task couldn’t be updated."));
+      setError(getErrorMessage(error, t("task.updateError")));
     } finally {
       pending.current.delete(task.id);
       setPendingIds([...pending.current]);
@@ -203,7 +201,7 @@ export default function DashboardPage() {
       setDeleteTarget(null);
       showMoment("task_deleted", undefined, "trash");
     } catch (error: unknown) {
-      setFormError(getErrorMessage(error, "Your task couldn’t be deleted."));
+      setFormError(getErrorMessage(error, t("task.deleteError")));
     } finally {
       setDeleting(false);
     }

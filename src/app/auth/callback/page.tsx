@@ -6,9 +6,11 @@ import { ErrorNotice, PageShell } from "@/components/ui";
 import { getSafeAuthCallbackPath } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export default function AuthCallbackPage() {
 
         if (!code) {
           throw new Error(
-            "This confirmation link is missing its sign-in code.",
+            t("auth.missingCode"),
           );
         }
 
@@ -36,7 +38,7 @@ export default function AuthCallbackPage() {
           setErrorMessage(
             getErrorMessage(
               error,
-              "Your email confirmation could not be completed.",
+              t("auth.confirmError"),
             ),
           );
         }
@@ -48,7 +50,7 @@ export default function AuthCallbackPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, t]);
 
   return (
     <PageShell className="max-w-xl">
@@ -58,13 +60,13 @@ export default function AuthCallbackPage() {
         ) : (
           <>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-              Routine Helper
+              rootine
             </p>
             <h1 className="display-title mt-2 text-3xl text-foreground">
-              Confirming your account…
+              {t("auth.confirming")}
             </h1>
             <p className="mt-2 text-sm leading-6 text-muted">
-              This should only take a moment.
+              {t("auth.confirmingBody")}
             </p>
           </>
         )}

@@ -97,7 +97,7 @@ export default function RoutinesPage() {
         }
       } catch (error: unknown) {
         if (!cancelled)
-          setError(getErrorMessage(error, "Your routines couldn’t be loaded."));
+          setError(getErrorMessage(error, t("routine.loadError")));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -135,7 +135,7 @@ export default function RoutinesPage() {
           setReminderOpen(await claimReminderIntroduction());
       }
     } catch (error: unknown) {
-      setFormError(getErrorMessage(error, "Your routine couldn’t be saved."));
+      setFormError(getErrorMessage(error, t("routine.saveError")));
     } finally {
       setSaving(false);
     }
@@ -175,7 +175,7 @@ export default function RoutinesPage() {
             : item,
         ),
       );
-      setError(getErrorMessage(error, "Your routine couldn’t be updated."));
+      setError(getErrorMessage(error, t("routine.updateError")));
     } finally {
       pending.current.delete(routine.id);
       setPendingIds([...pending.current]);
@@ -194,7 +194,7 @@ export default function RoutinesPage() {
       setDeleteTarget(null);
       showMoment("routine_deleted", undefined, "trash");
     } catch (error: unknown) {
-      setFormError(getErrorMessage(error, "Your routine couldn’t be deleted."));
+      setFormError(getErrorMessage(error, t("routine.deleteError")));
     } finally {
       setSaving(false);
     }
