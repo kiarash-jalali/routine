@@ -197,6 +197,7 @@ export const en = {
     "Download a JSON copy of your profile, routines, tasks, check-ins, points, reminders, health plans, workouts and feedback.",
   "settings.exportMine": "Download my data",
   "settings.exportError": "Your data could not be exported.",
+  "settings.exportRateLimited": "Too many export requests. Try again later.",
   "settings.delete": "Delete account",
   "settings.deleteBody":
     "Permanently remove your account and its data. This cannot be undone.",
