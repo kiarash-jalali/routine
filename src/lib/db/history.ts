@@ -5,7 +5,7 @@ import type {
   HistoricalCheckinItem,
 } from "@/types/history";
 
-const CHECKIN_COLUMNS = "id,user_id,day";
+const CHECKIN_COLUMNS = "id,user_id,day,submitted_at";
 
 export async function listCheckinDays(userId: string): Promise<string[]> {
   const supabase = supabaseBrowser();
