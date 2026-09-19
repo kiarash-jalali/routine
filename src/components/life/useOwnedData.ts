@@ -1,50 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useTransitionRouter as useRouter } from "next-view-transitions";
-import { getSessionUser } from "@/lib/session";
 
 const FOCUS_REFRESH_MS = 5 * 60_000;
 
-// Shared lifecycle only; each domain keeps its own data access and schema.
 export function useOwnedData<T>(
   load: (userId: string, limit: number) => Promise<T>,
+  userId: string,
+  initialData: T,
+  initialLoadError = false,
 ) {
-  const router = useRouter();
-  const [userId, setUserId] = useState("");
-  const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState(false);
+  const [data, setData] = useState<T>(initialData);
+  const [error, setError] = useState(initialLoadError);
   const [busy, setBusy] = useState(false);
   const [limit, setLimit] = useState(100);
   const [now, setNow] = useState(() => new Date());
-  const lastRefresh = useRef(0);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadOwner() {
-      try {
-        const user = await getSessionUser();
-
-        if (!user) {
-          router.replace("/login");
-          return;
-        }
-
-        if (!cancelled) setUserId(user.id);
-      } catch {
-        if (!cancelled) setError(true);
-      }
-    }
-
-    void loadOwner();
-    return () => {
-      cancelled = true;
-    };
-  }, [router]);
+  const lastRefresh = useRef(Date.now());
 
   const refresh = useCallback(async () => {
-    if (!userId) return;
     const result = await load(userId, limit);
     setData(result);
     setNow(new Date());
@@ -53,7 +26,6 @@ export function useOwnedData<T>(
   }, [load, userId, limit]);
 
   useEffect(() => {
-    if (!userId) return;
     let cancelled = false;
 
     async function refreshSafely() {
@@ -70,7 +42,7 @@ export function useOwnedData<T>(
       }
     }
 
-    void refreshSafely();
+    if (limit > 100) void refreshSafely();
 
     function onVisibilityChange() {
       if (
@@ -89,7 +61,7 @@ export function useOwnedData<T>(
   }, [load, limit, userId]);
 
   async function act(action: () => Promise<void>) {
-    if (busy || !userId) return false;
+    if (busy) return false;
     setBusy(true);
     setError(false);
     try {
