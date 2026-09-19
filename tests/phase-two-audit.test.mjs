@@ -36,7 +36,7 @@ test("settings use four clear groups and hide infrequent account controls", () =
 
 test("phase two database migration removes unused GraphQL and covers medication FK", () => {
   const migration = source(
-    "supabase/migrations/PHASE2_MIGRATION_PLACEHOLDER.sql",
+    "supabase/migrations/20260919124152_phase2_security_performance_cleanup.sql",
   );
 
   assert.match(
