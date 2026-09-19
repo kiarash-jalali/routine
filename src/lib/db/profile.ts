@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { isLanguage } from "@/lib/i18n";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { Profile } from "@/types/profile";
@@ -5,8 +7,11 @@ import type { Profile } from "@/types/profile";
 const PROFILE_COLUMNS =
   "user_id,display_name,onboarding_completed,locale,intro_seen,created_at,updated_at";
 
-export async function getProfile(userId: string): Promise<Profile | null> {
-  const supabase = supabaseBrowser();
+export async function getProfile(
+  userId: string,
+  client?: SupabaseClient<Database>,
+): Promise<Profile | null> {
+  const supabase = client ?? supabaseBrowser();
   const { data, error } = await supabase
     .from("profiles")
     .select(PROFILE_COLUMNS)

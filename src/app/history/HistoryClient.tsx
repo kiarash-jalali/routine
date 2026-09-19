@@ -1,0 +1,421 @@
+"use client";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
+
+import { useMemo, useState } from "react";
+import { Link } from "next-view-transitions";
+import { Icon } from "@/components/Icon";
+import { AnimatedList, AnimatedListItem } from "@/components/Motion";
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorNotice,
+  PageHeader,
+  PageShell,
+  ProgressBar,
+  SectionHeading,
+  Stat,
+} from "@/components/ui";
+import { repairStreakDay } from "@/lib/db/points";
+import { getErrorCode, getErrorMessage } from "@/lib/errors";
+import {
+  averageCompletionPercent,
+  buildMonthCalendarDays,
+  countRecentCheckins,
+  formatHistoryDate,
+  summarizeCheckin,
+} from "@/lib/history";
+import {
+  CHECKIN_REWARD_POINTS,
+  findRepairableDays,
+  STREAK_REPAIR_COST_POINTS,
+} from "@/lib/points";
+import { calculateStreakMetrics } from "@/lib/streak";
+import { useToday } from "@/lib/useToday";
+import type { TranslationKey } from "@/lib/i18n";
+import type { CheckinHistoryEntry } from "@/types/history";
+import type { StreakRepair } from "@/types/points";
+
+const weekdayReferenceMonday = new Date(2026, 0, 5);
+
+const repairErrorKeys = {
+  not_authenticated: "history.repairNotAuthenticated",
+  repair_day_required: "history.repairDayRequired",
+  day_already_checked_in: "history.repairAlreadyCheckedIn",
+  day_already_repaired: "history.repairAlreadyRepaired",
+  repair_requires_neighboring_checkins: "history.repairNeedsNeighbors",
+  insufficient_recovery_points: "history.repairInsufficientPoints",
+} as const satisfies Record<string, TranslationKey>;
+
+type RepairErrorCode = keyof typeof repairErrorKeys;
+
+function isRepairErrorCode(code: string): code is RepairErrorCode {
+  return code in repairErrorKeys;
+}
+
+function getWeekdayLabels(locale: string) {
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(weekdayReferenceMonday);
+    date.setDate(weekdayReferenceMonday.getDate() + index);
+    return new Intl.DateTimeFormat(locale, { weekday: "narrow" }).format(date);
+  });
+}
+
+export function HistoryClient({
+  initialHistory,
+  initialCheckinDays,
+  initialRepairs,
+  initialPointBalance,
+  initialLoadError,
+}: {
+  initialHistory: CheckinHistoryEntry[];
+  initialCheckinDays: string[];
+  initialRepairs: StreakRepair[];
+  initialPointBalance: number;
+  initialLoadError: boolean;
+}) {
+  const { t, locale, number } = useLanguage();
+  const today = useToday();
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    initialLoadError ? t("history.loadError") : null,
+  );
+  const [history] = useState<CheckinHistoryEntry[]>(initialHistory);
+  const [checkinDays] = useState<string[]>(initialCheckinDays);
+  const [repairs, setRepairs] = useState<StreakRepair[]>(initialRepairs);
+  const [pointBalance, setPointBalance] = useState(initialPointBalance);
+  const [showAll, setShowAll] = useState(false);
+  const [repairingDay, setRepairingDay] = useState<string | null>(null);
+
+  const repairedDays = useMemo(
+    () => repairs.map((repair) => repair.day),
+    [repairs],
+  );
+  const repairedDaySet = useMemo(() => new Set(repairedDays), [repairedDays]);
+  const effectiveRhythmDays = useMemo(
+    () => [...checkinDays, ...repairedDays],
+    [checkinDays, repairedDays],
+  );
+  const repairableDays = useMemo(
+    () => findRepairableDays(checkinDays, repairedDays),
+    [checkinDays, repairedDays],
+  );
+  const calendarDays = useMemo(
+    () => buildMonthCalendarDays(history, checkinDays, today, locale),
+    [checkinDays, history, locale, today],
+  );
+  const checkedInLastSeven = useMemo(
+    () => countRecentCheckins(history, 7, today),
+    [history, today],
+  );
+  const averageCompletion = useMemo(
+    () => averageCompletionPercent(history),
+    [history],
+  );
+  const streak = useMemo(
+    () => calculateStreakMetrics(effectiveRhythmDays),
+    [effectiveRhythmDays],
+  );
+  const monthLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        month: "long",
+        year: "numeric",
+      }).format(today),
+    [locale, today],
+  );
+  const weekdayLabels = useMemo(() => getWeekdayLabels(locale), [locale]);
+
+  async function repairDay(day: string) {
+    setRepairingDay(day);
+    setErrorMessage(null);
+
+    try {
+      const newBalance = await repairStreakDay(day);
+      setPointBalance(newBalance);
+      setRepairs((current) => [
+        ...current,
+        {
+          day,
+          cost_points: STREAK_REPAIR_COST_POINTS,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    } catch (error: unknown) {
+      const code = getErrorCode(error);
+      const translationKey =
+        code && isRepairErrorCode(code) ? repairErrorKeys[code] : null;
+
+      setErrorMessage(
+        translationKey
+          ? t(translationKey, { count: number(STREAK_REPAIR_COST_POINTS) })
+          : getErrorMessage(error, t("history.repairError")),
+      );
+    } finally {
+      setRepairingDay(null);
+    }
+  }
+
+  return (
+    <PageShell>
+      <PageHeader
+        eyebrow={t("product.historyEyebrow")}
+        title={t("product.historyTitle")}
+        description={t("product.historyBody")}
+      />
+      {errorMessage && (
+        <div className="mb-6">
+          <ErrorNotice>{errorMessage}</ErrorNotice>
+        </div>
+      )}
+      {history.length === 0 ? (
+        <Card>
+          <EmptyState>
+            {t("history.emptyTitle")}
+            <br />
+            {t("history.emptyBody")}
+            <div className="mt-4">
+              <Link href="/checkin" className="btn btn-primary">
+                {t("dashboard.checkinToday")}
+                <Icon name="arrow" size={16} />
+              </Link>
+            </div>
+          </EmptyState>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          <Card>
+            <div className="grid grid-cols-2 gap-x-5 gap-y-6 sm:grid-cols-4">
+              <Stat
+                value={streak.currentDays === 1 ? t("history.oneDay") : t("history.days", { count: number(streak.currentDays) })}
+                label={t("history.currentRhythm")}
+              />
+              <Stat
+                value={streak.bestDays === 1 ? t("history.oneDay") : t("history.days", { count: number(streak.bestDays) })}
+                label={t("history.longestRhythm")}
+              />
+              <Stat
+                value={`${number(checkedInLastSeven)} / ${number(7)}`}
+                label={t("history.checkinsWeek")}
+              />
+              <Stat
+                value={new Intl.NumberFormat(locale, { style: "percent" }).format(averageCompletion / 100)}
+                label={t("history.averageCompletion")}
+              />
+            </div>
+          </Card>
+
+          <Card>
+            <SectionHeading
+              title={monthLabel}
+              description={t("product.calendarBody")}
+            />
+            <div className="month-calendar mt-6" role="grid" aria-label={monthLabel}>
+              {weekdayLabels.map((label, index) => (
+                <div
+                  key={`${label}-${index}`}
+                  className="month-calendar-weekday"
+                  role="columnheader"
+                >
+                  {label}
+                </div>
+              ))}
+              {calendarDays.map((day) => {
+                const repaired = repairedDaySet.has(day.dateKey);
+                const complete = day.checkedIn && day.completionPercent === 100;
+                const status = day.future
+                  ? t("history.futureDay")
+                  : repaired
+                    ? t("history.repairedStatus")
+                    : day.checkedIn
+                      ? day.completionPercent === 100
+                        ? t("history.checkedAll")
+                        : t("history.checkedPercent", {
+                            percent: number(day.completionPercent),
+                          })
+                      : t("history.noCheckin");
+
+                return (
+                  <div
+                    key={day.dateKey}
+                    role="gridcell"
+                    aria-hidden={day.hidden || day.dayNumber === null || undefined}
+                    aria-label={
+                      day.hidden || day.dayNumber === null
+                        ? undefined
+                        : `${formatHistoryDate(day.dateKey, locale)}: ${status}`
+                    }
+                    className={`month-calendar-cell${day.hidden || day.dayNumber === null ? " is-hidden" : ""}${day.future ? " is-future" : ""}${day.today ? " is-today" : ""}${day.checkedIn ? " is-checked" : ""}${complete ? " is-complete" : ""}${repaired ? " is-repaired" : ""}`}
+                  >
+                    {day.dayNumber !== null && (
+                      <>
+                        <span className="month-calendar-date">{day.dayNumber}</span>
+                        {!day.hidden && !day.future && (
+                          <span className="month-calendar-status">
+                            {repaired
+                              ? t("history.repaired")
+                              : day.checkedIn
+                                ? day.completionPercent === 100
+                                  ? t("history.complete")
+                                  : new Intl.NumberFormat(locale, { style: "percent" }).format(day.completionPercent / 100)
+                                : "—"}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
+              <span className="inline-flex items-center gap-2">
+                <span className="h-3 w-3 rounded border border-dashed border-border bg-surface-soft opacity-60" />
+                {t("history.ahead")}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="h-3 w-3 rounded border border-border bg-surface-soft" />
+                {t("history.noCheckin")}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="h-3 w-3 rounded border border-primary/30 bg-primary-soft" />
+                {t("history.checkedInLegend")}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="h-3 w-3 rounded bg-primary" />
+                {t("history.allCompletedLegend")}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="h-3 w-3 rounded border border-dashed border-primary bg-primary-soft" />
+                {t("history.repaired")}
+              </span>
+            </div>
+          </Card>
+
+          <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+            <Card>
+              <SectionHeading
+                title={t("product.recent")}
+                description={t("product.recentBody")}
+              />
+              <AnimatedList className="mt-6 divide-y divide-border">
+                {(showAll ? history : history.slice(0, 7)).map((entry) => {
+                  const summary = summarizeCheckin(entry);
+                  return (
+                    <AnimatedListItem
+                      key={entry.id}
+                      className="py-4 first:pt-0 last:pb-0"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="icon-tile green">
+                          <Icon name="checkin" size={19} />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[15px] font-medium">
+                            {formatHistoryDate(entry.day, locale)}
+                          </p>
+                          <p className="mt-1 text-xs text-muted">
+                            {summary.totalCount === 0
+                              ? t("history.noItems")
+                              : t("history.summary", {
+                                  routines: `${number(summary.routineCompletedCount)}/${number(summary.routineTotalCount)}`,
+                                  tasks: `${number(summary.taskCompletedCount)}/${number(summary.taskTotalCount)}`,
+                                })}
+                          </p>
+                        </div>
+                        <span className="data-text text-xs text-primary">
+                          {summary.totalCount
+                            ? new Intl.NumberFormat(locale, { style: "percent" }).format(summary.completionPercent / 100)
+                            : "✓"}
+                        </span>
+                      </div>
+                      {summary.totalCount > 0 && (
+                        <div className="mt-3 pl-14">
+                          <ProgressBar
+                            value={summary.completedCount}
+                            max={summary.totalCount}
+                          />
+                        </div>
+                      )}
+                    </AnimatedListItem>
+                  );
+                })}
+              </AnimatedList>
+              {history.length > 7 && (
+                <Button
+                  className="mt-5 w-full"
+                  variant="ghost"
+                  onClick={() => setShowAll(!showAll)}
+                  aria-expanded={showAll}
+                >
+                  {showAll
+                    ? t("history.showLess")
+                    : t("history.showAll", { count: number(history.length) })}
+                </Button>
+              )}
+            </Card>
+            <Card tone="accent">
+              <span className="icon-tile mb-5 bg-surface">
+                <Icon name="spark" />
+              </span>
+              <SectionHeading title={t("product.return")} />
+              <div className="mt-4">
+                <Stat value={number(pointBalance)} label={t("history.recoveryPoints")} />
+              </div>
+              <p className="mt-4 text-sm leading-6 text-muted">
+                {t("history.pointsBody", {
+                  reward: number(CHECKIN_REWARD_POINTS),
+                  cost: number(STREAK_REPAIR_COST_POINTS),
+                })}
+              </p>
+              <p className="mt-3 text-sm leading-6 text-muted">
+                {t("history.repairedBody")}
+              </p>
+              <div className="mt-5 border-t border-primary/10 pt-5">
+                <AnimatedList className="space-y-4">
+                  {repairableDays.length === 0 ? (
+                    <AnimatedListItem key="no-gaps">
+                      <p className="text-sm leading-6 text-muted">
+                        {t("history.noGaps")}
+                      </p>
+                    </AnimatedListItem>
+                  ) : (
+                    repairableDays.map((day) => (
+                      <AnimatedListItem
+                        className="rounded-2xl bg-surface p-4"
+                        key={day}
+                      >
+                        <p className="mb-3 text-sm font-medium">
+                          {formatHistoryDate(day, locale)}
+                        </p>
+                        <Button
+                          className="w-full"
+                          disabled={
+                            pointBalance < STREAK_REPAIR_COST_POINTS ||
+                            repairingDay !== null
+                          }
+                          onClick={() => repairDay(day)}
+                          busy={repairingDay === day}
+                        >
+                          {repairingDay === day
+                            ? t("history.repairing")
+                            : t("history.repair", { cost: number(STREAK_REPAIR_COST_POINTS) })}
+                        </Button>
+                      </AnimatedListItem>
+                    ))
+                  )}
+                </AnimatedList>
+                {repairableDays.length > 0 &&
+                  pointBalance < STREAK_REPAIR_COST_POINTS && (
+                    <p className="text-sm text-muted">
+                      {t("history.morePoints", {
+                        count: number(STREAK_REPAIR_COST_POINTS - pointBalance),
+                      })}
+                    </p>
+                  )}
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
+    </PageShell>
+  );
+}

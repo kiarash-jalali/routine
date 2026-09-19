@@ -1,11 +1,17 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { MedicationInput } from "@/types/health";
 const planColumns =
   "id,user_id,name,dose,notes,times,days_of_week,timezone,is_active,reminders_enabled,start_date,end_date,created_at,updated_at";
 const reminderColumns =
   "id,user_id,medication_id,scheduled_day,scheduled_time,scheduled_at,timezone,name,dose,taken_at";
-export async function loadHealth(userId: string, historyLimit = 100) {
-  const db = supabaseBrowser();
+export async function loadHealth(
+  userId: string,
+  historyLimit = 100,
+  client?: SupabaseClient<Database>,
+) {
+  const db = client ?? supabaseBrowser();
   const [plans, reminders] = await Promise.all([
     db
       .from("medication_plans")

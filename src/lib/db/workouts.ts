@@ -1,11 +1,17 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { SessionInput, WorkoutInput } from "@/types/workout";
 const planColumns =
   "id,user_id,name,activity_type,duration_minutes,exercises,days_of_week,preferred_time,timezone,is_active,reminders_enabled,created_at,updated_at";
 const sessionColumns =
   "id,user_id,workout_id,name,activity_type,duration_minutes,exercises,scheduled_day,scheduled_time,scheduled_at,timezone,completed_at";
-export async function loadWorkouts(userId: string, limit = 100) {
-  const db = supabaseBrowser();
+export async function loadWorkouts(
+  userId: string,
+  limit = 100,
+  client?: SupabaseClient<Database>,
+) {
+  const db = client ?? supabaseBrowser();
   const [plans, sessions] = await Promise.all([
     db
       .from("workout_plans")

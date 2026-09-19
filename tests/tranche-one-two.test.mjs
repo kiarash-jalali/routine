@@ -6,7 +6,7 @@ function source(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
-test("Tranche 1 uses a nonce CSP and keeps Design Lab out of production", () => {
+test("Tranche 1 uses a nonce CSP and keeps Design Lab desktop-only", () => {
   const proxy = source("src/proxy.ts");
   const layout = source("src/app/layout.tsx");
   const designLab = source("src/app/design-lab/layout.tsx");
@@ -17,8 +17,16 @@ test("Tranche 1 uses a nonce CSP and keeps Design Lab out of production", () => 
   assert.match(proxy, /frame-ancestors 'none'/);
   assert.match(layout, /nonce=\{nonce\}/);
   assert.match(config, /Strict-Transport-Security/);
-  assert.match(designLab, /VERCEL_ENV/);
-  assert.match(designLab, /notFound\(\)/);
+  assert.doesNotMatch(designLab, /VERCEL_ENV|notFound\(\)/);
+
+  const designPage = source("src/app/design-lab/page.tsx");
+  const nav = source("src/components/AppNav.tsx");
+  const frame = source("src/components/AppFrame.tsx");
+  assert.match(designPage, /lg:hidden/);
+  assert.match(designPage, /hidden lg:block/);
+  assert.match(nav, /href="\/design-lab"/);
+  assert.match(nav, /hidden lg:flex/);
+  assert.match(frame, /"\/design-lab"/);
 });
 
 test("notification scheduler fails loudly and maintains an alert issue", () => {
@@ -39,7 +47,7 @@ test("Dashboard initial owned data now starts on the server", () => {
   const server = source("src/lib/supabase/server.ts");
 
   assert.doesNotMatch(page, /^"use client"/);
-  assert.match(page, /supabase\.auth\.getClaims\(\)/);
+  assert.match(page, /requireServerUser\(\)/);
   assert.match(page, /listTasks\(supabase\)/);
   assert.match(page, /listActiveRoutines\(supabase\)/);
   assert.match(server, /createServerClient<Database>/);
@@ -62,5 +70,5 @@ test("Dashboard has a route-shaped loading state and timezone handoff", () => {
 
   assert.match(loading, /xl:grid-cols/);
   assert.match(worker, /ROOTINE_TIMEZONE_COOKIE/);
-  assert.match(page, /dateKeyInTimeZone/);
+  assert.match(page, /getServerLocalDay/);
 });

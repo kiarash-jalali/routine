@@ -40,6 +40,7 @@ export const en = {
   "nav.settings": "Settings",
   "nav.guide": "Guide",
   "nav.feedback": "Feedback",
+  "nav.designLab": "Design Lab",
   "nav.health": "Health",
   "nav.workouts": "Sport",
   "nav.life": "Everyday life",
