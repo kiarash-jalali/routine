@@ -5,7 +5,7 @@ import { Link, useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap, Collapse } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
 import { Button, ErrorNotice, Input, SegmentedControl } from "@/components/ui";
-import { getFriendlySignInError, MIN_PASSWORD_LENGTH } from "@/lib/auth";
+import { getFriendlySignInErrorKey, MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import { getProfile } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
@@ -14,7 +14,7 @@ import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { LanguagePicker } from "@/components/preferences/LanguagePicker";
 
 export default function LoginPage() {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -42,6 +42,9 @@ export default function LoginPage() {
         if (error) throw error;
 
         const profile = await getProfile(data.user.id);
+        if (profile?.locale && profile.locale !== language) {
+          await setLanguage(profile.locale);
+        }
         router.push(
           profile?.onboarding_completed ? "/dashboard" : "/onboarding",
         );
@@ -65,8 +68,8 @@ export default function LoginPage() {
     } catch (error: unknown) {
       setErrorMessage(
         mode === "login"
-          ? getFriendlySignInError(error)
-          : getErrorMessage(error, "Couldn’t create your account. Try again."),
+          ? t(getFriendlySignInErrorKey(error))
+          : getErrorMessage(error, t("login.signupError")),
       );
     } finally {
       setLoading(false);
