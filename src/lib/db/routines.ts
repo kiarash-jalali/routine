@@ -1,5 +1,8 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import type { Routine } from "@/types/routine";
+import {
+  isRoutineFrequency,
+  type Routine,
+} from "@/types/routine";
 
 type RoutineWriteFields = Pick<
   Routine,
@@ -18,7 +21,12 @@ export async function listRoutines(): Promise<Routine[]> {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return (data ?? []) as Routine[];
+  return (data ?? []).map((routine) => {
+    if (!isRoutineFrequency(routine.frequency)) {
+      throw new Error("invalid_routine_frequency");
+    }
+    return { ...routine, frequency: routine.frequency };
+  });
 }
 
 export async function addRoutine(input: CreateRoutineInput): Promise<void> {
