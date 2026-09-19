@@ -12,7 +12,6 @@ import { Sheet } from "@/components/Sheet";
 import {
   AnimatedList,
   AnimatedListItem,
-  AnimatedNumber,
 } from "@/components/Motion";
 import { RoutineForm } from "@/components/routines/RoutineForm";
 import {

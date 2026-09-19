@@ -23,6 +23,12 @@ import {
 import { rememberFirstRoutineSuccess } from "@/lib/firstRun";
 import type { RoutineFormValues } from "@/types/routine";
 
+const routineTemplates = [
+  "onboarding.template.water",
+  "onboarding.template.walk",
+  "onboarding.template.read",
+] as const;
+
 const intro = {
   title: "intro.welcome",
   body: "intro.welcomeBody",
@@ -147,8 +153,8 @@ export function OnboardingClient({
             <div className="mb-5">
               <p className="mb-2 text-sm font-medium">{t("onboarding.quickStart")}</p>
               <div className="flex flex-wrap gap-2">
-                {["water", "walk", "read"].map((key) => {
-                  const title = t(`onboarding.template.${key}`);
+                {routineTemplates.map((key) => {
+                  const title = t(key);
                   return (
                     <button key={key} type="button" className="btn btn-secondary" onClick={() => setTemplateTitle(title)}>
                       {title}
