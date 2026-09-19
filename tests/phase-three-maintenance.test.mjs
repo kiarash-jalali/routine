@@ -18,12 +18,17 @@ test("dead reminder introduction infrastructure is removed", () => {
   );
 
   const notifications = source("src/lib/db/notifications.ts");
+  const routines = source("src/app/routines/page.tsx");
   const database = source("src/types/database.ts");
   const migration = source(
     "supabase/migrations/20260919142905_phase3_remove_dead_reminder_intro.sql",
   );
 
   assert.doesNotMatch(notifications, /claimReminderIntroduction/);
+  assert.doesNotMatch(
+    routines,
+    /ReminderPrompt|claimReminderIntroduction|requestPermission/,
+  );
   assert.doesNotMatch(database, /claim_reminder_introduction|reminder_intro_seen/);
   assert.match(migration, /drop function if exists public\.claim_reminder_introduction/);
   assert.match(migration, /drop column if exists reminder_intro_seen/);
