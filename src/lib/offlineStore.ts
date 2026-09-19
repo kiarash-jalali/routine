@@ -240,10 +240,6 @@ export async function removeOfflineMutations(ids: string[]) {
   emitQueueChanged();
 }
 
-export async function removeOfflineMutation(id: string) {
-  await removeOfflineMutations([id]);
-}
-
 export async function syncOfflineMutations(
   userId: string,
 ): Promise<OfflineSyncResult> {
