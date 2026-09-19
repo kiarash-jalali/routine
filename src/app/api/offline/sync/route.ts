@@ -146,10 +146,8 @@ export async function POST(request: Request) {
   }
 
   const db = await supabaseServer();
-  const {
-    data: { claims },
-    error: claimsError,
-  } = await db.auth.getClaims();
+  const { data: claimsData, error: claimsError } = await db.auth.getClaims();
+  const claims = claimsData?.claims;
   const userId = typeof claims?.sub === "string" ? claims.sub : null;
 
   if (claimsError || !userId) {
