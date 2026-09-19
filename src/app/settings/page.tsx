@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { Link, useTransitionRouter as useRouter } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
 import {
   MomentPopup,
@@ -272,6 +272,19 @@ export default function SettingsPage() {
           <ErrorNotice>{error}</ErrorNotice>
         </div>
       )}
+
+      <Card tone="soft" className="mb-6">
+        <SectionHeading
+          title={t("settings.guide")}
+          description={t("settings.guideBody")}
+          action={
+            <Link href="/guide" className="btn btn-secondary">
+              {t("settings.openGuide")}
+              <Icon name="chevron" size={16} />
+            </Link>
+          }
+        />
+      </Card>
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <div className="space-y-6">

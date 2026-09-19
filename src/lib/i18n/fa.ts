@@ -415,4 +415,13 @@ export const fa: Record<TranslationKey, string> = {
   "feedback.other": "چیز دیگری",
   "feedback.failed": "بازخورد ارسال نشد. دوباره تلاش کن.",
   "settings.loading": "در حال بارگذاری تنظیمات…",
+  "settings.guide": "راهنما",
+  "settings.guideBody":
+    "هر وقت خواستی، دوباره ببین روتین چطور کار می‌کند.",
+  "settings.openGuide": "باز کردن راهنما",
+  "guide.title": "روتین چطور کار می‌کند",
+  "guide.body":
+    "کارها، روتین‌ها، مرور روز، جبران، یادآورها، سلامت و تحرک در یک جا.",
+  "reminder.iosInstall":
+    "در آیفون یا آیپد، اول rootine را در Safari از مسیر Share → Add to Home Screen به صفحهٔ اصلی اضافه کن. بعد آن را از صفحهٔ اصلی باز کن تا اعلان‌ها فعال شوند.",
 };

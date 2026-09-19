@@ -418,5 +418,14 @@ export const en = {
   "feedback.other": "Something else",
   "feedback.failed": "Your feedback could not be sent. Try again.",
   "settings.loading": "Loading settings…",
+  "settings.guide": "Guide",
+  "settings.guideBody":
+    "Review how rootine works whenever you want a refresher.",
+  "settings.openGuide": "Open guide",
+  "guide.title": "How rootine works",
+  "guide.body":
+    "Tasks, routines, check-ins, recovery, reminders, health and movement in one place.",
+  "reminder.iosInstall":
+    "On iPhone or iPad, first add rootine to your Home Screen in Safari (Share → Add to Home Screen). Then open it from the Home Screen to enable notifications.",
 } as const;
 export type TranslationKey = keyof typeof en;

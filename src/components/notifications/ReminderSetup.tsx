@@ -6,6 +6,7 @@ import {
   currentNotificationPermission,
   enablePushNotifications,
   notificationsSupported,
+  iosPushRequiresInstall,
   showNotificationTest,
 } from "@/lib/notifications";
 import {
@@ -60,6 +61,7 @@ export function ReminderSetup({
     }
   }
   const available = notificationsSupported();
+  const needsIosInstall = iosPushRequiresInstall();
   return (
     <div className="space-y-4">
       <p className="text-sm leading-6 text-muted">
@@ -82,7 +84,7 @@ export function ReminderSetup({
       </p>
       {!available && (
         <p role="status" className="notice">
-          {t("reminder.unsupported")}
+          {t(needsIosInstall ? "reminder.iosInstall" : "reminder.unsupported")}
         </p>
       )}
       {permission === "denied" && (

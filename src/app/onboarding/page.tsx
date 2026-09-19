@@ -1,6 +1,4 @@
 "use client";
-import { ReminderPrompt } from "@/components/notifications/ReminderPrompt";
-import { claimReminderIntroduction } from "@/lib/db/notifications";
 import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap } from "@/components/Motion";
@@ -37,37 +35,13 @@ const screens = [
     items: [
       { key: "task", icon: "today" },
       { key: "routine", icon: "routines" },
-    ],
-  },
-  {
-    title: "intro.checkin",
-    body: "intro.checkinBody",
-    items: [
-      { key: "rhythm", icon: "rootine" },
-      { key: "points", icon: "spark" },
-    ],
-  },
-  {
-    title: "intro.perspective",
-    body: "intro.perspectiveBody",
-    items: [
-      { key: "history", icon: "history" },
-      { key: "reminders", icon: "clock" },
-    ],
-  },
-  {
-    title: "intro.life",
-    body: "intro.lifeBody",
-    items: [
-      { key: "health", icon: "checkin" },
-      { key: "workout", icon: "sun" },
+      { key: "checkin", icon: "checkin" },
     ],
   },
 ] as const;
 export default function OnboardingPage() {
   const router = useRouter();
-  const [reminderOpen, setReminderOpen] = useState(false);
-  const { t, number } = useLanguage();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -153,7 +127,6 @@ export default function OnboardingPage() {
         preferred_time: formatPreferredTimeForDatabase(values.preferredTime),
       });
       setStep("ready");
-      setReminderOpen(await claimReminderIntroduction());
     });
   }
   if (loading)
@@ -173,9 +146,6 @@ export default function OnboardingPage() {
       <AnimatedSwap value={String(step)}>
         {intro && (
           <Card>
-            <p className="mb-4 text-sm text-muted">
-              {t("intro.progress", { step: number(Number(step) + 1) })}
-            </p>
             <h1 className="display-title text-4xl">{t(intro.title)}</h1>
             <p className="mt-4 text-muted">{t(intro.body)}</p>
             <div className="intro-illustration">
@@ -198,24 +168,10 @@ export default function OnboardingPage() {
                 variant="primary"
                 busy={busy}
                 disabled={busy || !userId}
-                onClick={() =>
-                  Number(step) < screens.length - 1
-                    ? setStep(Number(step) + 1)
-                    : void setup()
-                }
+                onClick={() => void setup()}
               >
-                {Number(step) < screens.length - 1
-                  ? t("common.continue")
-                  : t("intro.setup")}
+                {t("intro.setup")}
               </Button>
-              {Number(step) > 0 && (
-                <Button
-                  disabled={busy}
-                  onClick={() => setStep(Number(step) - 1)}
-                >
-                  {t("common.back")}
-                </Button>
-              )}
             </div>
           </Card>
         )}
@@ -297,11 +253,6 @@ export default function OnboardingPage() {
       >
         {t("onboarding.skipAll")}
       </Button>
-      <ReminderPrompt
-        userId={userId}
-        open={reminderOpen}
-        onClose={() => setReminderOpen(false)}
-      />
     </PageShell>
   );
 }

@@ -96,3 +96,21 @@ export async function showNotificationTest(language: Language = "en") {
     data: { url: "/checkin" },
   });
 }
+
+
+export function iosPushRequiresInstall(): boolean {
+  if (typeof window === "undefined" || typeof navigator === "undefined")
+    return false;
+
+  const navigatorWithStandalone = navigator as Navigator & {
+    standalone?: boolean;
+  };
+  const isIos =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const standalone =
+    navigatorWithStandalone.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches;
+
+  return isIos && !standalone;
+}
