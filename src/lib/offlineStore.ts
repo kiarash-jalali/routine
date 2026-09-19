@@ -103,6 +103,15 @@ function emitQueueChanged() {
   }
 }
 
+function requestBackgroundSync() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+  void navigator.serviceWorker.ready
+    .then((registration) => {
+      registration.active?.postMessage({ type: "REGISTER_OFFLINE_SYNC" });
+    })
+    .catch(() => undefined);
+}
+
 function isStringArray(value: unknown): value is string[] {
   return (
     Array.isArray(value) &&
@@ -175,6 +184,7 @@ export async function queueDailyItemCompletion(
   await done;
   database.close();
   emitQueueChanged();
+  requestBackgroundSync();
 }
 
 export async function queueFinishDailyCheckin(
@@ -198,6 +208,7 @@ export async function queueFinishDailyCheckin(
   await done;
   database.close();
   emitQueueChanged();
+  requestBackgroundSync();
 }
 
 export async function listOfflineMutations(userId: string) {
