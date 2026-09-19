@@ -25,13 +25,16 @@ export function AppFrame({ children }: { children: ReactNode }) {
   const isApp = appPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
+  const isDesignLab =
+    pathname === "/design-lab" || pathname.startsWith("/design-lab/");
+
   return (
     <div className={isApp ? "app-frame" : "auth-frame"}>
       <a href="#main-content" className="skip-link">
         {t("common.skipContent")}
       </a>
       {isApp && <AppNav />}
-      {!isApp && (
+      {!isApp && !isDesignLab && (
         <div className="auth-theme">
           <ThemeToggle />
         </div>
