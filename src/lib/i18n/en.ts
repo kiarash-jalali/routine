@@ -438,6 +438,11 @@ export const en = {
   "auth.confirmError": "Your email confirmation could not be completed.",
   "auth.confirming": "Confirming your account…",
   "auth.confirmingBody": "This should only take a moment.",
+  "error.title": "Something went wrong.",
+  "error.body": "Your data is safe. Try this page again, or return to today.",
+  "error.retry": "Try again",
+  "error.today": "Back to today",
+  "error.reference": "Reference {id}",
   "settings.guide": "Guide",
   "settings.guideBody":
     "Review how rootine works whenever you want a refresher.",

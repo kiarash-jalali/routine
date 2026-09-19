@@ -435,6 +435,11 @@ export const fa: Record<TranslationKey, string> = {
   "auth.confirmError": "تأیید ایمیل کامل نشد.",
   "auth.confirming": "در حال تأیید حساب…",
   "auth.confirmingBody": "فقط یک لحظه طول می‌کشد.",
+  "error.title": "مشکلی پیش آمد.",
+  "error.body": "اطلاعاتت امن است. دوباره تلاش کن یا به امروز برگرد.",
+  "error.retry": "تلاش دوباره",
+  "error.today": "بازگشت به امروز",
+  "error.reference": "شناسهٔ پیگیری {id}",
   "settings.guide": "راهنما",
   "settings.guideBody":
     "هر وقت خواستی، دوباره ببین روتین چطور کار می‌کند.",
