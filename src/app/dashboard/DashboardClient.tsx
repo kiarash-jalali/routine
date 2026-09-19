@@ -46,14 +46,42 @@ import type { CheckinCompletionMap } from "@/types/checkin";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
 
-function formatDueTime(task: Task, locale: string, anytime: string) {
+function formatDueTime(
+  task: Task,
+  locale: string,
+  anytime: string,
+  today: Date,
+  labels: { today: string; tomorrow: string; yesterday: string },
+) {
   if (!task.due_at) return anytime;
-  return new Intl.DateTimeFormat(locale, {
-    month: "short",
-    day: "numeric",
+  const due = new Date(task.due_at);
+  const dueDay = new Date(due);
+  dueDay.setHours(0, 0, 0, 0);
+  const todayDay = new Date(today);
+  todayDay.setHours(0, 0, 0, 0);
+  const dayDelta = Math.round(
+    (dueDay.getTime() - todayDay.getTime()) / 86_400_000,
+  );
+  const time = new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(task.due_at));
+  }).format(due);
+
+  const dayLabel =
+    dayDelta === 0
+      ? labels.today
+      : dayDelta === 1
+        ? labels.tomorrow
+        : dayDelta === -1
+          ? labels.yesterday
+          : dayDelta > 1 && dayDelta < 7
+            ? new Intl.DateTimeFormat(locale, { weekday: "long" }).format(due)
+            : new Intl.DateTimeFormat(locale, {
+                month: "short",
+                day: "numeric",
+              }).format(due);
+
+  return `${dayLabel} · ${time}`;
 }
 
 function sortTasks(tasks: Task[]) {
@@ -101,6 +129,7 @@ export function DashboardClient({
   const [firstSuccessRoutine, setFirstSuccessRoutine] = useState<string | null>(
     null,
   );
+  const [showReminderNudge, setShowReminderNudge] = useState(false);
   const pending = useRef(new Set<string>());
   const [filter, setFilter] = useState<"today" | "all" | "done">("today");
   const today = useToday();
@@ -314,11 +343,55 @@ export function DashboardClient({
         ? tasks.filter((task) => task.is_done)
         : tasks;
   const checkedInToday = rhythm?.checkedInToday ?? false;
+  const hasDailyValue =
+    checkedInToday || Object.values(completionByItem).some(Boolean);
+  const isDayOne =
+    routines.length === 0 &&
+    tasks.length === 0 &&
+    !checkedInToday &&
+    (rhythm?.currentDays ?? 0) === 0;
+
+  useEffect(() => {
+    if (!hasDailyValue || typeof window === "undefined") {
+      setShowReminderNudge(false);
+      return;
+    }
+    const dismissed =
+      window.localStorage.getItem("rootine-reminder-nudge-dismissed") === "1";
+    const permission =
+      typeof Notification === "undefined" ? "unsupported" : Notification.permission;
+    setShowReminderNudge(!dismissed && permission === "default");
+  }, [hasDailyValue]);
+
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
     date.setDate(today.getDate() - ((today.getDay() + 6) % 7) + index);
     return date;
   });
+
+  const checkinCard = (
+    <Card tone="accent">
+      <span className="icon-tile mb-5 bg-surface">
+        <Icon name={checkedInToday ? "checkin" : "moon"} size={22} />
+      </span>
+      <h2 className="reflection-title">
+        {checkedInToday
+          ? t("dashboard.showedUp")
+          : t("dashboard.moment")}
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-muted">
+        {checkedInToday
+          ? t("dashboard.checkinSaved")
+          : t("dashboard.reflect")}
+      </p>
+      <Link href="/checkin" className="btn btn-primary mt-5 w-full">
+        {checkedInToday
+          ? t("dashboard.viewCheckin")
+          : t("dashboard.checkinToday")}
+        <Icon name="arrow" size={17} />
+      </Link>
+    </Card>
+  );
 
   return (
     <PageShell>
@@ -380,6 +453,71 @@ export function DashboardClient({
           <ErrorNotice>{error}</ErrorNotice>
         </div>
       </Collapse>
+
+      {isDayOne && (
+        <Card tone="accent" className="mb-7">
+          <span className="icon-tile mb-4 bg-surface">
+            <Icon name="spark" size={21} />
+          </span>
+          <h2 className="display-title text-2xl">{t("dashboard.dayOneTitle")}</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+            {t("dashboard.dayOneBody")}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Button
+              variant="primary"
+              onClick={() => {
+                setFormError(null);
+                setShowTaskForm(true);
+              }}
+            >
+              <Icon name="plus" size={17} />
+              {t("dashboard.dayOneTask")}
+            </Button>
+            <Link href="/routines" className="btn btn-secondary">
+              <Icon name="routines" size={17} />
+              {t("dashboard.dayOneRoutine")}
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      <div className="mb-6 xl:hidden">{checkinCard}</div>
+
+      {showReminderNudge && (
+        <Card tone="soft" className="mb-7">
+          <div className="flex items-start gap-4">
+            <span className="icon-tile shrink-0">
+              <Icon name="clock" size={20} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-semibold">{t("dashboard.reminderNudgeTitle")}</h2>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                {t("dashboard.reminderNudgeBody")}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link href="/settings#reminders" className="btn btn-primary">
+                  {t("dashboard.reminderNudgeAction")}
+                </Link>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    window.localStorage.setItem(
+                      "rootine-reminder-nudge-dismissed",
+                      "1",
+                    );
+                    setShowReminderNudge(false);
+                  }}
+                >
+                  {t("common.notNow")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {!isDayOne && (
       <div className="stats-strip mb-7 grid grid-cols-3 divide-x divide-border rounded-2xl px-2 py-5 sm:px-5">
         <div className="px-3 sm:px-5">
           <Stat value={number(routines.length)} label={t("dashboard.routinesTodayCount")} />
@@ -398,6 +536,7 @@ export function DashboardClient({
           />
         </div>
       </div>
+      )}
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-6">
           <Card>
@@ -423,7 +562,7 @@ export function DashboardClient({
                     href="/routines"
                   >
                     {t("routine.addSmall")}
-                    <Icon name="arrow" size={16} className="ml-2" />
+                    <Icon name="arrow" size={16} className="ms-2" />
                   </Link>
                 </EmptyState>
               ) : (
@@ -509,6 +648,20 @@ export function DashboardClient({
                       : filter === "all"
                         ? t("task.emptyAll")
                         : t("task.emptyToday")}
+                    {filter !== "done" && (
+                      <div className="mt-4">
+                        <Button
+                          variant="primary"
+                          onClick={() => {
+                            setFormError(null);
+                            setShowTaskForm(true);
+                          }}
+                        >
+                          <Icon name="plus" size={16} />
+                          {t("task.addFirst")}
+                        </Button>
+                      </div>
+                    )}
                   </EmptyState>
                 </AnimatedListItem>
               ) : (
@@ -534,7 +687,17 @@ export function DashboardClient({
                     <div className="min-w-0 flex-1">
                       <p className="row-title">{task.title}</p>
                       <p className="row-detail">
-                      {formatDueTime(task, locale, t("common.anytime"))}
+                      {formatDueTime(
+                        task,
+                        locale,
+                        t("common.anytime"),
+                        today,
+                        {
+                          today: t("common.today"),
+                          tomorrow: t("common.tomorrow"),
+                          yesterday: t("common.yesterday"),
+                        },
+                      )}
                     </p>
                     </div>
                     <button
@@ -595,27 +758,7 @@ export function DashboardClient({
               <Icon name="arrow" size={16} />
             </Link>
           </Card>
-          <Card tone="accent">
-            <span className="icon-tile mb-5 bg-surface">
-              <Icon name={checkedInToday ? "checkin" : "moon"} size={22} />
-            </span>
-            <h2 className="reflection-title">
-              {checkedInToday
-                ? t("dashboard.showedUp")
-                : t("dashboard.moment")}
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              {checkedInToday
-                ? t("dashboard.checkinSaved")
-                : t("dashboard.reflect")}
-            </p>
-            <Link href="/checkin" className="btn btn-primary mt-5 w-full">
-              {checkedInToday
-                ? t("dashboard.viewCheckin")
-                : t("dashboard.checkinToday")}
-              <Icon name="arrow" size={17} />
-            </Link>
-          </Card>
+          <div className="hidden xl:block">{checkinCard}</div>
         </div>
       </div>
 
