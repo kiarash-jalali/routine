@@ -20,7 +20,7 @@ export async function listStreakRepairs(
     .order("day", { ascending: true });
 
   if (error) throw error;
-  return (data ?? []) as StreakRepair[];
+  return data ?? [];
 }
 
 export async function repairStreakDay(day: string): Promise<number> {
