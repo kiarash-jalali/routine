@@ -66,3 +66,13 @@ test("Tranche 4 improves onboarding, first-day actions, reminders and auth UX", 
   assert.match(login, /auth\.resend/);
   assert.match(login, /PasswordGuidance/);
 });
+
+test("existing profile locale is synchronized before authenticated navigation", () => {
+  const login = source("src/app/login/page.tsx");
+  assert.match(login, /profile\.locale !== language/);
+  assert.match(login, /await setLanguage\(profile\.locale\)/);
+  assert.ok(
+    login.indexOf("await setLanguage(profile.locale)") <
+      login.indexOf('router.push('),
+  );
+});
