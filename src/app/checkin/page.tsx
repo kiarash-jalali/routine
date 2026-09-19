@@ -34,9 +34,10 @@ import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy } from "@/lib/moments";
 import { getSessionUser } from "@/lib/session";
 import {
-  filterTasksForToday,
-  getLocalDateKey,
-} from "@/lib/today";
+  completionMapFromItems,
+  tasksForDailyCheckin,
+} from "@/lib/checkinProgress";
+import { getLocalDateKey } from "@/lib/today";
 import { useToday } from "@/lib/useToday";
 import type {
   CheckinCompletionMap,
@@ -79,19 +80,6 @@ function CheckinChoice({
         )}
       </span>
     </button>
-  );
-}
-
-function createItemKey(itemType: CheckinItemType, itemId: string): string {
-  return `${itemType}:${itemId}`;
-}
-
-function createCompletionMap(items: CheckinItem[]): CheckinCompletionMap {
-  return Object.fromEntries(
-    items.map((item) => [
-      createItemKey(item.item_type, item.item_id),
-      item.completed,
-    ]),
   );
 }
 
@@ -146,20 +134,14 @@ export default function CheckinPage() {
         const existingItems = existingCheckin
           ? await listCheckinItems(existingCheckin.id)
           : [];
-        const existingCompletionMap = createCompletionMap(existingItems);
+        const existingCompletionMap = completionMapFromItems(existingItems);
 
         if (cancelled) return;
-
-        const openTasks = filterTasksForToday(allTasks, dayDate);
-        const taskIds = new Set(openTasks.map((task) => task.id));
-        for (const item of existingItems) {
-          if (item.item_type === "task") taskIds.add(item.item_id);
-        }
 
         setUserId(user.id);
         setDailyCheckinId(existingCheckin?.id ?? null);
         setRoutines(todaysRoutines);
-        setTasks(allTasks.filter((task) => taskIds.has(task.id)));
+        setTasks(tasksForDailyCheckin(allTasks, existingItems, dayDate));
         setCompletionByItem(existingCompletionMap);
         setSavedCompletionByItem(existingCompletionMap);
         setHasFinishedToday(Boolean(existingCheckin?.completed_at));
@@ -183,7 +165,7 @@ export default function CheckinPage() {
   }, [router, t, today]);
 
   function toggleItem(itemType: CheckinItemType, itemId: string) {
-    const itemKey = createItemKey(itemType, itemId);
+    const itemKey = checkinItemKey(itemType, itemId);
     const willComplete = !completionByItem[itemKey];
 
     setCompletionByItem((current) => ({
@@ -208,7 +190,7 @@ export default function CheckinPage() {
   }
 
   function isItemCompleted(itemType: CheckinItemType, itemId: string) {
-    return Boolean(completionByItem[createItemKey(itemType, itemId)]);
+    return Boolean(completionByItem[checkinItemKey(itemType, itemId)]);
   }
 
   function cancelFinishedCheckinEdit() {
