@@ -1,5 +1,6 @@
 import { enforceRateLimit, requestIp } from "@/lib/server/rateLimit";
 import { createClient } from "@supabase/supabase-js";
+import type { Database, Tables } from "@/types/database";
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { reminderDelivery } from "@/lib/server/reminderDelivery";
@@ -8,12 +9,10 @@ import { localClock } from "@/lib/schedule";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-type PreferenceRow = {
-  user_id: string;
-  reminder_time: string;
-  timezone: string;
-  last_sent_on: string | null;
-};
+type PreferenceRow = Pick<
+  Tables<"notification_preferences">,
+  "user_id" | "reminder_time" | "timezone" | "last_sent_on"
+>;
 
 type DuePreference = {
   preference: PreferenceRow;
@@ -61,7 +60,7 @@ async function sendNotifications(request: Request) {
     );
   }
 
-  const admin = createClient(url, key, {
+  const admin = createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
@@ -103,7 +102,7 @@ async function sendNotifications(request: Request) {
   }
 
   const duePreferences: DuePreference[] = [];
-  for (const preference of (preferences ?? []) as PreferenceRow[]) {
+  for (const preference of preferences ?? []) {
     try {
       const clock = localClock(now, preference.timezone);
       if (
@@ -189,7 +188,7 @@ async function sendNotifications(request: Request) {
 
   if (healthError) counts.failed++;
   await runInChunks(
-    (healthRows ?? []) as Array<{ id: string; user_id: string }>,
+    healthRows ?? [],
     25,
     async (reminder) => {
       if (await deliver(reminder.user_id, "health", reminder.id)) {
@@ -227,7 +226,7 @@ async function sendNotifications(request: Request) {
 
   if (workoutError) counts.failed++;
   await runInChunks(
-    (workoutRows ?? []) as Array<{ id: string; user_id: string }>,
+    workoutRows ?? [],
     25,
     async (session) => {
       if (await deliver(session.user_id, "workout", session.id)) {

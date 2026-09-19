@@ -1,12 +1,13 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import {
   sendReminderPush,
   type PushTarget,
   type ReminderCategory,
 } from "./webPush";
 import { isLanguage } from "@/lib/i18n";
-export function reminderDelivery(admin: SupabaseClient) {
+export function reminderDelivery(admin: SupabaseClient<Database>) {
   const counts = { sent: 0, expired: 0, failed: 0 };
   const targets = new Map<string, PushTarget[]>();
   const languages = new Map<string, "en" | "fa">();
@@ -31,7 +32,7 @@ export function reminderDelivery(admin: SupabaseClient) {
         counts.failed++;
         return false;
       }
-      targets.set(userId, subscriptions.data as PushTarget[]);
+      targets.set(userId, subscriptions.data ?? []);
       languages.set(
         userId,
         isLanguage(profile.data?.locale) ? profile.data.locale : "en",

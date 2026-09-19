@@ -2,9 +2,10 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 
 export async function enforceRateLimit(
-  admin: SupabaseClient,
+  admin: SupabaseClient<Database>,
   bucket: string,
   subject: string,
   limit: number,
