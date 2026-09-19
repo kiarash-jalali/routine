@@ -77,7 +77,6 @@ export function PwaStatus() {
       } = await supabase.auth.getSession();
       userIdRef.current = session?.user.id ?? null;
       if (!userIdRef.current) {
-        await clearOfflineData().catch(() => undefined);
         setPending(0);
         return;
       }
@@ -122,7 +121,14 @@ export function PwaStatus() {
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
     window.addEventListener(OFFLINE_QUEUE_EVENT, onQueueChanged);
+    function onServiceWorkerMessage(event: MessageEvent) {
+      if (event.data?.type === "ROOTINE_OFFLINE_SYNCED") {
+        void refreshPending();
+      }
+    }
+
     document.addEventListener("visibilitychange", onVisibilityChange);
+    navigator.serviceWorker?.addEventListener("message", onServiceWorkerMessage);
 
     return () => {
       subscription.unsubscribe();
@@ -130,6 +136,10 @@ export function PwaStatus() {
       window.removeEventListener("offline", onOffline);
       window.removeEventListener(OFFLINE_QUEUE_EVENT, onQueueChanged);
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      navigator.serviceWorker?.removeEventListener(
+        "message",
+        onServiceWorkerMessage,
+      );
     };
   }, [flushQueue, refreshPending]);
 
