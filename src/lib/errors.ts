@@ -10,6 +10,7 @@ const TECHNICAL_ERROR_PATTERNS = [
   /postgrest/i,
   /pgrst\d+/i,
   /postgres/i,
+  /^(not_authenticated|invalid_|daily_item_|repair_|day_already_|insufficient_)/i,
 ];
 
 function readMessage(error: unknown): string | null {
