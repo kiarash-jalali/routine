@@ -1,10 +1,14 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import type { Task } from "@/types/task";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
 type CreateTaskInput = Pick<Task, "user_id" | "title" | "due_at">;
 
-export async function listTasks(): Promise<Task[]> {
-  const supabase = supabaseBrowser();
+export async function listTasks(
+  client?: SupabaseClient<Database>,
+): Promise<Task[]> {
+  const supabase = client ?? supabaseBrowser();
   const { data, error } = await supabase
     .from("tasks")
     .select("*")
@@ -16,11 +20,16 @@ export async function listTasks(): Promise<Task[]> {
   return data ?? [];
 }
 
-export async function addTask(input: CreateTaskInput): Promise<void> {
+export async function addTask(input: CreateTaskInput): Promise<Task> {
   const supabase = supabaseBrowser();
-  const { error } = await supabase.from("tasks").insert(input);
+  const { data, error } = await supabase
+    .from("tasks")
+    .insert(input)
+    .select("*")
+    .single();
 
   if (error) throw error;
+  return data;
 }
 
 export async function setTaskDone(
