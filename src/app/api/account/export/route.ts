@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
   if (!supabaseUrl || !anonKey || !serviceRoleKey) {
     return NextResponse.json(
-      { error: "Account export is temporarily unavailable." },
+      { error: "export_unavailable" },
       { status: 503 },
     );
   }
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     ? authorization.slice("Bearer ".length)
     : null;
 
-  if (!accessToken) return unauthorized("Not authenticated.");
+  if (!accessToken) return unauthorized("not_authenticated");
 
   const userDb = createClient<Database>(supabaseUrl, anonKey, {
     global: {
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
   } = await userDb.auth.getUser(accessToken);
 
   if (userError || !user) {
-    return unauthorized("Your session is no longer valid.");
+    return unauthorized("session_invalid");
   }
 
   const admin = createClient<Database>(supabaseUrl, serviceRoleKey, {
@@ -88,13 +88,13 @@ export async function GET(request: Request) {
     );
     if (!allowed) {
       return NextResponse.json(
-        { error: "Too many export requests. Try again later." },
+        { error: "export_rate_limited" },
         { status: 429 },
       );
     }
   } catch {
     return NextResponse.json(
-      { error: "Account export is temporarily unavailable." },
+      { error: "export_unavailable" },
       { status: 503 },
     );
   }
@@ -276,7 +276,7 @@ export async function GET(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { error: "Your data could not be exported. Try again in a moment." },
+      { error: "export_failed" },
       {
         status: 500,
         headers: { "Cache-Control": "private, no-store, max-age=0" },
