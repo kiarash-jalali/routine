@@ -350,6 +350,7 @@
     state.syncing = true;
     await refreshPending();
     const c = copy[state.language];
+    let finalStatus;
 
     try {
       const response = await fetch("/api/offline/sync", {
@@ -360,26 +361,26 @@
       });
 
       if (response.status === 401) {
-        await refreshPending(c.signIn);
-        return;
-      }
-      if (!response.ok) throw new Error("offline_sync_failed");
+        finalStatus = c.signIn;
+      } else {
+        if (!response.ok) throw new Error("offline_sync_failed");
 
-      const result = await response.json();
-      const removable = [
-        ...(Array.isArray(result.appliedIds) ? result.appliedIds : []),
-        ...(Array.isArray(result.discardedIds) ? result.discardedIds : []),
-      ];
-      await removeMutations(removable);
-      const retryCount = Array.isArray(result.retryIds)
-        ? result.retryIds.length
-        : 0;
-      await refreshPending(retryCount > 0 ? c.retry : undefined);
+        const result = await response.json();
+        const removable = [
+          ...(Array.isArray(result.appliedIds) ? result.appliedIds : []),
+          ...(Array.isArray(result.discardedIds) ? result.discardedIds : []),
+        ];
+        await removeMutations(removable);
+        const retryCount = Array.isArray(result.retryIds)
+          ? result.retryIds.length
+          : 0;
+        if (retryCount > 0) finalStatus = c.retry;
+      }
     } catch {
-      await refreshPending(c.retry);
+      finalStatus = c.retry;
     } finally {
       state.syncing = false;
-      await refreshPending();
+      await refreshPending(finalStatus);
     }
   }
 
