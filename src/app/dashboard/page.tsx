@@ -38,21 +38,15 @@ import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import { getSessionUser } from "@/lib/session";
+import { checkinItemKey, completionMapFromItems } from "@/lib/checkinProgress";
 import {
   filterTasksForToday,
   getLocalDateKey,
 } from "@/lib/today";
 import { useToday } from "@/lib/useToday";
-import type {
-  CheckinCompletionMap,
-  CheckinItemType,
-} from "@/types/checkin";
+import type { CheckinCompletionMap } from "@/types/checkin";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
-
-function dailyItemKey(itemType: CheckinItemType, itemId: string) {
-  return `${itemType}:${itemId}`;
-}
 
 function formatDueTime(task: Task, locale: string, anytime: string) {
   if (!task.due_at) return anytime;
@@ -129,12 +123,7 @@ export default function DashboardPage() {
         if (rhythmResult.status === "fulfilled") setRhythm(rhythmResult.value);
         if (progressResult.status === "fulfilled") {
           setCompletionByItem(
-            Object.fromEntries(
-              progressResult.value.items.map((item) => [
-                dailyItemKey(item.item_type, item.item_id),
-                item.completed,
-              ]),
-            ),
+            completionMapFromItems(progressResult.value.items),
           );
         }
         if (results.some((result) => result.status === "rejected"))
@@ -185,7 +174,7 @@ export default function DashboardPage() {
   }
 
   async function toggleDone(task: Task) {
-    const pendingKey = dailyItemKey("task", task.id);
+    const pendingKey = checkinItemKey("task", task.id);
     if (pending.current.has(pendingKey)) return;
     const nextCompleted = !task.is_done;
 
@@ -232,7 +221,7 @@ export default function DashboardPage() {
   }
 
   async function toggleRoutine(routine: Routine) {
-    const pendingKey = dailyItemKey("routine", routine.id);
+    const pendingKey = checkinItemKey("routine", routine.id);
     if (pending.current.has(pendingKey)) return;
     const previous = Boolean(completionByItem[pendingKey]);
     const nextCompleted = !previous;
@@ -394,7 +383,7 @@ export default function DashboardPage() {
               ) : (
                 <ul>
                   {routines.map((routine) => {
-                    const completionKey = dailyItemKey("routine", routine.id);
+                    const completionKey = checkinItemKey("routine", routine.id);
                     const completed = Boolean(completionByItem[completionKey]);
                     return (
                     <li
@@ -490,7 +479,7 @@ export default function DashboardPage() {
                           task.is_done ? "task.reopenNamed" : "task.completeNamed",
                           { name: task.title },
                         )}
-                        disabled={pendingIds.includes(dailyItemKey("task", task.id))}
+                        disabled={pendingIds.includes(checkinItemKey("task", task.id))}
                         onClick={() => toggleDone(task)}
                       >
                         <CheckCircle checked={task.is_done} />
@@ -505,7 +494,7 @@ export default function DashboardPage() {
                     <button
                       className="icon-button danger -mr-2"
                       aria-label={t("task.deleteNamed", { name: task.title })}
-                      disabled={pendingIds.includes(dailyItemKey("task", task.id))}
+                      disabled={pendingIds.includes(checkinItemKey("task", task.id))}
                       onClick={() => {
                         setFormError(null);
                         setDeleteTarget(task);
