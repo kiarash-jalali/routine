@@ -180,6 +180,14 @@ export const fa: Record<TranslationKey, string> = {
     "رمز عبور به‌روزرسانی نشد. یک لینک تازه درخواست کن و دوباره تلاش کن.",
   "settings.title": "تنظیمات",
   "settings.description": "روتین را مطابق سلیقهٔ خودت تنظیم کن.",
+  "settings.personal": "شخصی‌سازی",
+  "settings.personalBody": "نام، ظاهر و زبان حساب تو.",
+  "settings.device": "اپ و یادآورها",
+  "settings.deviceBody": "روتین را نصب کن و انتخاب کن چه زمانی توجهت را جلب کند.",
+  "settings.account": "حساب و امنیت",
+  "settings.accountBody": "اطلاعات ورود و نشست این دستگاه.",
+  "settings.data": "اطلاعات تو",
+  "settings.dataBody": "یک نسخه دریافت کن یا حسابت را برای همیشه حذف کن.",
   "settings.profile": "پروفایل",
   "settings.profileBody": "نامی که روتین برای خطاب به تو استفاده می‌کند.",
   "settings.displayName": "نام نمایشی",
@@ -211,6 +219,10 @@ export const fa: Record<TranslationKey, string> = {
   "settings.passwordTooShort": "رمز عبور باید حداقل {count} نویسه باشد.",
   "settings.emailConfirm":
     "برای تکمیل تغییر ایمیل، صندوق ورودی‌ات را بررسی کن.",
+  "dashboard.firstSuccessEyebrow": "آماده‌ای",
+  "dashboard.firstSuccessTitle": "«{name}» برای امروز آماده است.",
+  "dashboard.firstSuccessBody":
+    "وقتی انجامش دادی همین‌جا علامتش بزن. همان اولین انجام کوچک برای شروع ریتمت کافی است.",
   "dashboard.lifeBody":
     "در کنار برنامه‌های روزمره، برای سلامتی و تحرک هم جا باز کن.",
   "product.todayBody": "کمی پیشرفت، با سرعت خودت.",
