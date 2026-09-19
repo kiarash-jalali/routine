@@ -211,13 +211,17 @@ export function CheckinClient({
       const routineItems: CheckinItem[] = routines.map((routine) => ({
         item_type: "routine",
         item_id: routine.id,
-        completed: isItemCompleted("routine", routine.id),
+        completed: Boolean(
+          completionByItem[checkinItemKey("routine", routine.id)],
+        ),
       }));
 
       const taskItems: CheckinItem[] = tasks.map((task) => ({
         item_type: "task",
         item_id: task.id,
-        completed: isItemCompleted("task", task.id),
+        completed: Boolean(
+          completionByItem[checkinItemKey("task", task.id)],
+        ),
       }));
 
       await finishDailyCheckin(today, [
