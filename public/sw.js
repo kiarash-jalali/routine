@@ -1,18 +1,29 @@
-const SW_VERSION = "v1";
+const SW_VERSION = "v2";
 const CACHE_PREFIX = "rootine-";
 const SHELL_CACHE = `${CACHE_PREFIX}shell-${SW_VERSION}`;
 const ASSET_CACHE = `${CACHE_PREFIX}assets-${SW_VERSION}`;
 const OFFLINE_URL = "/offline.html";
+const OFFLINE_SCRIPT_URL = "/offline.js";
 const DATABASE_NAME = "rootine-offline";
 const DATABASE_VERSION = 1;
 const STATE_STORE = "state";
 const MUTATION_STORE = "mutations";
+const SYNC_TAG = "rootine-offline-sync";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((cache) => cache.add(new Request(OFFLINE_URL, { cache: "reload" }))),
+    Promise.all([
+      caches
+        .open(SHELL_CACHE)
+        .then((cache) =>
+          cache.add(new Request(OFFLINE_URL, { cache: "reload" })),
+        ),
+      caches
+        .open(ASSET_CACHE)
+        .then((cache) =>
+          cache.add(new Request(OFFLINE_SCRIPT_URL, { cache: "reload" })),
+        ),
+    ]),
   );
 });
 
@@ -33,13 +44,26 @@ self.addEventListener("activate", (event) => {
               .map((key) => caches.delete(key)),
           ),
         ),
+      self.registration.navigationPreload?.enable?.().catch(() => undefined),
       clients.claim(),
     ]),
   );
 });
 
 self.addEventListener("message", (event) => {
-  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+    return;
+  }
+
+  if (
+    event.data?.type === "REGISTER_OFFLINE_SYNC" &&
+    "sync" in self.registration
+  ) {
+    event.waitUntil(
+      self.registration.sync.register(SYNC_TAG).catch(() => undefined),
+    );
+  }
 });
 
 function openOfflineDatabase() {
@@ -66,131 +90,119 @@ function idbRequest(request) {
   });
 }
 
-async function readOfflineState() {
+function transactionDone(transaction) {
+  return new Promise((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error);
+  });
+}
+
+async function readOfflineQueue() {
+  const database = await openOfflineDatabase();
+  const transaction = database.transaction(
+    [STATE_STORE, MUTATION_STORE],
+    "readonly",
+  );
+  const snapshot = await idbRequest(
+    transaction.objectStore(STATE_STORE).get("snapshot"),
+  );
+  const mutations = await idbRequest(
+    transaction.objectStore(MUTATION_STORE).getAll(),
+  );
+  database.close();
+
+  const ownedMutations =
+    snapshot?.userId && Array.isArray(mutations)
+      ? mutations
+          .filter((mutation) => mutation.userId === snapshot.userId)
+          .sort((left, right) => left.queuedAt.localeCompare(right.queuedAt))
+      : [];
+
+  return { snapshot: snapshot || null, mutations: ownedMutations };
+}
+
+async function removeOfflineMutations(ids) {
+  if (!Array.isArray(ids) || ids.length === 0) return;
+
+  const database = await openOfflineDatabase();
+  const transaction = database.transaction(MUTATION_STORE, "readwrite");
+  const done = transactionDone(transaction);
+  const store = transaction.objectStore(MUTATION_STORE);
+  for (const id of new Set(ids)) {
+    if (typeof id === "string") store.delete(id);
+  }
+  await done;
+  database.close();
+}
+
+async function tellClientsOfflineSyncChanged() {
+  const windows = await clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+  for (const client of windows) {
+    client.postMessage({ type: "ROOTINE_OFFLINE_SYNCED" });
+  }
+}
+
+async function syncOfflineQueue() {
+  let state;
   try {
-    const database = await openOfflineDatabase();
-    const transaction = database.transaction(
-      [STATE_STORE, MUTATION_STORE],
-      "readonly",
-    );
-    const snapshot = await idbRequest(
-      transaction.objectStore(STATE_STORE).get("snapshot"),
-    );
-    const mutations = await idbRequest(
-      transaction.objectStore(MUTATION_STORE).getAll(),
-    );
-    database.close();
-    const pending = Array.isArray(mutations)
-      ? mutations.filter(
-          (mutation) => !snapshot?.userId || mutation.userId === snapshot.userId,
-        ).length
-      : 0;
-    return { snapshot: snapshot || null, pending };
+    state = await readOfflineQueue();
   } catch {
-    return { snapshot: null, pending: 0 };
+    return;
+  }
+
+  if (!state.snapshot?.userId || state.mutations.length === 0) return;
+
+  let response;
+  try {
+    response = await fetch("/api/offline/sync", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mutations: state.mutations }),
+    });
+  } catch {
+    throw new Error("offline_sync_network_failed");
+  }
+
+  if (!response.ok) {
+    throw new Error(`offline_sync_failed_${response.status}`);
+  }
+
+  const result = await response.json();
+  await removeOfflineMutations([
+    ...(Array.isArray(result.appliedIds) ? result.appliedIds : []),
+    ...(Array.isArray(result.discardedIds) ? result.discardedIds : []),
+  ]);
+  await tellClientsOfflineSyncChanged();
+
+  if (Array.isArray(result.retryIds) && result.retryIds.length > 0) {
+    throw new Error("offline_sync_retry_required");
   }
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function offlineCopy(language) {
-  if (language === "fa") {
-    return {
-      title: "فعلاً آفلاینی.",
-      body: "آخرین نمای ذخیره‌شده‌ات هنوز اینجاست. برای تازه‌سازی اطلاعات دوباره آنلاین شو.",
-      statusTitle: "بدون اینترنت",
-      statusBody: "اگر اپ از قبل باز بوده باشد، تغییرات انجام کارها و مرور روز برای همگام‌سازی نگه داشته می‌شوند.",
-      routines: "روتین‌ها",
-      tasks: "کارها",
-      empty: "هنوز نمای آفلاینی ذخیره نشده است.",
-      pending: (count) => `${count} تغییر منتظر همگام‌سازی است.`,
-      saved: (value) => `آخرین ذخیره: ${value}`,
-    };
+self.addEventListener("sync", (event) => {
+  if (event.tag === SYNC_TAG) {
+    event.waitUntil(syncOfflineQueue());
   }
-
-  return {
-    title: "You’re offline for now.",
-    body: "Your last saved view is still here. Reconnect to refresh it.",
-    statusTitle: "No connection",
-    statusBody:
-      "If the app was already open, routine, task and check-in changes are kept for the next sync.",
-    routines: "Routines",
-    tasks: "Tasks",
-    empty: "No offline view has been saved on this device yet.",
-    pending: (count) => `${count} change${count === 1 ? "" : "s"} waiting to sync.`,
-    saved: (value) => `Last saved: ${value}`,
-  };
-}
-
-function renderItems(title, items) {
-  if (!Array.isArray(items) || items.length === 0) return "";
-  return `<section><h2>${escapeHtml(title)}</h2><ul>${items
-    .map(
-      (item) =>
-        `<li><span class="mark">${item.completed ? "✓" : "○"}</span><span>${escapeHtml(item.title)}</span></li>`,
-    )
-    .join("")}</ul></section>`;
-}
+});
 
 async function offlineResponse() {
   const cached = await caches.match(OFFLINE_URL);
-  if (!cached) {
-    return new Response("rootine is offline.", {
-      status: 503,
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-    });
-  }
-
-  const [{ snapshot, pending }, template] = await Promise.all([
-    readOfflineState(),
-    cached.text(),
-  ]);
-  const language = snapshot?.language === "fa" ? "fa" : "en";
-  const copy = offlineCopy(language);
-  const locale = language === "fa" ? "fa-IR" : "en";
-  const saved = snapshot?.savedAt
-    ? copy.saved(
-        new Intl.DateTimeFormat(locale, {
-          dateStyle: "medium",
-          timeStyle: "short",
-        }).format(new Date(snapshot.savedAt)),
-      )
-    : copy.empty;
-  const content = snapshot
-    ? renderItems(copy.routines, snapshot.routines) +
-      renderItems(copy.tasks, snapshot.tasks)
-    : `<section><p class="muted">${escapeHtml(copy.empty)}</p></section>`;
-  const statusBody = pending > 0 ? copy.pending(pending) : copy.statusBody;
-
-  const html = template
-    .replaceAll("{{LANG}}", language)
-    .replaceAll("{{DIR}}", language === "fa" ? "rtl" : "ltr")
-    .replaceAll("{{TITLE}}", escapeHtml(copy.title))
-    .replaceAll("{{BODY}}", escapeHtml(copy.body))
-    .replaceAll("{{STATUS_TITLE}}", escapeHtml(copy.statusTitle))
-    .replaceAll("{{STATUS_BODY}}", escapeHtml(statusBody))
-    .replaceAll("{{CONTENT}}", content)
-    .replaceAll("{{SAVED}}", escapeHtml(saved));
-
-  return new Response(html, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "no-store",
-    },
+  if (cached) return cached;
+  return new Response("rootine is offline.", {
+    status: 503,
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
   });
 }
 
 async function cacheAsset(request) {
   const cache = await caches.open(ASSET_CACHE);
   const cached = await cache.match(request);
+
   if (cached) {
     fetch(request)
       .then((response) => {
@@ -213,13 +225,24 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(fetch(request).catch(() => offlineResponse()));
+    event.respondWith(
+      (async () => {
+        try {
+          const preload = await event.preloadResponse;
+          if (preload) return preload;
+          return await fetch(request);
+        } catch {
+          return offlineResponse();
+        }
+      })(),
+    );
     return;
   }
 
   if (
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/pwa/") ||
+    url.pathname === OFFLINE_SCRIPT_URL ||
     ["style", "script", "font", "image"].includes(request.destination)
   ) {
     event.respondWith(cacheAsset(request));
