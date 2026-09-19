@@ -534,6 +534,20 @@ export function DashboardClient({
                       : filter === "all"
                         ? t("task.emptyAll")
                         : t("task.emptyToday")}
+                    {filter !== "done" && (
+                      <div className="mt-4">
+                        <Button
+                          variant="primary"
+                          onClick={() => {
+                            setFormError(null);
+                            setShowTaskForm(true);
+                          }}
+                        >
+                          <Icon name="plus" size={16} />
+                          {t("product.addTask")}
+                        </Button>
+                      </div>
+                    )}
                   </EmptyState>
                 </AnimatedListItem>
               ) : (

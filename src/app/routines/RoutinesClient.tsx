@@ -33,7 +33,6 @@ import {
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import {
-  describeRoutine,
   formatPreferredTimeForDatabase,
   getDefaultRoutineFormValues,
   routineToFormValues,
@@ -49,7 +48,7 @@ export function RoutinesClient({
   initialRoutines: Routine[];
   initialLoadError: boolean;
 }) {
-  const { t } = useLanguage();
+  const { t, time, weekday } = useLanguage();
   const [routines, setRoutines] = useState<Routine[]>(initialRoutines);
   const [error, setError] = useState<string | null>(
     initialLoadError ? t("routine.loadError") : null,
@@ -174,6 +173,17 @@ export function RoutinesClient({
     }
   }
 
+  function describeRoutineLocalized(routine: Routine) {
+    const when = routine.preferred_time
+      ? time(routine.preferred_time)
+      : t("common.anytime");
+    if (routine.frequency === "daily") return `${t("routine.everyDay")} · ${when}`;
+    const days = (routine.days_of_week ?? [])
+      .map((day) => weekday(day, "short"))
+      .join(", ");
+    return `${days || t("routine.noDays")} · ${when}`;
+  }
+
   const activeCount = routines.filter((routine) => routine.is_active).length;
   const visible = routines.filter(
     (routine) =>
@@ -273,7 +283,7 @@ export function RoutinesClient({
                   >
                     {routine.title}
                   </p>
-                  <p className="row-detail">{describeRoutine(routine)}</p>
+                  <p className="row-detail">{describeRoutineLocalized(routine)}</p>
                 </div>
                 <div className="hidden sm:block">
                   <Pill muted={!routine.is_active}>

@@ -16,6 +16,13 @@ test("English and Persian translation dictionaries stay in parity", () => {
   assert.deepEqual([...en].sort(), [...fa].sort());
 });
 
+test("routine schedule summaries are localized at render time", () => {
+  const routines = source("src/app/routines/RoutinesClient.tsx");
+  assert.doesNotMatch(routines, /describeRoutine\(routine\)/);
+  assert.match(routines, /weekday\(day, "short"\)/);
+  assert.match(routines, /routine\.noDays/);
+});
+
 test("key Tranche 4 pages avoid physical Tailwind margins", () => {
   for (const path of [
     "src/app/dashboard/DashboardClient.tsx",

@@ -383,7 +383,11 @@ export function SettingsClient({
           </div>
           <div className="space-y-6">
             <InstallAppCard />
-            {userId && <ReminderSettings userId={userId} />}
+            {userId && (
+              <div id="reminders" className="scroll-mt-6">
+                <ReminderSettings userId={userId} />
+              </div>
+            )}
             <Card tone="soft">
               <SectionHeading title={t("settings.feedbackTitle")} description={t("settings.feedbackBody")} />
               <Link href="/feedback" className="btn btn-secondary mt-5 inline-flex">

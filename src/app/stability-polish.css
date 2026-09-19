@@ -83,7 +83,7 @@
   position: fixed;
   z-index: 80;
   top: var(--sheet-viewport-top, 0px);
-  left: 0;
+  inset-inline-start: 0;
   width: 100%;
   height: var(--sheet-viewport-height, 100dvh);
   display: flex;
@@ -227,7 +227,7 @@
   }
   84%,
   100% {
-    left: 118%;
+    inset-inline-start: 118%;
     opacity: 0;
   }
 }

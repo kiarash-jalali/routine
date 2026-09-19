@@ -1021,7 +1021,7 @@
   }
   .auth-theme {
     position: absolute;
-    right: 24px;
+    inset-inline-end: 24px;
     top: 20px;
     z-index: 20;
   }
