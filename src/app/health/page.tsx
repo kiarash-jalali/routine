@@ -4,18 +4,24 @@ import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
 
+type HealthData = Awaited<ReturnType<typeof loadHealth>>;
+
 export default async function HealthPage() {
   const { supabase, userId } = await requireServerUser();
+  let data: HealthData = { plans: [], reminders: [] };
+  let initialLoadError = false;
+
   try {
-    const data = await loadHealth(userId, 100, supabase);
-    return <HealthClient userId={userId} initialData={data} initialLoadError={false} />;
+    data = await loadHealth(userId, 100, supabase);
   } catch {
-    return (
-      <HealthClient
-        userId={userId}
-        initialData={{ plans: [], reminders: [] }}
-        initialLoadError
-      />
-    );
+    initialLoadError = true;
   }
+
+  return (
+    <HealthClient
+      userId={userId}
+      initialData={data}
+      initialLoadError={initialLoadError}
+    />
+  );
 }

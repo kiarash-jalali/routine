@@ -4,18 +4,24 @@ import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
 
+type WorkoutData = Awaited<ReturnType<typeof loadWorkouts>>;
+
 export default async function WorkoutsPage() {
   const { supabase, userId } = await requireServerUser();
+  let data: WorkoutData = { plans: [], sessions: [] };
+  let initialLoadError = false;
+
   try {
-    const data = await loadWorkouts(userId, 100, supabase);
-    return <WorkoutsClient userId={userId} initialData={data} initialLoadError={false} />;
+    data = await loadWorkouts(userId, 100, supabase);
   } catch {
-    return (
-      <WorkoutsClient
-        userId={userId}
-        initialData={{ plans: [], sessions: [] }}
-        initialLoadError
-      />
-    );
+    initialLoadError = true;
   }
+
+  return (
+    <WorkoutsClient
+      userId={userId}
+      initialData={data}
+      initialLoadError={initialLoadError}
+    />
+  );
 }
