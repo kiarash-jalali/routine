@@ -25,6 +25,7 @@ test("auth proxy declares every protected app route", () => {
     "/workouts/:path*",
     "/guide/:path*",
     "/onboarding/:path*",
+    "/design-lab/:path*",
   ]);
 });
 

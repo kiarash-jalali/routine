@@ -17,5 +17,6 @@ export const config = {
     "/workouts/:path*",
     "/guide/:path*",
     "/onboarding/:path*",
+    "/design-lab/:path*",
   ],
 };
