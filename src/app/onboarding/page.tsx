@@ -6,7 +6,13 @@ import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ replay?: string }>;
+}) {
+  const { replay } = await searchParams;
+  const replayMode = replay === "1";
   const { supabase, userId } = await requireServerUser();
 
   try {
@@ -21,13 +27,14 @@ export default async function OnboardingPage() {
           userId={userId}
           initialStep="intro"
           initialLoadError
+          replay={replayMode}
         />
       );
     }
 
-    if (profile.onboarding_completed) redirect("/dashboard");
+    if (profile.onboarding_completed && !replayMode) redirect("/dashboard");
 
-    if (routines.length > 0) {
+    if (routines.length > 0 && !replayMode) {
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -43,8 +50,9 @@ export default async function OnboardingPage() {
     return (
       <OnboardingClient
         userId={userId}
-        initialStep={profile.intro_seen ? "routine" : "intro"}
+        initialStep={replayMode ? "intro" : profile.intro_seen ? "routine" : "intro"}
         initialLoadError={false}
+        replay={replayMode}
       />
     );
   } catch (error) {
@@ -54,6 +62,7 @@ export default async function OnboardingPage() {
         userId={userId}
         initialStep="intro"
         initialLoadError
+        replay={replayMode}
       />
     );
   }

@@ -37,16 +37,29 @@ export function OnboardingClient({
   userId,
   initialStep,
   initialLoadError,
+  replay = false,
 }: {
   userId: string;
   initialStep: "intro" | "routine";
   initialLoadError: boolean;
+  replay?: boolean;
 }) {
   const router = useRouter();
   const { t } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(initialLoadError);
   const [step, setStep] = useState<"intro" | "routine">(initialStep);
+  const [routineDraft, setRoutineDraft] = useState<RoutineFormValues>(
+    getDefaultRoutineFormValues,
+  );
+  const [routineVersion, setRoutineVersion] = useState(0);
+
+  const starterRoutines = [
+    { key: "onboarding.presetWater", time: "08:00" },
+    { key: "onboarding.presetWalk", time: "18:00" },
+    { key: "onboarding.presetRead", time: "21:00" },
+    { key: "onboarding.presetStretch", time: "07:30" },
+  ] as const;
 
   async function run(action: () => Promise<void>) {
     if (!userId || busy) return;
@@ -64,16 +77,25 @@ export function OnboardingClient({
 
   function beginSetup() {
     return run(async () => {
-      await markIntroSeen(userId);
+      if (!replay) await markIntroSeen(userId);
       setStep("routine");
     });
   }
 
   function skipSetup() {
     return run(async () => {
-      await completeOnboarding(userId);
+      if (!replay) await completeOnboarding(userId);
       router.replace("/dashboard");
     });
+  }
+
+  function chooseStarter(key: (typeof starterRoutines)[number]["key"], time: string) {
+    setRoutineDraft({
+      ...getDefaultRoutineFormValues(),
+      title: t(key),
+      preferredTime: time,
+    });
+    setRoutineVersion((value) => value + 1);
   }
 
   async function createRoutine(values: RoutineFormValues) {
@@ -86,7 +108,7 @@ export function OnboardingClient({
         preferred_time: formatPreferredTimeForDatabase(values.preferredTime),
       });
       rememberFirstRoutineSuccess(values.title);
-      await completeOnboarding(userId);
+      if (!replay) await completeOnboarding(userId);
       router.replace("/dashboard");
     });
   }
@@ -126,7 +148,7 @@ export function OnboardingClient({
               disabled={busy || !userId}
               onClick={() => void beginSetup()}
             >
-              {t("onboarding.begin")}
+              {t(replay ? "onboarding.reviewContinue" : "onboarding.begin")}
             </Button>
           </Card>
         )}
@@ -137,9 +159,30 @@ export function OnboardingClient({
               title={t("onboarding.routine")}
               description={t("onboarding.routineBody")}
             />
+            <div className="mt-5">
+              <p className="text-sm font-medium">{t("onboarding.starters")}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {starterRoutines.map((preset) => (
+                  <Button
+                    key={preset.key}
+                    variant="ghost"
+                    onClick={() => chooseStarter(preset.key, preset.time)}
+                    disabled={busy}
+                  >
+                    {t(preset.key)}
+                  </Button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted">
+                {t("onboarding.startersBody")}
+              </p>
+            </div>
             <RoutineForm
-              initialValues={getDefaultRoutineFormValues()}
-              submitLabel={t("onboarding.addAndStart")}
+              key={routineVersion}
+              initialValues={routineDraft}
+              submitLabel={t(
+                replay ? "onboarding.addAnother" : "onboarding.addAndStart",
+              )}
               submittingLabel={t("common.saving")}
               isSubmitting={busy}
               onSubmit={createRoutine}
@@ -155,7 +198,7 @@ export function OnboardingClient({
         disabled={busy || !userId}
         onClick={() => void skipSetup()}
       >
-        {t("onboarding.skipAll")}
+        {t(replay ? "onboarding.backToday" : "onboarding.skipAll")}
       </Button>
     </PageShell>
   );

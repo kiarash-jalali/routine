@@ -43,6 +43,14 @@ export function AppNav() {
         ))}
       </nav>
       <div className="nav-footer">
+        <Link href="/health" className="logout-button" aria-current={pathname === "/health" ? "page" : undefined} aria-label={t("nav.health")}>
+          <Icon name="checkin" size={19} />
+          <span>{t("nav.health")}</span>
+        </Link>
+        <Link href="/workouts" className="logout-button" aria-current={pathname === "/workouts" ? "page" : undefined} aria-label={t("nav.workouts")}>
+          <Icon name="sun" size={19} />
+          <span>{t("nav.workouts")}</span>
+        </Link>
         <Link href="/settings" className="logout-button" aria-current={pathname === "/settings" ? "page" : undefined} aria-label={t("nav.settings")}>
           <Icon name="settings" size={19} />
           <span>{t("nav.settings")}</span>
@@ -50,10 +58,6 @@ export function AppNav() {
         <Link href="/guide" className="logout-button" aria-current={pathname === "/guide" ? "page" : undefined} aria-label={t("nav.guide")}>
           <Icon name="rootine" size={19} />
           <span>{t("nav.guide")}</span>
-        </Link>
-        <Link href="/feedback" className="logout-button" aria-current={pathname === "/feedback" ? "page" : undefined} aria-label={t("nav.feedback")}>
-          <Icon name="mail" size={19} />
-          <span>{t("nav.feedback")}</span>
         </Link>
         <Link
           href="/design-lab"

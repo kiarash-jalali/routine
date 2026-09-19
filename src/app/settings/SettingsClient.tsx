@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { Link, useTransitionRouter as useRouter } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
 import {
   MomentPopup,
@@ -388,7 +388,25 @@ export function SettingsClient({
           </div>
           <div className="space-y-6">
             <InstallAppCard />
-            {userId && <ReminderSettings userId={userId} />}
+            <div id="reminders" className="scroll-mt-6">
+              {userId && <ReminderSettings userId={userId} />}
+            </div>
+            <Card tone="soft">
+              <SectionHeading
+                title={t("settings.help")}
+                description={t("settings.helpBody")}
+              />
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link href="/onboarding?replay=1" className="btn btn-secondary">
+                  <Icon name="rootine" size={17} />
+                  {t("settings.replayIntro")}
+                </Link>
+                <Link href="/feedback" className="btn btn-secondary">
+                  <Icon name="mail" size={17} />
+                  {t("settings.sendFeedback")}
+                </Link>
+              </div>
+            </Card>
           </div>
         </section>
 
