@@ -400,6 +400,14 @@ export const fa: Record<TranslationKey, string> = {
   "history.days": "{count} روز",
   "history.loadError": "سابقهٔ مرورها بارگذاری نشد.",
   "history.repairError": "آن روز جاافتاده جبران نشد.",
+  "history.repairNotAuthenticated": "برای جبران یک روز، دوباره وارد حسابت شو.",
+  "history.repairDayRequired": "یک روز جاافتاده را برای جبران انتخاب کن.",
+  "history.repairAlreadyCheckedIn": "برای آن روز از قبل مرور روزانهٔ نهایی ثبت شده است.",
+  "history.repairAlreadyRepaired": "آن روز قبلاً جبران شده است.",
+  "history.repairNeedsNeighbors":
+    "فقط روز جاافتاده‌ای بین دو مرور روزانهٔ نهایی قابل جبران است.",
+  "history.repairInsufficientPoints":
+    "برای جبران یک روز به {count} امتیاز جبران نیاز داری.",
   "checkin.loadError": "مرور امروز بارگذاری نشد.",
   "checkin.saveError": "مرور امروز ذخیره نشد.",
   "feedback.loading": "در حال باز کردن بازخورد…",

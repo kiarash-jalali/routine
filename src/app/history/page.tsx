@@ -24,7 +24,7 @@ import {
   listStreakRepairs,
   repairStreakDay,
 } from "@/lib/db/points";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorCode, getErrorMessage } from "@/lib/errors";
 import {
   averageCompletionPercent,
   buildMonthCalendarDays,
@@ -40,10 +40,26 @@ import {
 import { getSessionUser } from "@/lib/session";
 import { calculateStreakMetrics } from "@/lib/streak";
 import { useToday } from "@/lib/useToday";
+import type { TranslationKey } from "@/lib/i18n";
 import type { CheckinHistoryEntry } from "@/types/history";
 import type { StreakRepair } from "@/types/points";
 
 const weekdayReferenceMonday = new Date(2026, 0, 5);
+
+const repairErrorKeys = {
+  not_authenticated: "history.repairNotAuthenticated",
+  repair_day_required: "history.repairDayRequired",
+  day_already_checked_in: "history.repairAlreadyCheckedIn",
+  day_already_repaired: "history.repairAlreadyRepaired",
+  repair_requires_neighboring_checkins: "history.repairNeedsNeighbors",
+  insufficient_recovery_points: "history.repairInsufficientPoints",
+} as const satisfies Record<string, TranslationKey>;
+
+type RepairErrorCode = keyof typeof repairErrorKeys;
+
+function isRepairErrorCode(code: string): code is RepairErrorCode {
+  return code in repairErrorKeys;
+}
 
 function getWeekdayLabels(locale: string) {
   return Array.from({ length: 7 }, (_, index) => {
@@ -170,8 +186,14 @@ export default function HistoryPage() {
         },
       ]);
     } catch (error: unknown) {
+      const code = getErrorCode(error);
+      const translationKey =
+        code && isRepairErrorCode(code) ? repairErrorKeys[code] : null;
+
       setErrorMessage(
-        getErrorMessage(error, t("history.repairError")),
+        translationKey
+          ? t(translationKey, { count: number(STREAK_REPAIR_COST_POINTS) })
+          : getErrorMessage(error, t("history.repairError")),
       );
     } finally {
       setRepairingDay(null);
