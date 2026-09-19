@@ -34,9 +34,13 @@ Supabase service-role key to the server environment:
 
 ```env
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=your-vapid-public-key
+VAPID_PRIVATE_KEY=your-vapid-private-key
+VAPID_SUBJECT=mailto:you@example.com
+NOTIFICATION_CRON_SECRET=use-a-long-random-secret
 ```
 
-Never expose the service-role key in browser code or commit it to the repository.
+Never expose the service-role or private VAPID keys in browser code or commit it to the repository.
 The `.env*` files are ignored by Git.
 
 Install the locked dependency versions and start the development server:
@@ -63,7 +67,8 @@ npm run dev       # Development server with live reload
 npm run lint      # ESLint code-quality checks
 npx tsc --noEmit  # TypeScript type check
 npm run build     # Production build check
-npm run verify    # Lint + type generation/typecheck + production build
+npm test          # Unit/contract tests
+npm run verify    # Tests + lint + type generation/typecheck + production build
 npm run archive:safe # Create a source archive from tracked Git files only
 ```
 
@@ -106,7 +111,7 @@ theme colours and global visual tokens live in `src/app/globals.css`.
 
 - `tasks`: one-time items that may have a due time;
 - `routines`: reusable daily or weekly plans;
-- `daily_checkins`: one row per user and local calendar day;
+- `daily_checkins`: one row per user and local calendar day; `completed_at` distinguishes in-progress daily activity from a finished check-in;
 - `checkin_items`: completion state for each task or routine in a check-in;
 - `profiles`: display name and onboarding state;
 - `point_transactions`: append-only rewards and recovery spending;
@@ -160,8 +165,8 @@ Points + missed-day recovery v1 adds these rules:
 - repaired days are visually distinct from real check-ins in History.
 
 Settings now provides profile editing, email and password changes, appearance,
-session controls, server-side account deletion, and opt-in daily Web Push
-reminders. Routine is installable as a PWA on supported Android and iOS devices.
+session controls, server-side account deletion, PWA installation guidance, and
+opt-in daily Web Push reminders. Routine is installable as a PWA on supported Android and iOS devices.
 The private-alpha pass also includes stricter database privileges and RLS,
 protected server endpoints, production security headers, safer user-facing error
 messages, mobile keyboard/sheet fixes, and an in-app feedback flow.
@@ -173,3 +178,22 @@ messages, mobile keyboard/sheet fixes, and an in-app feedback flow.
 3. Revisit onboarding and account verification before a wider release.
 4. Adjust points and recovery only after observing real behaviour.
 5. Add earned personalisation without turning the app into a high-pressure game.
+
+
+## Notification scheduler
+
+The repository defines the reminder scheduler in
+`.github/workflows/notifications-cron.yml`. It calls the protected notification
+endpoint every 15 minutes.
+
+Before enabling that workflow on `main`, configure these GitHub repository
+settings:
+
+- Actions secret `NOTIFICATION_CRON_SECRET`: the same value used by the
+  production server environment.
+- Actions variable `ROUTINE_PRODUCTION_URL`: the canonical production origin,
+  without a trailing slash.
+
+The endpoint remains idempotent: daily reminders track `last_sent_on`, and push
+deliveries are claimed before transmission. Never put either secret value in a
+repository file.

@@ -25,9 +25,8 @@ import {
 } from "@/components/ui";
 import {
   findDailyCheckin,
-  getOrCreateDailyCheckin,
+  finishDailyCheckin,
   listCheckinItems,
-  saveCheckinItems,
 } from "@/lib/db/checkins";
 import { listTasks } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
@@ -35,15 +34,16 @@ import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy } from "@/lib/moments";
 import { getSessionUser } from "@/lib/session";
 import {
-  filterTasksForToday,
-  getLocalDateKey,
-} from "@/lib/today";
+  checkinItemKey,
+  completionMapFromItems,
+  tasksForDailyCheckin,
+} from "@/lib/checkinProgress";
+import { getLocalDateKey } from "@/lib/today";
 import { useToday } from "@/lib/useToday";
 import type {
   CheckinCompletionMap,
   CheckinItem,
   CheckinItemType,
-  CheckinItemUpsert,
 } from "@/types/checkin";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
@@ -84,19 +84,6 @@ function CheckinChoice({
   );
 }
 
-function createItemKey(itemType: CheckinItemType, itemId: string): string {
-  return `${itemType}:${itemId}`;
-}
-
-function createCompletionMap(items: CheckinItem[]): CheckinCompletionMap {
-  return Object.fromEntries(
-    items.map((item) => [
-      createItemKey(item.item_type, item.item_id),
-      item.completed,
-    ]),
-  );
-}
-
 export default function CheckinPage() {
   const { t, date, time, number } = useLanguage();
   const router = useRouter();
@@ -114,7 +101,6 @@ export default function CheckinPage() {
   const [moment, setMoment] = useState<MomentNotice | null>(null);
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [dailyCheckinId, setDailyCheckinId] = useState<string | null>(null);
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completionByItem, setCompletionByItem] =
@@ -148,17 +134,16 @@ export default function CheckinPage() {
         const existingItems = existingCheckin
           ? await listCheckinItems(existingCheckin.id)
           : [];
-        const existingCompletionMap = createCompletionMap(existingItems);
+        const existingCompletionMap = completionMapFromItems(existingItems);
 
         if (cancelled) return;
 
         setUserId(user.id);
-        setDailyCheckinId(existingCheckin?.id ?? null);
         setRoutines(todaysRoutines);
-        setTasks(filterTasksForToday(allTasks, dayDate));
+        setTasks(tasksForDailyCheckin(allTasks, existingItems, dayDate));
         setCompletionByItem(existingCompletionMap);
         setSavedCompletionByItem(existingCompletionMap);
-        setHasFinishedToday(Boolean(existingCheckin));
+        setHasFinishedToday(Boolean(existingCheckin?.completed_at));
         setEditingFinishedCheckin(false);
       } catch (error: unknown) {
         if (!cancelled) {
@@ -179,7 +164,7 @@ export default function CheckinPage() {
   }, [router, t, today]);
 
   function toggleItem(itemType: CheckinItemType, itemId: string) {
-    const itemKey = createItemKey(itemType, itemId);
+    const itemKey = checkinItemKey(itemType, itemId);
     const willComplete = !completionByItem[itemKey];
 
     setCompletionByItem((current) => ({
@@ -204,7 +189,7 @@ export default function CheckinPage() {
   }
 
   function isItemCompleted(itemType: CheckinItemType, itemId: string) {
-    return Boolean(completionByItem[createItemKey(itemType, itemId)]);
+    return Boolean(completionByItem[checkinItemKey(itemType, itemId)]);
   }
 
   function cancelFinishedCheckinEdit() {
@@ -220,27 +205,22 @@ export default function CheckinPage() {
     setErrorMessage(null);
 
     try {
-      const checkinId =
-        dailyCheckinId ?? (await getOrCreateDailyCheckin(userId, today)).id;
-
-      const routineItems: CheckinItemUpsert[] = routines.map((routine) => ({
-        user_id: userId,
-        checkin_id: checkinId,
+      const routineItems: CheckinItem[] = routines.map((routine) => ({
         item_type: "routine",
         item_id: routine.id,
         completed: isItemCompleted("routine", routine.id),
       }));
 
-      const taskItems: CheckinItemUpsert[] = tasks.map((task) => ({
-        user_id: userId,
-        checkin_id: checkinId,
+      const taskItems: CheckinItem[] = tasks.map((task) => ({
         item_type: "task",
         item_id: task.id,
         completed: isItemCompleted("task", task.id),
       }));
 
-      await saveCheckinItems([...routineItems, ...taskItems]);
-      setDailyCheckinId(checkinId);
+      await finishDailyCheckin(today, [
+        ...routineItems,
+        ...taskItems,
+      ]);
       setSavedCompletionByItem({ ...completionByItem });
       setHasFinishedToday(true);
       setEditingFinishedCheckin(false);

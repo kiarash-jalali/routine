@@ -1,11 +1,12 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import type {
   CheckinItem,
+  CheckinItemType,
   CheckinItemUpsert,
   DailyCheckinSummary,
 } from "@/types/checkin";
 
-const DAILY_CHECKIN_COLUMNS = "id,user_id,day";
+const DAILY_CHECKIN_COLUMNS = "id,user_id,day,completed_at";
 
 export async function findDailyCheckin(
   userId: string,
@@ -37,7 +38,6 @@ export async function getOrCreateDailyCheckin(
     .select(DAILY_CHECKIN_COLUMNS)
     .single();
 
-  // Another browser tab may have created today's row after our first query.
   if (error?.code === "23505") {
     const concurrentlyCreatedCheckin = await findDailyCheckin(userId, day);
     if (concurrentlyCreatedCheckin) return concurrentlyCreatedCheckin;
@@ -60,6 +60,50 @@ export async function listCheckinItems(
 
   if (error) throw error;
   return (data ?? []) as CheckinItem[];
+}
+
+export async function getDailyProgress(userId: string, day: string) {
+  const checkin = await findDailyCheckin(userId, day);
+  if (!checkin) return { checkin: null, items: [] as CheckinItem[] };
+
+  return {
+    checkin,
+    items: await listCheckinItems(checkin.id),
+  };
+}
+
+export async function setDailyItemCompletion(
+  day: string,
+  itemType: CheckinItemType,
+  itemId: string,
+  completed: boolean,
+): Promise<DailyCheckinSummary> {
+  const { data, error } = await supabaseBrowser()
+    .rpc("set_daily_item_completion", {
+      p_day: day,
+      p_item_type: itemType,
+      p_item_id: itemId,
+      p_completed: completed,
+    })
+    .single();
+
+  if (error) throw error;
+  return data as DailyCheckinSummary;
+}
+
+export async function finishDailyCheckin(
+  day: string,
+  items: CheckinItem[],
+): Promise<DailyCheckinSummary> {
+  const { data, error } = await supabaseBrowser()
+    .rpc("finish_daily_checkin", {
+      p_day: day,
+      p_items: items,
+    })
+    .single();
+
+  if (error) throw error;
+  return data as DailyCheckinSummary;
 }
 
 export async function saveCheckinItems(

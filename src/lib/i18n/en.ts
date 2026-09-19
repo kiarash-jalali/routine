@@ -200,6 +200,7 @@ export const en = {
   "settings.currentPassword": "Current password",
   "settings.space": "Your space",
   "settings.passwordMismatch": "The two password fields do not match.",
+  "settings.passwordTooShort": "Your new password must be at least {count} characters.",
   "settings.emailConfirm": "Check your inbox to finish the email change.",
   "dashboard.lifeBody":
     "Make space for your health and movement, alongside your everyday plans.",
@@ -352,6 +353,8 @@ export const en = {
   "routine.pauseNamed": "Pause {name}",
   "routine.resumeNamed": "Resume {name}",
   "routine.deleteNamed": "Delete {name}",
+  "routine.completeNamed": "Complete {name}",
+  "routine.reopenNamed": "Mark {name} incomplete",
   "dashboard.routinesTodayCount": "routines today",
   "dashboard.openTasksCount": "open tasks",
   "dashboard.dayRhythm": "day in rhythm",
@@ -452,5 +455,9 @@ export const en = {
     "Tasks, routines, check-ins, recovery, reminders, health and movement in one place.",
   "reminder.iosInstall":
     "On iPhone or iPad, first add rootine to your Home Screen in Safari (Share → Add to Home Screen). Then open it from the Home Screen to enable notifications.",
+  "install.title": "Install rootine",
+  "install.body": "Install rootine on this device for quicker access to your day.",
+  "install.iosBody": "On iPhone or iPad, use Share → Add to Home Screen to open rootine like an app.",
+  "install.action": "Install on this device",
 } as const;
 export type TranslationKey = keyof typeof en;

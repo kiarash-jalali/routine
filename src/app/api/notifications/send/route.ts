@@ -30,8 +30,9 @@ async function runInChunks<T>(
   }
 }
 
-export async function POST(request: Request) {
-  const expected = process.env.NOTIFICATION_CRON_SECRET;
+async function sendNotifications(request: Request) {
+  const expected =
+    process.env.CRON_SECRET ?? process.env.NOTIFICATION_CRON_SECRET;
   const supplied = request.headers
     .get("authorization")
     ?.replace(/^Bearer\s+/i, "");
@@ -127,7 +128,8 @@ export async function POST(request: Request) {
       .from("daily_checkins")
       .select("user_id,day")
       .in("user_id", userIds)
-      .in("day", days);
+      .in("day", days)
+      .not("completed_at", "is", null);
 
     if (checkinError) {
       counts.failed += batch.length;
@@ -251,4 +253,13 @@ export async function POST(request: Request) {
     ...counts,
     skippedCheckedIn,
   });
+}
+
+
+export async function GET(request: Request) {
+  return sendNotifications(request);
+}
+
+export async function POST(request: Request) {
+  return sendNotifications(request);
 }

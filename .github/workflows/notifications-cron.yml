@@ -1,0 +1,28 @@
+name: Notification cron
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger reminder delivery
+        env:
+          ROUTINE_URL: ${{ vars.ROUTINE_PRODUCTION_URL }}
+          CRON_SECRET: ${{ secrets.NOTIFICATION_CRON_SECRET }}
+        run: |
+          if [ -z "$ROUTINE_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Notification cron is not configured yet; skipping safely."
+            exit 0
+          fi
+
+          curl --fail --silent --show-error --retry 2 --max-time 55 \
+            -X POST "$ROUTINE_URL/api/notifications/send" \
+            -H "Authorization: Bearer $CRON_SECRET"

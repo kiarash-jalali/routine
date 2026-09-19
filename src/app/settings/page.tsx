@@ -23,6 +23,7 @@ import {
 } from "@/components/ui";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import { ReminderSettings } from "@/components/notifications/ReminderSettings";
+import { InstallAppCard } from "@/components/pwa/InstallAppCard";
 import { getProfile, saveDisplayName } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
@@ -149,7 +150,7 @@ export default function SettingsPage() {
         "mail",
         currentEmail === nextEmail
           ? undefined
-          : "Check your inbox to finish the email change.",
+          : t("settings.emailConfirm"),
       );
     } catch (updateError: unknown) {
       setError(
@@ -166,7 +167,7 @@ export default function SettingsPage() {
 
     if (newPassword.length < MIN_PASSWORD_LENGTH) {
       setError(
-        `Your new password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+        t("settings.passwordTooShort", { count: MIN_PASSWORD_LENGTH }),
       );
       return;
     }
@@ -235,7 +236,7 @@ export default function SettingsPage() {
         const payload = (await response.json().catch(() => null)) as {
           error?: string;
         } | null;
-        throw new Error(payload?.error ?? "Your account could not be deleted.");
+        throw new Error(payload?.error ?? t("settings.deleteError"));
       }
 
       await supabase.auth.signOut({ scope: "local" });
@@ -405,6 +406,8 @@ export default function SettingsPage() {
             </div>
           </Card>
 
+          <InstallAppCard />
+
           {userId && <ReminderSettings userId={userId} />}
 
           <Card>
@@ -430,8 +433,7 @@ export default function SettingsPage() {
             />
             <div className="mt-6 space-y-4">
               <p className="text-sm leading-6 text-muted">
-                Type <span className="font-semibold text-danger">DELETE</span>{" "}
-                to confirm.
+                {t("settings.typeDelete")}
               </p>
               <Input
                 value={deleteConfirmation}

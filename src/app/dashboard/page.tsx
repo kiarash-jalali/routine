@@ -28,17 +28,23 @@ import {
   SegmentedControl,
   Stat,
 } from "@/components/ui";
+import {
+  getDailyProgress,
+  setDailyItemCompletion,
+} from "@/lib/db/checkins";
 import { getRhythmSummary, type RhythmSummary } from "@/lib/db/rhythm";
-import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
+import { addTask, listTasks, removeTask } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import { getSessionUser } from "@/lib/session";
+import { checkinItemKey, completionMapFromItems } from "@/lib/checkinProgress";
 import {
   filterTasksForToday,
   getLocalDateKey,
 } from "@/lib/today";
 import { useToday } from "@/lib/useToday";
+import type { CheckinCompletionMap } from "@/types/checkin";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
 
@@ -60,6 +66,8 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [rhythm, setRhythm] = useState<RhythmSummary | null>(null);
+  const [completionByItem, setCompletionByItem] =
+    useState<CheckinCompletionMap>({});
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -105,13 +113,19 @@ export default function DashboardPage() {
           listTasks(),
           listTodaysRoutines(today),
           getRhythmSummary(todayKey, 7),
+          getDailyProgress(user.id, todayKey),
         ]);
         if (cancelled) return;
-        const [taskResult, routineResult, rhythmResult] = results;
+        const [taskResult, routineResult, rhythmResult, progressResult] = results;
         if (taskResult.status === "fulfilled") setTasks(taskResult.value);
         if (routineResult.status === "fulfilled")
           setRoutines(routineResult.value);
         if (rhythmResult.status === "fulfilled") setRhythm(rhythmResult.value);
+        if (progressResult.status === "fulfilled") {
+          setCompletionByItem(
+            completionMapFromItems(progressResult.value.items),
+          );
+        }
         if (results.some((result) => result.status === "rejected"))
           setError(t("dashboard.partialLoadError"));
       } catch (error: unknown) {
@@ -160,17 +174,30 @@ export default function DashboardPage() {
   }
 
   async function toggleDone(task: Task) {
-    if (pending.current.has(task.id)) return;
-    pending.current.add(task.id);
+    const pendingKey = checkinItemKey("task", task.id);
+    if (pending.current.has(pendingKey)) return;
+    const nextCompleted = !task.is_done;
+
+    pending.current.add(pendingKey);
     setPendingIds([...pending.current]);
     setError(null);
     setTasks((current) =>
       current.map((item) =>
-        item.id === task.id ? { ...item, is_done: !task.is_done } : item,
+        item.id === task.id ? { ...item, is_done: nextCompleted } : item,
       ),
     );
+    setCompletionByItem((current) => ({
+      ...current,
+      [pendingKey]: nextCompleted,
+    }));
+
     try {
-      await setTaskDone(task.id, !task.is_done);
+      await setDailyItemCompletion(
+        todayKey,
+        "task",
+        task.id,
+        nextCompleted,
+      );
       showMoment(
         task.is_done ? "task_reopened" : "task_completed",
         `task-${task.id}`,
@@ -182,9 +209,53 @@ export default function DashboardPage() {
           item.id === task.id ? { ...item, is_done: task.is_done } : item,
         ),
       );
+      setCompletionByItem((current) => ({
+        ...current,
+        [pendingKey]: task.is_done,
+      }));
       setError(getErrorMessage(error, t("task.updateError")));
     } finally {
-      pending.current.delete(task.id);
+      pending.current.delete(pendingKey);
+      setPendingIds([...pending.current]);
+    }
+  }
+
+  async function toggleRoutine(routine: Routine) {
+    const pendingKey = checkinItemKey("routine", routine.id);
+    if (pending.current.has(pendingKey)) return;
+    const previous = Boolean(completionByItem[pendingKey]);
+    const nextCompleted = !previous;
+
+    pending.current.add(pendingKey);
+    setPendingIds([...pending.current]);
+    setError(null);
+    setCompletionByItem((current) => ({
+      ...current,
+      [pendingKey]: nextCompleted,
+    }));
+
+    try {
+      await setDailyItemCompletion(
+        todayKey,
+        "routine",
+        routine.id,
+        nextCompleted,
+      );
+      if (nextCompleted) {
+        showMoment(
+          "checkin_routine_completed",
+          `routine-${routine.id}`,
+          "check",
+        );
+      }
+    } catch (error: unknown) {
+      setCompletionByItem((current) => ({
+        ...current,
+        [pendingKey]: previous,
+      }));
+      setError(getErrorMessage(error, t("routine.updateError")));
+    } finally {
+      pending.current.delete(pendingKey);
       setPendingIds([...pending.current]);
     }
   }
@@ -311,20 +382,30 @@ export default function DashboardPage() {
                 </EmptyState>
               ) : (
                 <ul>
-                  {routines.map((routine) => (
-                    <li className="list-row" key={routine.id}>
-                      <span
-                        className={`icon-tile ${routine.preferred_time && routine.preferred_time < "12:00" ? "amber" : ""}`}
-                      >
-                        <Icon
-                          name={
-                            routine.preferred_time &&
-                            routine.preferred_time >= "17:00"
-                              ? "moon"
-                              : "sun"
-                          }
-                        />
-                      </span>
+                  {routines.map((routine) => {
+                    const completionKey = checkinItemKey("routine", routine.id);
+                    const completed = Boolean(completionByItem[completionKey]);
+                    return (
+                    <li
+                      className={`list-row ${completed ? "is-done" : ""}`}
+                      key={routine.id}
+                    >
+                      <MomentSource id={`routine-${routine.id}`}>
+                        <button
+                          className="check-control -ml-2"
+                          aria-pressed={completed}
+                          aria-label={t(
+                            completed
+                              ? "routine.reopenNamed"
+                              : "routine.completeNamed",
+                            { name: routine.title },
+                          )}
+                          disabled={pendingIds.includes(completionKey)}
+                          onClick={() => toggleRoutine(routine)}
+                        >
+                          <CheckCircle checked={completed} />
+                        </button>
+                      </MomentSource>
                       <div className="min-w-0 flex-1">
                         <p className="row-title">{routine.title}</p>
                         <p className="row-detail">
@@ -339,7 +420,8 @@ export default function DashboardPage() {
                           : t("common.anytime")}
                       </span>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               )}
             </div>
@@ -397,7 +479,7 @@ export default function DashboardPage() {
                           task.is_done ? "task.reopenNamed" : "task.completeNamed",
                           { name: task.title },
                         )}
-                        disabled={pendingIds.includes(task.id)}
+                        disabled={pendingIds.includes(checkinItemKey("task", task.id))}
                         onClick={() => toggleDone(task)}
                       >
                         <CheckCircle checked={task.is_done} />
@@ -412,7 +494,7 @@ export default function DashboardPage() {
                     <button
                       className="icon-button danger -mr-2"
                       aria-label={t("task.deleteNamed", { name: task.title })}
-                      disabled={pendingIds.includes(task.id)}
+                      disabled={pendingIds.includes(checkinItemKey("task", task.id))}
                       onClick={() => {
                         setFormError(null);
                         setDeleteTarget(task);
