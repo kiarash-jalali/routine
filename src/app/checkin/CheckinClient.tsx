@@ -272,12 +272,16 @@ export function CheckinClient({
       routines: routines.slice(0, 50).map((routine) => ({
         id: routine.id,
         title: routine.title,
-        completed: isItemCompleted("routine", routine.id),
+        completed: Boolean(
+          completionByItem[checkinItemKey("routine", routine.id)],
+        ),
       })),
       tasks: tasks.slice(0, 50).map((task) => ({
         id: task.id,
         title: task.title,
-        completed: isItemCompleted("task", task.id),
+        completed: Boolean(
+          completionByItem[checkinItemKey("task", task.id)],
+        ),
       })),
     }).catch(() => undefined);
   }, [
