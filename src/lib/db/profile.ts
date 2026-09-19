@@ -1,3 +1,4 @@
+import { isLanguage } from "@/lib/i18n";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { Profile } from "@/types/profile";
 
@@ -13,7 +14,9 @@ export async function getProfile(userId: string): Promise<Profile | null> {
     .maybeSingle();
 
   if (error) throw error;
-  return data as Profile | null;
+  if (!data) return null;
+  if (!isLanguage(data.locale)) throw new Error("invalid_profile_locale");
+  return { ...data, locale: data.locale };
 }
 
 export async function saveDisplayName(
