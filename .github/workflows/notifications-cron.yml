@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   send:
@@ -19,10 +20,75 @@ jobs:
           CRON_SECRET: ${{ secrets.NOTIFICATION_CRON_SECRET }}
         run: |
           if [ -z "$ROUTINE_URL" ] || [ -z "$CRON_SECRET" ]; then
-            echo "Notification cron is not configured yet; skipping safely."
-            exit 0
+            echo "::error::Notification cron configuration is missing."
+            exit 1
           fi
 
-          curl --fail --silent --show-error --retry 2 --max-time 55 \
-            -X POST "$ROUTINE_URL/api/notifications/send" \
-            -H "Authorization: Bearer $CRON_SECRET"
+          response="$(
+            curl --fail --silent --show-error --retry 2 --max-time 55 \
+              -X POST "$ROUTINE_URL/api/notifications/send" \
+              -H "Authorization: Bearer $CRON_SECRET"
+          )"
+
+          printf '%s\n' "$response"
+
+          RESPONSE="$response" node <<'NODE'
+          const response = JSON.parse(process.env.RESPONSE || "{}");
+          if (response.ok !== true || Number(response.failed || 0) > 0) {
+            console.error("Reminder delivery reported a failure.");
+            process.exit(1);
+          }
+          NODE
+
+      - name: Open or update cron alert
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const title = "[alert] Notification cron failing";
+            const body = [
+              "The production notification cron failed.",
+              "",
+              "Workflow run: " + context.serverUrl + "/" + owner + "/" + repo + "/actions/runs/" + context.runId,
+              "",
+              "Check the Vercel runtime logs for /api/notifications/send before retrying.",
+            ].join("\n");
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner, repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find(
+              (issue) => !issue.pull_request && issue.title === title,
+            );
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: existing.number, body,
+              });
+            } else {
+              await github.rest.issues.create({ owner, repo, title, body });
+            }
+
+      - name: Close recovered cron alert
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const title = "[alert] Notification cron failing";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner, repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find(
+              (issue) => !issue.pull_request && issue.title === title,
+            );
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: existing.number,
+                body: "Recovered on workflow run " + context.runId + ".",
+              });
+              await github.rest.issues.update({
+                owner, repo, issue_number: existing.number, state: "closed",
+              });
+            }

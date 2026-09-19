@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { NotificationWorker } from "@/components/notifications/NotificationWorker";
 import { AppFrame } from "@/components/AppFrame";
 import { ViewTransitions } from "next-view-transitions";
@@ -7,9 +8,9 @@ import { LanguageProvider } from "@/components/preferences/LanguageProvider";
 import { ThemeController } from "@/components/preferences/ThemeController";
 import { languageScript } from "@/lib/i18n";
 import { themeScript } from "@/lib/theme";
-import "@fontsource-variable/fraunces";
-import "@fontsource-variable/vazirmatn";
-import "@fontsource-variable/dm-sans";
+import "@fontsource-variable/fraunces/wght.css";
+import "@fontsource-variable/vazirmatn/wght.css";
+import "@fontsource-variable/dm-sans/wght.css";
 import "@fontsource/dm-mono/latin-400.css";
 import "./globals.css";
 import "./stability-polish.css";
@@ -20,9 +21,7 @@ export const metadata: Metadata = {
   description: "A calm, routine-first way to shape each day.",
   applicationName: "rootine",
   manifest: "/manifest.webmanifest",
-  formatDetection: {
-    telephone: false,
-  },
+  formatDetection: { telephone: false },
   appleWebApp: {
     capable: true,
     title: "rootine",
@@ -38,16 +37,19 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     <ViewTransitions>
       <html lang="en" suppressHydrationWarning>
         <head>
           <script
+            nonce={nonce}
             dangerouslySetInnerHTML={{
               __html: themeScript + ";" + languageScript,
             }}
