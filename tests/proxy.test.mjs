@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { unstable_doesProxyMatch } from "next/experimental/testing/server.js";
+import nextTestingServer from "next/experimental/testing/server.js";
+const { unstable_doesProxyMatch } = nextTestingServer;
 import { loadTypeScriptModule } from "./load-typescript.mjs";
 
 const { config } = loadTypeScriptModule(
