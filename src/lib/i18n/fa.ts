@@ -191,6 +191,12 @@ export const fa: Record<TranslationKey, string> = {
   "settings.session": "نشست",
   "settings.sessionBody": "وقتی کارت تمام شد از حساب این دستگاه خارج شو.",
   "settings.logout": "خروج",
+  "settings.export": "دریافت اطلاعات",
+  "settings.exportBody":
+    "یک نسخهٔ JSON از پروفایل، روتین‌ها، کارها، مرورهای روزانه، امتیازها، یادآورها، برنامه‌های سلامت، ورزش‌ها و بازخوردهایت دریافت کن.",
+  "settings.exportMine": "دریافت اطلاعات من",
+  "settings.exportError": "دریافت اطلاعاتت انجام نشد.",
+  "settings.exportRateLimited": "درخواست‌های دریافت اطلاعات خیلی زیاد بود. کمی بعد دوباره امتحان کن.",
   "settings.delete": "حذف حساب",
   "settings.deleteBody":
     "حساب و اطلاعاتت برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.",

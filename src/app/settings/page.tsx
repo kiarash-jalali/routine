@@ -48,6 +48,7 @@ export default function SettingsPage() {
     | "password"
     | "notifications"
     | "logout"
+    | "export"
     | "delete"
     | null
   >(null);
@@ -204,6 +205,53 @@ export default function SettingsPage() {
       router.replace("/login");
     } catch (logoutError: unknown) {
       setError(getErrorMessage(logoutError, t("settings.logoutError")));
+      setBusyAction(null);
+    }
+  }
+
+  async function exportAccountData() {
+    if (busyAction) return;
+
+    beginAction("export");
+    try {
+      const supabase = supabaseBrowser();
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session?.access_token) {
+        throw new Error(t("settings.sessionExpired"));
+      }
+
+      const response = await fetch("/api/account/export", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const message =
+          response.status === 401
+            ? t("settings.sessionExpired")
+            : response.status === 429
+              ? t("settings.exportRateLimited")
+              : t("settings.exportError");
+        throw new Error(message);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `rootine-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (exportError: unknown) {
+      setError(getErrorMessage(exportError, t("settings.exportError")));
+    } finally {
       setBusyAction(null);
     }
   }
@@ -423,6 +471,21 @@ export default function SettingsPage() {
             >
               <Icon name="logout" size={17} />
               {t("settings.logout")}
+            </Button>
+          </Card>
+
+          <Card>
+            <SectionHeading
+              title={t("settings.export")}
+              description={t("settings.exportBody")}
+            />
+            <Button
+              className="mt-6"
+              onClick={exportAccountData}
+              disabled={Boolean(busyAction)}
+              busy={busyAction === "export"}
+            >
+              {t("settings.exportMine")}
             </Button>
           </Card>
 
