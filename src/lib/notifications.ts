@@ -1,11 +1,65 @@
 import { translate, type Language } from "@/lib/i18n";
-import type { StoredPushSubscription } from "@/lib/db/notifications";
+import {
+  removePushSubscription,
+  savePushSubscription,
+  type StoredPushSubscription,
+} from "@/lib/db/notifications";
+
+const PUSH_ENDPOINT_KEY = "rootine-push-endpoint";
+const PUSH_INTENT_KEY = "rootine-push-intent";
 
 function decodeBase64Url(value: string) {
   const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
   const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
   const raw = window.atob(padded);
   return Uint8Array.from(raw, (character) => character.charCodeAt(0));
+}
+
+function applicationServerKeyMatches(
+  subscription: PushSubscription,
+  expected: Uint8Array,
+) {
+  const current = subscription.options.applicationServerKey;
+  if (!current) return false;
+  const actual = new Uint8Array(current);
+  return (
+    actual.length === expected.length &&
+    actual.every((value, index) => value === expected[index])
+  );
+}
+
+function rememberedEndpoint() {
+  try {
+    return localStorage.getItem(PUSH_ENDPOINT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function pushIntent() {
+  try {
+    return localStorage.getItem(PUSH_INTENT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function rememberEnabledEndpoint(endpoint: string) {
+  try {
+    localStorage.setItem(PUSH_ENDPOINT_KEY, endpoint);
+    localStorage.setItem(PUSH_INTENT_KEY, "enabled");
+  } catch {
+    // Browser subscription still works when storage is unavailable.
+  }
+}
+
+function rememberDisabledDevice() {
+  try {
+    localStorage.removeItem(PUSH_ENDPOINT_KEY);
+    localStorage.setItem(PUSH_INTENT_KEY, "disabled");
+  } catch {
+    // The browser subscription is still removed below.
+  }
 }
 
 export function notificationsSupported() {
@@ -33,27 +87,40 @@ export async function getServiceWorkerRegistration() {
   return navigator.serviceWorker.ready;
 }
 
-export async function enablePushNotifications() {
+async function ensureBrowserPushSubscription(requestPermission: boolean) {
   if (!notificationsSupported()) {
     throw new Error("Notifications are not supported on this device.");
   }
 
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   if (!publicKey) throw new Error("Push notifications are not configured.");
+
   const permission =
     Notification.permission === "granted"
       ? "granted"
-      : await Notification.requestPermission();
-  if (permission !== "granted")
+      : requestPermission
+        ? await Notification.requestPermission()
+        : Notification.permission;
+
+  if (permission !== "granted") {
     throw new Error("Notification permission was not granted.");
+  }
 
   const registration = await getServiceWorkerRegistration();
+  const expectedKey = decodeBase64Url(publicKey);
   let subscription = await registration.pushManager.getSubscription();
+  let replacedEndpoint: string | null = null;
+
+  if (subscription && !applicationServerKeyMatches(subscription, expectedKey)) {
+    replacedEndpoint = subscription.endpoint;
+    await subscription.unsubscribe();
+    subscription = null;
+  }
 
   if (!subscription) {
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: decodeBase64Url(publicKey),
+      applicationServerKey: expectedKey,
     });
   }
 
@@ -72,17 +139,86 @@ export async function enablePushNotifications() {
       p256dh,
       auth,
     } satisfies StoredPushSubscription,
+    replacedEndpoint,
   };
 }
 
+async function persistPushSubscription(
+  userId: string,
+  subscription: StoredPushSubscription,
+  replacedEndpoint: string | null,
+) {
+  const previousEndpoint = rememberedEndpoint() ?? replacedEndpoint;
+  await savePushSubscription(userId, subscription);
+
+  if (previousEndpoint && previousEndpoint !== subscription.endpoint) {
+    await removePushSubscription(previousEndpoint).catch(() => undefined);
+  }
+
+  rememberEnabledEndpoint(subscription.endpoint);
+}
+
+export async function enablePushNotifications(userId: string) {
+  const result = await ensureBrowserPushSubscription(true);
+  await persistPushSubscription(
+    userId,
+    result.storedSubscription,
+    result.replacedEndpoint,
+  );
+  return result;
+}
+
+export type PushHealth =
+  | "healthy"
+  | "disabled"
+  | "unsupported"
+  | "permission-required"
+  | "blocked";
+
+export async function reconcilePushNotifications(
+  userId: string,
+  dailyPreferenceEnabled: boolean,
+): Promise<PushHealth> {
+  if (!notificationsSupported()) return "unsupported";
+  if (pushIntent() === "disabled") return "disabled";
+
+  const registration = await navigator.serviceWorker.getRegistration("/");
+  const existingSubscription =
+    await registration?.pushManager.getSubscription();
+  const shouldHavePush =
+    pushIntent() === "enabled" ||
+    dailyPreferenceEnabled ||
+    Boolean(existingSubscription);
+
+  if (!shouldHavePush) return "disabled";
+
+  if (Notification.permission !== "granted") {
+    const endpoint = rememberedEndpoint() ?? existingSubscription?.endpoint;
+    if (endpoint) {
+      await removePushSubscription(endpoint).catch(() => undefined);
+    }
+    return Notification.permission === "denied"
+      ? "blocked"
+      : "permission-required";
+  }
+
+  const result = await ensureBrowserPushSubscription(false);
+  await persistPushSubscription(
+    userId,
+    result.storedSubscription,
+    result.replacedEndpoint,
+  );
+  return "healthy";
+}
+
 export async function disablePushNotifications() {
-  if (!notificationsSupported()) return null;
+  const previousEndpoint = rememberedEndpoint();
+  rememberDisabledDevice();
+  if (!notificationsSupported()) return previousEndpoint;
   const registration = await navigator.serviceWorker.getRegistration("/");
   const subscription = await registration?.pushManager.getSubscription();
-  if (!subscription) return null;
-
-  const endpoint = subscription.endpoint;
-  await subscription.unsubscribe();
+  const endpoint = subscription?.endpoint ?? previousEndpoint;
+  if (subscription) await subscription.unsubscribe();
   return endpoint;
 }
 
@@ -96,7 +232,6 @@ export async function showNotificationTest(language: Language = "en") {
     data: { url: "/checkin" },
   });
 }
-
 
 export function iosPushRequiresInstall(): boolean {
   if (typeof window === "undefined" || typeof navigator === "undefined")

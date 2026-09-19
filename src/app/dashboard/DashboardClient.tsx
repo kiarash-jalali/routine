@@ -43,6 +43,7 @@ import {
   routineOccursOn,
 } from "@/lib/today";
 import { useToday } from "@/lib/useToday";
+import { saveOfflineSnapshot } from "@/lib/offlineStore";
 import type { CheckinCompletionMap } from "@/types/checkin";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
@@ -93,7 +94,7 @@ export function DashboardClient({
   initialDayKey: string | null;
   initialPartialError: boolean;
 }) {
-  const { t, locale, date, time, number, weekday } = useLanguage();
+  const { t, language, locale, date, time, number, weekday } = useLanguage();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [rhythm, setRhythm] = useState<RhythmSummary | null>(initialRhythm);
   const [completionByItem, setCompletionByItem] =
@@ -119,6 +120,18 @@ export function DashboardClient({
   useEffect(() => {
     const routineTitle = consumeFirstRoutineSuccess();
     if (routineTitle) setFirstSuccessRoutine(routineTitle);
+
+    const shortcut = new URLSearchParams(window.location.search).get("newTask");
+    if (shortcut === "1") {
+      setShowTaskForm(true);
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete("newTask");
+      window.history.replaceState(
+        window.history.state,
+        "",
+        cleanUrl.pathname + cleanUrl.search + cleanUrl.hash,
+      );
+    }
   }, []);
 
   function showMoment(
@@ -324,6 +337,39 @@ export function DashboardClient({
         ? tasks.filter((task) => task.is_done)
         : tasks;
   const checkedInToday = rhythm?.checkedInToday ?? false;
+
+  useEffect(() => {
+    void saveOfflineSnapshot({
+      version: 1,
+      userId,
+      language,
+      savedAt: new Date().toISOString(),
+      day: todayKey,
+      checkedInToday,
+      routines: routines.slice(0, 50).map((routine) => ({
+        id: routine.id,
+        title: routine.title,
+        completed: Boolean(
+          completionByItem[checkinItemKey("routine", routine.id)],
+        ),
+      })),
+      tasks: tasks.slice(0, 50).map((task) => ({
+        id: task.id,
+        title: task.title,
+        completed:
+          completionByItem[checkinItemKey("task", task.id)] ?? task.is_done,
+      })),
+    }).catch(() => undefined);
+  }, [
+    checkedInToday,
+    completionByItem,
+    language,
+    routines,
+    tasks,
+    todayKey,
+    userId,
+  ]);
+
   const dayOne = routines.length === 0 && todayTasks.length === 0 && !checkedInToday;
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);

@@ -2,6 +2,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import {
+  isOfflineLikeError,
+  queueDailyItemCompletion,
+  queueFinishDailyCheckin,
+  type OfflineMutation,
+} from "@/lib/offlineStore";
+import {
   isCheckinItemType,
   type CheckinItem,
   type CheckinItemType,
@@ -86,7 +92,14 @@ export async function getDailyProgress(
   };
 }
 
-export async function setDailyItemCompletion(
+async function currentUserIdForOfflineQueue() {
+  const {
+    data: { session },
+  } = await supabaseBrowser().auth.getSession();
+  return session?.user.id ?? null;
+}
+
+async function setDailyItemCompletionOnline(
   day: string,
   itemType: CheckinItemType,
   itemId: string,
@@ -106,7 +119,24 @@ export async function setDailyItemCompletion(
   return data;
 }
 
-export async function finishDailyCheckin(
+export async function setDailyItemCompletion(
+  day: string,
+  itemType: CheckinItemType,
+  itemId: string,
+  completed: boolean,
+): Promise<DailyCheckinSummary | null> {
+  try {
+    return await setDailyItemCompletionOnline(day, itemType, itemId, completed);
+  } catch (error) {
+    if (!isOfflineLikeError(error)) throw error;
+    const userId = await currentUserIdForOfflineQueue();
+    if (!userId) throw error;
+    await queueDailyItemCompletion(userId, day, itemType, itemId, completed);
+    return null;
+  }
+}
+
+async function finishDailyCheckinOnline(
   day: string,
   items: CheckinItem[],
 ): Promise<DailyCheckinSummary> {
@@ -120,6 +150,35 @@ export async function finishDailyCheckin(
   if (error) throw error;
   if (!data) throw new Error("checkin_finish_failed");
   return data;
+}
+
+export async function finishDailyCheckin(
+  day: string,
+  items: CheckinItem[],
+): Promise<DailyCheckinSummary | null> {
+  try {
+    return await finishDailyCheckinOnline(day, items);
+  } catch (error) {
+    if (!isOfflineLikeError(error)) throw error;
+    const userId = await currentUserIdForOfflineQueue();
+    if (!userId) throw error;
+    await queueFinishDailyCheckin(userId, day, items);
+    return null;
+  }
+}
+
+export async function replayOfflineMutation(mutation: OfflineMutation) {
+  if (mutation.kind === "daily_item_completion") {
+    await setDailyItemCompletionOnline(
+      mutation.day,
+      mutation.itemType,
+      mutation.itemId,
+      mutation.completed,
+    );
+    return;
+  }
+
+  await finishDailyCheckinOnline(mutation.day, mutation.items);
 }
 
 export async function saveCheckinItems(
