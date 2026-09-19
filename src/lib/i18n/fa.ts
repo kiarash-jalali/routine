@@ -351,6 +351,8 @@ export const fa: Record<TranslationKey, string> = {
   "routine.pauseNamed": "توقف {name}",
   "routine.resumeNamed": "فعال‌سازی {name}",
   "routine.deleteNamed": "حذف {name}",
+  "routine.completeNamed": "انجام {name}",
+  "routine.reopenNamed": "ناتمام کردن {name}",
   "dashboard.routinesTodayCount": "روتین امروز",
   "dashboard.openTasksCount": "کار باز",
   "dashboard.dayRhythm": "روز در ریتم",
