@@ -71,6 +71,7 @@ export async function listRecentCheckinHistory(
     id: checkin.id,
     user_id: checkin.user_id,
     day: checkin.day,
+    submitted_at: checkin.submitted_at,
     items: itemsByCheckin.get(checkin.id) ?? [],
   }));
 }

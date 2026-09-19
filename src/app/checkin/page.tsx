@@ -184,7 +184,7 @@ export default function CheckinPage() {
     return () => {
       cancelled = true;
     };
-  }, [router, today]);
+  }, [router, t, today]);
 
   function toggleItem(itemType: CheckinItemType, itemId: string) {
     const itemKey = createItemKey(itemType, itemId);
