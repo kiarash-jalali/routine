@@ -40,9 +40,6 @@ body,
   background: var(--surface-soft);
   border-radius: 20px;
 }
-[dir="rtl"] .text-left {
-  text-align: right;
-}
 [dir="rtl"] .segmented-indicator {
   transform: translateX(calc(var(--segment-index) * -100%));
 }

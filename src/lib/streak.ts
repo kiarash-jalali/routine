@@ -82,18 +82,3 @@ export function calculateStreakMetrics(
   };
 }
 
-export function streakMessage(metrics: StreakMetrics): string {
-  if (metrics.state === "checked-in-today") {
-    return "You showed up today. Completion does not need to be perfect for the rhythm to count.";
-  }
-
-  if (metrics.state === "open-today") {
-    return "Your rhythm is still alive. A check-in today keeps it moving.";
-  }
-
-  return "A finished check-in today starts a new rhythm. The goal is returning, not being perfect.";
-}
-
-export function formatDayCount(days: number): string {
-  return `${days} ${days === 1 ? "day" : "days"}`;
-}

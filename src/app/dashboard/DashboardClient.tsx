@@ -346,7 +346,7 @@ export function DashboardClient({
   const hasDailyValue =
     checkedInToday || Object.values(completionByItem).some(Boolean);
   const isDayOne =
-    routines.length === 0 &&
+    initialActiveRoutines.length === 0 &&
     tasks.length === 0 &&
     !checkedInToday &&
     (rhythm?.currentDays ?? 0) === 0;
@@ -356,8 +356,13 @@ export function DashboardClient({
       setShowReminderNudge(false);
       return;
     }
-    const dismissed =
-      window.localStorage.getItem("rootine-reminder-nudge-dismissed") === "1";
+    let dismissed = false;
+    try {
+      dismissed =
+        window.localStorage.getItem("rootine-reminder-nudge-dismissed") === "1";
+    } catch {
+      dismissed = false;
+    }
     const permission =
       typeof Notification === "undefined" ? "unsupported" : Notification.permission;
     setShowReminderNudge(!dismissed && permission === "default");
@@ -502,10 +507,14 @@ export function DashboardClient({
                 <Button
                   variant="ghost"
                   onClick={() => {
-                    window.localStorage.setItem(
-                      "rootine-reminder-nudge-dismissed",
-                      "1",
-                    );
+                    try {
+                      window.localStorage.setItem(
+                        "rootine-reminder-nudge-dismissed",
+                        "1",
+                      );
+                    } catch {
+                      // Dismiss for this render even when storage is unavailable.
+                    }
                     setShowReminderNudge(false);
                   }}
                 >
@@ -577,7 +586,7 @@ export function DashboardClient({
                     >
                       <MomentSource id={`routine-${routine.id}`}>
                         <button
-                          className="check-control -ml-2"
+                          className="check-control -ms-2"
                           aria-pressed={completed}
                           aria-label={t(
                             completed
@@ -616,7 +625,7 @@ export function DashboardClient({
               title={t("product.tasks")}
               action={
                 <button
-                  className="icon-button -mr-2 -mt-2"
+                  className="icon-button -me-2 -mt-2"
                   aria-label={t("product.addTask")}
                   onClick={() => {
                     setFormError(null);
@@ -672,7 +681,7 @@ export function DashboardClient({
                   >
                     <MomentSource id={`task-${task.id}`}>
                       <button
-                        className="check-control -ml-2"
+                        className="check-control -ms-2"
                         aria-pressed={task.is_done}
                         aria-label={t(
                           task.is_done ? "task.reopenNamed" : "task.completeNamed",
@@ -701,7 +710,7 @@ export function DashboardClient({
                     </p>
                     </div>
                     <button
-                      className="icon-button danger -mr-2"
+                      className="icon-button danger -me-2"
                       aria-label={t("task.deleteNamed", { name: task.title })}
                       disabled={pendingIds.includes(checkinItemKey("task", task.id))}
                       onClick={() => {

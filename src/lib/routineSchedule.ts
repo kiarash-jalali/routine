@@ -32,16 +32,3 @@ export function formatPreferredTimeForDatabase(time: string): string {
   return time.length === 5 ? `${time}:00` : time;
 }
 
-export function describeRoutine(routine: Routine): string {
-  const time = routine.preferred_time?.slice(0, 5) ?? "No time";
-
-  if (routine.frequency === "daily") {
-    return `Every day · ${time}`;
-  }
-
-  const dayLabels = ROUTINE_DAYS.filter((day) =>
-    (routine.days_of_week ?? []).includes(day.value),
-  ).map((day) => day.label);
-
-  return `${dayLabels.join(", ") || "No days selected"} · ${time}`;
-}
