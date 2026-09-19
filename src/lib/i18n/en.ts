@@ -192,6 +192,11 @@ export const en = {
   "settings.session": "Session",
   "settings.sessionBody": "Sign out on this device when you are finished.",
   "settings.logout": "Log out",
+  "settings.export": "Export your data",
+  "settings.exportBody":
+    "Download a JSON copy of your profile, routines, tasks, check-ins, points, reminders, health plans, workouts and feedback.",
+  "settings.exportMine": "Download my data",
+  "settings.exportError": "Your data could not be exported.",
   "settings.delete": "Delete account",
   "settings.deleteBody":
     "Permanently remove your account and its data. This cannot be undone.",
