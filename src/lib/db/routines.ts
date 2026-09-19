@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import {
   isRoutineFrequency,
@@ -12,8 +14,10 @@ type RoutineWriteFields = Pick<
 type CreateRoutineInput = RoutineWriteFields & Pick<Routine, "user_id">;
 type UpdateRoutineInput = RoutineWriteFields;
 
-export async function listRoutines(): Promise<Routine[]> {
-  const supabase = supabaseBrowser();
+export async function listRoutines(
+  client?: SupabaseClient<Database>,
+): Promise<Routine[]> {
+  const supabase = client ?? supabaseBrowser();
   const { data, error } = await supabase
     .from("routines")
     .select("*")
@@ -29,24 +33,38 @@ export async function listRoutines(): Promise<Routine[]> {
   });
 }
 
-export async function addRoutine(input: CreateRoutineInput): Promise<void> {
+export async function addRoutine(input: CreateRoutineInput): Promise<Routine> {
   const supabase = supabaseBrowser();
-  const { error } = await supabase.from("routines").insert(input);
+  const { data, error } = await supabase
+    .from("routines")
+    .insert(input)
+    .select("*")
+    .single();
 
   if (error) throw error;
+  if (!isRoutineFrequency(data.frequency)) {
+    throw new Error("invalid_routine_frequency");
+  }
+  return { ...data, frequency: data.frequency };
 }
 
 export async function updateRoutine(
   routineId: string,
   input: UpdateRoutineInput,
-): Promise<void> {
+): Promise<Routine> {
   const supabase = supabaseBrowser();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("routines")
     .update(input)
-    .eq("id", routineId);
+    .eq("id", routineId)
+    .select("*")
+    .single();
 
   if (error) throw error;
+  if (!isRoutineFrequency(data.frequency)) {
+    throw new Error("invalid_routine_frequency");
+  }
+  return { ...data, frequency: data.frequency };
 }
 
 export async function toggleRoutineActive(
