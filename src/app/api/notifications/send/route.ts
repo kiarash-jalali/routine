@@ -127,7 +127,8 @@ export async function POST(request: Request) {
       .from("daily_checkins")
       .select("user_id,day")
       .in("user_id", userIds)
-      .in("day", days);
+      .in("day", days)
+      .not("completed_at", "is", null);
 
     if (checkinError) {
       counts.failed += batch.length;
