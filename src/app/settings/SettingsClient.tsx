@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { Link, useTransitionRouter as useRouter } from "next-view-transitions";
 import { Icon } from "@/components/Icon";
 import {
   MomentPopup,
@@ -21,6 +21,7 @@ import {
   SectionHeading,
 } from "@/components/ui";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
+import { PasswordGuidance } from "@/components/auth/PasswordGuidance";
 import { ReminderSettings } from "@/components/notifications/ReminderSettings";
 import { InstallAppCard } from "@/components/pwa/InstallAppCard";
 import { saveDisplayName } from "@/lib/db/profile";
@@ -383,6 +384,13 @@ export function SettingsClient({
           <div className="space-y-6">
             <InstallAppCard />
             {userId && <ReminderSettings userId={userId} />}
+            <Card tone="soft">
+              <SectionHeading title={t("settings.feedbackTitle")} description={t("settings.feedbackBody")} />
+              <Link href="/feedback" className="btn btn-secondary mt-5 inline-flex">
+                <Icon name="mail" size={17} />
+                {t("settings.feedbackAction")}
+              </Link>
+            </Card>
           </div>
         </section>
 
@@ -446,6 +454,7 @@ export function SettingsClient({
                       onChange={(event) => setNewPassword(event.target.value)}
                     />
                   </label>
+                  <PasswordGuidance password={newPassword} />
                   <label className="grid gap-2 text-sm font-medium">
                     {t("settings.confirmPassword")}
                     <Input

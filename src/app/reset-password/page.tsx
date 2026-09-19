@@ -7,6 +7,7 @@ import { LanguagePicker } from "@/components/preferences/LanguagePicker";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { Button, ErrorNotice, Input } from "@/components/ui";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
+import { PasswordGuidance } from "@/components/auth/PasswordGuidance";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
@@ -128,6 +129,7 @@ export default function ResetPasswordPage() {
                   disabled={loading}
                 />
               </label>
+              <PasswordGuidance password={password} />
 
               <label className="grid gap-2 text-sm font-medium">
                 {t("passwordReset.confirm")}

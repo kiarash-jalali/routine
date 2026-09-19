@@ -6,6 +6,7 @@ import { AnimatedSwap, Collapse } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
 import { Button, ErrorNotice, Input, SegmentedControl } from "@/components/ui";
 import { getFriendlySignInError, MIN_PASSWORD_LENGTH } from "@/lib/auth";
+import { PasswordGuidance } from "@/components/auth/PasswordGuidance";
 import { getProfile } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
@@ -23,6 +24,8 @@ export default function LoginPage() {
   const [confirmationSent, setConfirmationSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -73,6 +76,27 @@ export default function LoginPage() {
     }
   }
 
+  async function resendConfirmation() {
+    if (resending || !email) return;
+    setResending(true);
+    setErrorMessage(null);
+    setResent(false);
+    try {
+      const emailRedirectTo = `${window.location.origin}/auth/callback?next=/onboarding`;
+      const { error } = await supabaseBrowser().auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo },
+      });
+      if (error) throw error;
+      setResent(true);
+    } catch (error: unknown) {
+      setErrorMessage(getErrorMessage(error, t("login.resendError")));
+    } finally {
+      setResending(false);
+    }
+  }
+
   function switchMode(nextMode: "login" | "signup") {
     setMode(nextMode);
     setErrorMessage(null);
@@ -118,6 +142,17 @@ export default function LoginPage() {
                 <p className="text-center text-sm leading-6 text-muted">
                   {t("login.spam")}
                 </p>
+                <Button
+                  className="w-full"
+                  variant="primary"
+                  busy={resending}
+                  disabled={resending}
+                  onClick={() => void resendConfirmation()}
+                >
+                  {resending ? t("login.resending") : t("login.resend")}
+                </Button>
+                {resent && <p className="text-center text-sm text-primary">{t("login.resent")}</p>}
+                {errorMessage && <ErrorNotice>{errorMessage}</ErrorNotice>}
                 <Button
                   className="w-full"
                   onClick={() => setConfirmationSent(false)}
@@ -195,6 +230,7 @@ export default function LoginPage() {
                           <Icon name="eye" size={18} />
                         </button>
                       </div>
+                      {mode === "signup" && <PasswordGuidance password={password} />}
                       {mode === "login" && (
                         <div className="mt-2 flex justify-end">
                           <Link

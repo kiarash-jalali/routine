@@ -60,3 +60,13 @@ export function getFriendlySignInError(error: unknown): string {
 
   return "Couldn’t sign you in right now. Try again in a moment.";
 }
+
+export type PasswordStrength = "weak" | "fair" | "strong";
+
+export function getPasswordStrength(password: string): PasswordStrength {
+  if (!password) return "weak";
+  let score = password.length >= MIN_PASSWORD_LENGTH ? 1 : 0;
+  if (/[A-Za-z]/.test(password) && /\d/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password) || password.length >= 14) score += 1;
+  return score >= 3 ? "strong" : score >= 2 ? "fair" : "weak";
+}
