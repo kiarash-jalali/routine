@@ -15,7 +15,7 @@ import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { LanguagePicker } from "@/components/preferences/LanguagePicker";
 
 export default function LoginPage() {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -45,6 +45,13 @@ export default function LoginPage() {
         if (error) throw error;
 
         const profile = await getProfile(data.user.id);
+        if (
+          profile?.locale &&
+          (profile.locale === "en" || profile.locale === "fa") &&
+          profile.locale !== language
+        ) {
+          await setLanguage(profile.locale);
+        }
         router.push(
           profile?.onboarding_completed ? "/dashboard" : "/onboarding",
         );
