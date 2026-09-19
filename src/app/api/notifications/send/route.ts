@@ -30,18 +30,27 @@ async function runInChunks<T>(
   }
 }
 
-export async function POST(request: Request) {
-  const expected = process.env.NOTIFICATION_CRON_SECRET;
+function hasValidCronSecret(supplied: string | undefined) {
+  if (!supplied) return false;
+
+  const expectedSecrets = [
+    process.env.CRON_SECRET,
+    process.env.NOTIFICATION_CRON_SECRET,
+  ].filter((value): value is string => Boolean(value));
+
+  return expectedSecrets.some(
+    (expected) =>
+      Buffer.byteLength(expected) === Buffer.byteLength(supplied) &&
+      timingSafeEqual(Buffer.from(expected), Buffer.from(supplied)),
+  );
+}
+
+async function sendNotifications(request: Request) {
   const supplied = request.headers
     .get("authorization")
     ?.replace(/^Bearer\s+/i, "");
 
-  if (
-    !expected ||
-    !supplied ||
-    Buffer.byteLength(expected) !== Buffer.byteLength(supplied) ||
-    !timingSafeEqual(Buffer.from(expected), Buffer.from(supplied))
-  ) {
+  if (!hasValidCronSecret(supplied)) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
@@ -252,3 +261,7 @@ export async function POST(request: Request) {
     skippedCheckedIn,
   });
 }
+
+
+export const GET = sendNotifications;
+export const POST = sendNotifications;
