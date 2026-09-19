@@ -7,7 +7,7 @@ function source(path) {
 }
 
 test("onboarding hands the first routine success into Today once", () => {
-  const onboarding = source("src/app/onboarding/page.tsx");
+  const onboarding = source("src/app/onboarding/OnboardingClient.tsx");
   const dashboard = source("src/app/dashboard/DashboardClient.tsx");
   const firstRun = source("src/lib/firstRun.ts");
 
@@ -18,7 +18,7 @@ test("onboarding hands the first routine success into Today once", () => {
 });
 
 test("settings use four clear groups and hide infrequent account controls", () => {
-  const settings = source("src/app/settings/page.tsx");
+  const settings = source("src/app/settings/SettingsClient.tsx");
 
   for (const key of [
     "settings.personal",
@@ -32,6 +32,26 @@ test("settings use four clear groups and hide infrequent account controls", () =
   assert.match(settings, /function SettingsDisclosure/);
   assert.match(settings, /<details/);
   assert.doesNotMatch(settings, /settings\.guideBody/);
+});
+
+test("core authenticated pages use server-owned initial data boundaries", () => {
+  const pages = [
+    "dashboard",
+    "routines",
+    "checkin",
+    "history",
+    "settings",
+    "feedback",
+    "health",
+    "workouts",
+    "onboarding",
+  ];
+
+  for (const page of pages) {
+    const pageSource = source(`src/app/${page}/page.tsx`);
+    assert.doesNotMatch(pageSource, /^"use client"/, page);
+    assert.match(pageSource, /requireServerUser\(\)/, page);
+  }
 });
 
 test("phase two database migration removes unused GraphQL and covers medication FK", () => {

@@ -28,7 +28,7 @@ test("server auth boundary validates privileged API requests", () => {
 });
 
 test("first-run flow reaches Today without notification permission", () => {
-  const onboarding = source("src/app/onboarding/page.tsx");
+  const onboarding = source("src/app/onboarding/OnboardingClient.tsx");
   assert.match(onboarding, /await completeOnboarding\(userId\)/);
   assert.match(onboarding, /router\.replace\("\/dashboard"\)/);
   assert.doesNotMatch(onboarding, /step === "name"/);
