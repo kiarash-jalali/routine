@@ -42,6 +42,9 @@ test("Tranche 5 exposes offline, pending-sync and safe-update UI", () => {
   assert.match(status, /OFFLINE_QUEUE_EVENT/);
   assert.match(status, /registration\.waiting/);
   assert.match(status, /SKIP_WAITING/);
+  assert.match(source("public/sw.js"), /rootine-offline-sync/);
+  assert.match(source("public/offline.js"), /daily_item_completion/);
+  assert.match(source("public/offline.js"), /finish_daily_checkin/);
   assert.match(layout, /<PwaStatus \/>/);
 });
 
@@ -79,7 +82,8 @@ test("Tranche 5 keeps an offline read snapshot for Dashboard and Check-in", () =
 
   assert.match(dashboard, /saveOfflineSnapshot/);
   assert.match(checkin, /saveOfflineSnapshot/);
-  assert.match(source("public/offline.html"), /\{\{CONTENT\}\}/);
+  assert.match(source("public/offline.html"), /offline-content/);
+  assert.match(source("public/offline.html"), /offline\.js/);
 });
 
 test("Tranche 5 keeps health and medication data out of the offline cache", () => {
