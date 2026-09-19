@@ -3,13 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
-import { replayOfflineMutation } from "@/lib/db/checkins";
 import {
   clearOfflineData,
   getPendingOfflineMutationCount,
-  listOfflineMutations,
   OFFLINE_QUEUE_EVENT,
-  removeOfflineMutation,
+  syncOfflineMutations,
 } from "@/lib/offlineStore";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
@@ -54,10 +52,9 @@ export function PwaStatus() {
       setSyncing(true);
       setSyncError(false);
       try {
-        const mutations = await listOfflineMutations(activeUserId);
-        for (const mutation of mutations) {
-          await replayOfflineMutation(mutation);
-          await removeOfflineMutation(mutation.id);
+        const result = await syncOfflineMutations(activeUserId);
+        if (!result.ok || result.retryIds.length > 0) {
+          setSyncError(true);
         }
       } catch {
         setSyncError(true);
