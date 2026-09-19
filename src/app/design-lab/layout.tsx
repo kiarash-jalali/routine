@@ -6,6 +6,10 @@ export default function DesignLabLayout({
 }: {
   children: ReactNode;
 }) {
-  if (process.env.NODE_ENV === "production") notFound();
+  const isDevelopment = process.env.NODE_ENV !== "production";
+  const isVercelPreview = process.env.VERCEL_ENV === "preview";
+
+  if (!isDevelopment && !isVercelPreview) notFound();
+
   return children;
 }
