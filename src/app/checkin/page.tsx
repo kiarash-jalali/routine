@@ -101,7 +101,6 @@ export default function CheckinPage() {
   const [moment, setMoment] = useState<MomentNotice | null>(null);
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [dailyCheckinId, setDailyCheckinId] = useState<string | null>(null);
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completionByItem, setCompletionByItem] =
@@ -140,7 +139,6 @@ export default function CheckinPage() {
         if (cancelled) return;
 
         setUserId(user.id);
-        setDailyCheckinId(existingCheckin?.id ?? null);
         setRoutines(todaysRoutines);
         setTasks(tasksForDailyCheckin(allTasks, existingItems, dayDate));
         setCompletionByItem(existingCompletionMap);
@@ -223,7 +221,6 @@ export default function CheckinPage() {
         ...routineItems,
         ...taskItems,
       ]);
-      setDailyCheckinId(checkin.id);
       setSavedCompletionByItem({ ...completionByItem });
       setHasFinishedToday(true);
       setEditingFinishedCheckin(false);
