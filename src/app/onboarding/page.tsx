@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { AnimatedSwap } from "@/components/Motion";
@@ -11,7 +12,6 @@ import {
   LoadingState,
   Card,
   ErrorNotice,
-  Input,
   PageShell,
   SectionHeading,
 } from "@/components/ui";
@@ -19,7 +19,6 @@ import {
   completeOnboarding,
   getProfile,
   markIntroSeen,
-  saveDisplayName,
 } from "@/lib/db/profile";
 import { addRoutine, listRoutines } from "@/lib/db/routines";
 import {
@@ -28,17 +27,17 @@ import {
 } from "@/lib/routineSchedule";
 import { getSessionUser } from "@/lib/session";
 import type { RoutineFormValues } from "@/types/routine";
-const screens = [
-  {
-    title: "intro.welcome",
-    body: "intro.welcomeBody",
-    items: [
-      { key: "task", icon: "today" },
-      { key: "routine", icon: "routines" },
-      { key: "checkin", icon: "checkin" },
-    ],
-  },
-] as const;
+
+const intro = {
+  title: "intro.welcome",
+  body: "intro.welcomeBody",
+  items: [
+    { key: "task", icon: "today" },
+    { key: "routine", icon: "routines" },
+    { key: "checkin", icon: "checkin" },
+  ],
+} as const;
+
 export default function OnboardingPage() {
   const router = useRouter();
   const { t } = useLanguage();
@@ -46,10 +45,11 @@ export default function OnboardingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const [userId, setUserId] = useState("");
-  const [name, setName] = useState("");
-  const [step, setStep] = useState<number | "name" | "routine" | "ready">(0);
+  const [step, setStep] = useState<"intro" | "routine">("intro");
+
   useEffect(() => {
     let cancelled = false;
+
     async function load() {
       try {
         const user = await getSessionUser();
@@ -57,26 +57,27 @@ export default function OnboardingPage() {
           router.replace("/login");
           return;
         }
+
         const [profile, existingRoutines] = await Promise.all([
           getProfile(user.id),
           listRoutines(),
         ]);
         if (!profile) throw new Error("profile");
+
         if (profile.onboarding_completed) {
           router.replace("/dashboard");
           return;
         }
+
+        if (existingRoutines.length > 0) {
+          await completeOnboarding(user.id);
+          router.replace("/dashboard");
+          return;
+        }
+
         if (!cancelled) {
           setUserId(user.id);
-          setName(profile.display_name ?? "");
-          if (profile.intro_seen)
-            setStep(
-              existingRoutines.length
-                ? "ready"
-                : profile.display_name
-                  ? "routine"
-                  : "name",
-            );
+          if (profile.intro_seen) setStep("routine");
         }
       } catch {
         if (!cancelled) setError(true);
@@ -84,15 +85,18 @@ export default function OnboardingPage() {
         if (!cancelled) setLoading(false);
       }
     }
+
     void load();
     return () => {
       cancelled = true;
     };
   }, [router]);
+
   async function run(action: () => Promise<void>) {
     if (!userId || busy) return;
     setBusy(true);
     setError(false);
+
     try {
       await action();
     } catch {
@@ -101,18 +105,21 @@ export default function OnboardingPage() {
       setBusy(false);
     }
   }
-  function finish() {
+
+  function beginSetup() {
+    return run(async () => {
+      await markIntroSeen(userId);
+      setStep("routine");
+    });
+  }
+
+  function skipSetup() {
     return run(async () => {
       await completeOnboarding(userId);
       router.replace("/dashboard");
     });
   }
-  function setup() {
-    return run(async () => {
-      await markIntroSeen(userId);
-      setStep("name");
-    });
-  }
+
   async function createRoutine(values: RoutineFormValues) {
     await run(async () => {
       await addRoutine({
@@ -122,25 +129,30 @@ export default function OnboardingPage() {
         days_of_week: values.frequency === "weekly" ? values.daysOfWeek : null,
         preferred_time: formatPreferredTimeForDatabase(values.preferredTime),
       });
-      setStep("ready");
+      await completeOnboarding(userId);
+      router.replace("/dashboard");
     });
   }
-  if (loading)
+
+  if (loading) {
     return (
       <PageShell className="max-w-xl">
         <LoadingState label={t("common.loading")} />
       </PageShell>
     );
-  const intro = typeof step === "number" ? screens[step] : null;
+  }
+
   return (
     <PageShell className="max-w-xl">
       <div className="mb-7 flex items-center justify-between gap-5">
         <BrandMark />
         <LanguagePicker />
       </div>
+
       {error && <ErrorNotice>{t("common.error")}</ErrorNotice>}
-      <AnimatedSwap value={String(step)}>
-        {intro && (
+
+      <AnimatedSwap value={step}>
+        {step === "intro" && (
           <Card>
             <h1 className="display-title text-4xl">{t(intro.title)}</h1>
             <p className="mt-4 text-muted">{t(intro.body)}</p>
@@ -159,54 +171,17 @@ export default function OnboardingPage() {
                 </div>
               ))}
             </div>
-            <div className="flex gap-3">
-              <Button
-                variant="primary"
-                busy={busy}
-                disabled={busy || !userId}
-                onClick={() => void setup()}
-              >
-                {t("intro.setup")}
-              </Button>
-            </div>
-          </Card>
-        )}
-        {step === "name" && (
-          <Card>
-            <SectionHeading
-              title={t("onboarding.name")}
-              description={t("onboarding.nameBody")}
-            />
-            <form
-              className="mt-6 grid gap-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void run(async () => {
-                  if (name.trim()) await saveDisplayName(userId, name);
-                  setStep("routine");
-                });
-              }}
+            <Button
+              variant="primary"
+              busy={busy}
+              disabled={busy || !userId}
+              onClick={() => void beginSetup()}
             >
-              <label className="grid gap-2">
-                {t("common.name")}
-                <Input
-                  autoComplete="given-name"
-                  maxLength={80}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </label>
-              <Button
-                type="submit"
-                busy={busy}
-                disabled={busy}
-                variant="primary"
-              >
-                {t("common.continue")}
-              </Button>
-            </form>
+              {t("onboarding.begin")}
+            </Button>
           </Card>
         )}
+
         {step === "routine" && (
           <Card>
             <SectionHeading
@@ -215,7 +190,7 @@ export default function OnboardingPage() {
             />
             <RoutineForm
               initialValues={getDefaultRoutineFormValues()}
-              submitLabel={t("onboarding.add")}
+              submitLabel={t("onboarding.addAndStart")}
               submittingLabel={t("common.saving")}
               isSubmitting={busy}
               onSubmit={createRoutine}
@@ -223,29 +198,13 @@ export default function OnboardingPage() {
             />
           </Card>
         )}
-        {step === "ready" && (
-          <Card tone="accent">
-            <SectionHeading
-              title={t("onboarding.ready")}
-              description={t("onboarding.readyBody")}
-            />
-            <Button
-              className="mt-6"
-              variant="primary"
-              busy={busy}
-              disabled={busy}
-              onClick={finish}
-            >
-              {t("onboarding.start")}
-            </Button>
-          </Card>
-        )}
       </AnimatedSwap>
+
       <Button
         className="mt-5"
         variant="ghost"
         disabled={busy || !userId}
-        onClick={finish}
+        onClick={() => void skipSetup()}
       >
         {t("onboarding.skipAll")}
       </Button>

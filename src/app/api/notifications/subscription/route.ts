@@ -1,6 +1,9 @@
 import { isValidPushEndpoint as isValidEndpoint } from "@/lib/pushEndpoint";
+import {
+  authenticatePrivilegedRequest,
+  type RequestAuthFailure,
+} from "@/lib/server/requestAuth";
 import { enforceRateLimit } from "@/lib/server/rateLimit";
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -22,74 +25,28 @@ function isValidSubscriptionKey(
   );
 }
 
-function getAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+function authErrorResponse(error: RequestAuthFailure) {
+  if (error === "server_unavailable") {
+    return NextResponse.json(
+      { error: "Push notifications are not configured on the server." },
+      { status: 503 },
+    );
+  }
 
-  if (!supabaseUrl || !serviceRoleKey) return null;
-
-  return createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
+  return NextResponse.json(
+    {
+      error:
+        error === "not_authenticated"
+          ? "Not authenticated."
+          : "Your session is no longer valid.",
     },
-  });
-}
-
-function getAccessToken(request: Request) {
-  const authorization = request.headers.get("authorization");
-  return authorization?.startsWith("Bearer ")
-    ? authorization.slice("Bearer ".length)
-    : null;
-}
-
-async function getAuthenticatedUser(request: Request) {
-  const admin = getAdminClient();
-  if (!admin) {
-    return {
-      error: NextResponse.json(
-        { error: "Push notifications are not configured on the server." },
-        { status: 503 },
-      ),
-      admin: null,
-      user: null,
-    };
-  }
-
-  const accessToken = getAccessToken(request);
-  if (!accessToken) {
-    return {
-      error: NextResponse.json(
-        { error: "Not authenticated." },
-        { status: 401 },
-      ),
-      admin,
-      user: null,
-    };
-  }
-
-  const {
-    data: { user },
-    error,
-  } = await admin.auth.getUser(accessToken);
-
-  if (error || !user) {
-    return {
-      error: NextResponse.json(
-        { error: "Your session is no longer valid." },
-        { status: 401 },
-      ),
-      admin,
-      user: null,
-    };
-  }
-
-  return { error: null, admin, user };
+    { status: 401 },
+  );
 }
 
 export async function POST(request: Request) {
-  const auth = await getAuthenticatedUser(request);
-  if (auth.error || !auth.admin || !auth.user) return auth.error;
+  const auth = await authenticatePrivilegedRequest(request);
+  if (!auth.ok) return authErrorResponse(auth.error);
 
   try {
     const allowed = await enforceRateLimit(
@@ -138,10 +95,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // A browser push endpoint belongs to the device/service-worker subscription,
-  // not permanently to one Routine account. If another account previously used
-  // the same installed PWA, transfer that endpoint to the currently authenticated
-  // user instead of letting RLS block the client-side upsert.
   const { error } = await auth.admin.from("push_subscriptions").upsert(
     {
       user_id: auth.user.id,
@@ -164,8 +117,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const auth = await getAuthenticatedUser(request);
-  if (auth.error || !auth.admin || !auth.user) return auth.error;
+  const auth = await authenticatePrivilegedRequest(request);
+  if (!auth.ok) return authErrorResponse(auth.error);
 
   try {
     const allowed = await enforceRateLimit(
