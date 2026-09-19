@@ -352,6 +352,8 @@ export const en = {
   "routine.pauseNamed": "Pause {name}",
   "routine.resumeNamed": "Resume {name}",
   "routine.deleteNamed": "Delete {name}",
+  "routine.completeNamed": "Complete {name}",
+  "routine.reopenNamed": "Mark {name} incomplete",
   "dashboard.routinesTodayCount": "routines today",
   "dashboard.openTasksCount": "open tasks",
   "dashboard.dayRhythm": "day in rhythm",
