@@ -38,6 +38,7 @@ import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import { getSessionUser } from "@/lib/session";
+import { consumeFirstRoutineSuccess } from "@/lib/firstRun";
 import { checkinItemKey, completionMapFromItems } from "@/lib/checkinProgress";
 import {
   filterTasksForToday,
@@ -78,10 +79,18 @@ export default function DashboardPage() {
   const [deleting, setDeleting] = useState(false);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
   const [moment, setMoment] = useState<MomentNotice | null>(null);
+  const [firstSuccessRoutine, setFirstSuccessRoutine] = useState<string | null>(
+    null,
+  );
   const pending = useRef(new Set<string>());
   const [filter, setFilter] = useState<"today" | "all" | "done">("today");
   const today = useToday();
   const todayKey = getLocalDateKey(today);
+
+  useEffect(() => {
+    const routineTitle = consumeFirstRoutineSuccess();
+    if (routineTitle) setFirstSuccessRoutine(routineTitle);
+  }, []);
 
   function showMoment(
     key: MomentCopyKey,
@@ -329,6 +338,34 @@ export default function DashboardPage() {
         }
       />
       <LifeLinks />
+      <Collapse show={!!firstSuccessRoutine}>
+        <Card tone="accent" className="mb-7">
+          <div className="flex items-start gap-4">
+            <span className="icon-tile shrink-0 bg-surface">
+              <Icon name="spark" size={20} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                {t("dashboard.firstSuccessEyebrow")}
+              </p>
+              <h2 className="display-title mt-1 text-2xl">
+                {t("dashboard.firstSuccessTitle", {
+                  name: firstSuccessRoutine ?? "",
+                })}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                {t("dashboard.firstSuccessBody")}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              onClick={() => setFirstSuccessRoutine(null)}
+            >
+              {t("common.done")}
+            </Button>
+          </div>
+        </Card>
+      </Collapse>
       <Collapse show={!!error}>
         <div className="mb-6">
           <ErrorNotice>{error}</ErrorNotice>

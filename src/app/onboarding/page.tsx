@@ -26,6 +26,7 @@ import {
   getDefaultRoutineFormValues,
 } from "@/lib/routineSchedule";
 import { getSessionUser } from "@/lib/session";
+import { rememberFirstRoutineSuccess } from "@/lib/firstRun";
 import type { RoutineFormValues } from "@/types/routine";
 
 const intro = {
@@ -129,6 +130,7 @@ export default function OnboardingPage() {
         days_of_week: values.frequency === "weekly" ? values.daysOfWeek : null,
         preferred_time: formatPreferredTimeForDatabase(values.preferredTime),
       });
+      rememberFirstRoutineSuccess(values.title);
       await completeOnboarding(userId);
       router.replace("/dashboard");
     });
