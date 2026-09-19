@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
 export type RhythmSummary = {
@@ -11,8 +13,9 @@ export type RhythmSummary = {
 export async function getRhythmSummary(
   today: string,
   windowDays = 7,
+  client?: SupabaseClient<Database>,
 ): Promise<RhythmSummary> {
-  const { data, error } = await supabaseBrowser()
+  const { data, error } = await (client ?? supabaseBrowser())
     .rpc("get_rhythm_summary", {
       p_today: today,
       p_window_days: windowDays,

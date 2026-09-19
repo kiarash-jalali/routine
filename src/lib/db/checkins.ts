@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import {
   isCheckinItemType,
@@ -12,8 +14,9 @@ const DAILY_CHECKIN_COLUMNS = "id,user_id,day,completed_at";
 export async function findDailyCheckin(
   userId: string,
   day: string,
+  client?: SupabaseClient<Database>,
 ): Promise<DailyCheckinSummary | null> {
-  const supabase = supabaseBrowser();
+  const supabase = client ?? supabaseBrowser();
   const { data, error } = await supabase
     .from("daily_checkins")
     .select(DAILY_CHECKIN_COLUMNS)
@@ -52,8 +55,9 @@ export async function getOrCreateDailyCheckin(
 
 export async function listCheckinItems(
   checkinId: string,
+  client?: SupabaseClient<Database>,
 ): Promise<CheckinItem[]> {
-  const supabase = supabaseBrowser();
+  const supabase = client ?? supabaseBrowser();
   const { data, error } = await supabase
     .from("checkin_items")
     .select("item_type,item_id,completed")
@@ -68,13 +72,17 @@ export async function listCheckinItems(
   });
 }
 
-export async function getDailyProgress(userId: string, day: string) {
-  const checkin = await findDailyCheckin(userId, day);
+export async function getDailyProgress(
+  userId: string,
+  day: string,
+  client?: SupabaseClient<Database>,
+) {
+  const checkin = await findDailyCheckin(userId, day, client);
   if (!checkin) return { checkin: null, items: [] };
 
   return {
     checkin,
-    items: await listCheckinItems(checkin.id),
+    items: await listCheckinItems(checkin.id, client),
   };
 }
 

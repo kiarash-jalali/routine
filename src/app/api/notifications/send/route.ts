@@ -30,6 +30,7 @@ async function runInChunks<T>(
 }
 
 async function sendNotifications(request: Request) {
+  const startedAt = Date.now();
   const expected =
     process.env.CRON_SECRET ?? process.env.NOTIFICATION_CRON_SECRET;
   const supplied = request.headers
@@ -247,11 +248,21 @@ async function sendNotifications(request: Request) {
       new Date(now.getTime() - 30 * 86400000).toISOString(),
     );
 
-  return NextResponse.json({
+  const result = {
     ok: counts.failed === 0,
     ...counts,
     skippedCheckedIn,
-  });
+    dueCheckins: duePreferences.length,
+    dueMedication: healthRows?.length ?? 0,
+    dueWorkouts: workoutRows?.length ?? 0,
+    durationMs: Date.now() - startedAt,
+  };
+
+  const log = JSON.stringify({ kind: "notification_cron", ...result });
+  if (result.ok) console.info(log);
+  else console.error(log);
+
+  return NextResponse.json(result, { status: result.ok ? 200 : 500 });
 }
 
 

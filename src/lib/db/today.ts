@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import { routineOccursOn } from "@/lib/today";
 import {
@@ -5,8 +7,10 @@ import {
   type Routine,
 } from "@/types/routine";
 
-export async function listTodaysRoutines(date = new Date()): Promise<Routine[]> {
-  const supabase = supabaseBrowser();
+export async function listActiveRoutines(
+  client?: SupabaseClient<Database>,
+): Promise<Routine[]> {
+  const supabase = client ?? supabaseBrowser();
   const { data, error } = await supabase
     .from("routines")
     .select("*")
@@ -23,5 +27,13 @@ export async function listTodaysRoutines(date = new Date()): Promise<Routine[]> 
     return { ...routine, frequency: routine.frequency };
   });
 
+  return routines;
+}
+
+export async function listTodaysRoutines(
+  date = new Date(),
+  client?: SupabaseClient<Database>,
+): Promise<Routine[]> {
+  const routines = await listActiveRoutines(client);
   return routines.filter((routine) => routineOccursOn(routine, date));
 }

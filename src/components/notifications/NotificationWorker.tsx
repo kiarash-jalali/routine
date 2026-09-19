@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { syncNotificationPreferenceTimezone } from "@/lib/db/notifications";
 import { supabaseBrowser } from "@/lib/supabaseClient";
+import { ROOTINE_TIMEZONE_COOKIE } from "@/lib/timezone";
 
 export function NotificationWorker() {
   useEffect(() => {
@@ -11,10 +12,17 @@ export function NotificationWorker() {
     let lastSyncKey: string | null = null;
 
     async function syncTimezone(userId: string | null | undefined) {
-      if (!userId || disposed) return;
-
       const timezone =
         Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      const secure = window.location.protocol === "https:" ? "; Secure" : "";
+      document.cookie =
+        ROOTINE_TIMEZONE_COOKIE +
+        "=" +
+        encodeURIComponent(timezone) +
+        "; Path=/; Max-Age=31536000; SameSite=Lax" +
+        secure;
+
+      if (!userId || disposed) return;
       const syncKey = `${userId}:${timezone}`;
       if (lastSyncKey === syncKey) return;
 
