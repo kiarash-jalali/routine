@@ -8,7 +8,7 @@ function source(path) {
 
 test("onboarding hands the first routine success into Today once", () => {
   const onboarding = source("src/app/onboarding/page.tsx");
-  const dashboard = source("src/app/dashboard/page.tsx");
+  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
   const firstRun = source("src/lib/firstRun.ts");
 
   assert.match(onboarding, /rememberFirstRoutineSuccess\(values\.title\)/);

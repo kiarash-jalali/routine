@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { loadTypeScriptModule } from "./load-typescript.mjs";
+
+function source(path) {
+  return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+}
 
 const { config } = loadTypeScriptModule(
   new URL("../src/proxy.ts", import.meta.url),
@@ -14,24 +19,39 @@ const { config } = loadTypeScriptModule(
 );
 
 test("auth proxy declares every protected app route", () => {
+  const proxy = source("src/proxy.ts");
+
+  for (const pathname of [
+    "/dashboard",
+    "/routines",
+    "/checkin",
+    "/history",
+    "/settings",
+    "/feedback",
+    "/health",
+    "/workouts",
+    "/guide",
+    "/onboarding",
+    "/design-lab",
+  ]) {
+    assert.match(proxy, new RegExp(`"${pathname.replaceAll("/", "\\/")}"`));
+  }
+
   assert.deepEqual(config.matcher, [
-    "/dashboard/:path*",
-    "/routines/:path*",
-    "/checkin/:path*",
-    "/history/:path*",
-    "/settings/:path*",
-    "/feedback/:path*",
-    "/health/:path*",
-    "/workouts/:path*",
-    "/guide/:path*",
-    "/onboarding/:path*",
-    "/design-lab/:path*",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|css|js)$).*)",
   ]);
 });
 
-test("auth proxy does not include public auth routes", () => {
-  const matchers = config.matcher.join("\n");
+test("public auth routes receive CSP but are not authentication-gated", () => {
+  const proxy = source("src/proxy.ts");
+  const protectedBlock = proxy.slice(
+    proxy.indexOf("const protectedRoutes"),
+    proxy.indexOf("] as const"),
+  );
+
   for (const pathname of ["/login", "/forgot-password", "/reset-password"]) {
-    assert.equal(matchers.includes(pathname), false, pathname);
+    assert.equal(protectedBlock.includes(`"${pathname}"`), false, pathname);
   }
+
+  assert.match(proxy, /Content-Security-Policy/);
 });

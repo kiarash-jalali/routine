@@ -35,12 +35,12 @@ test("first-run flow reaches Today without notification permission", () => {
   assert.doesNotMatch(onboarding, /step === "ready"/);
   assert.doesNotMatch(onboarding, /ReminderSetup|ReminderPrompt|requestPermission/);
 
-  const dashboard = source("src/app/dashboard/page.tsx");
+  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
   assert.doesNotMatch(dashboard, /ReminderSetup|ReminderPrompt|requestPermission/);
 });
 
 test("Today supports routine completion and Guide stays discoverable", () => {
-  const dashboard = source("src/app/dashboard/page.tsx");
+  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
   assert.match(dashboard, /async function toggleRoutine/);
   assert.match(dashboard, /setDailyItemCompletion/);
 
