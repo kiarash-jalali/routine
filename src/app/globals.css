@@ -11,7 +11,7 @@
   --surface: #ffffffad;
   --surface-soft: #eaf0e9b8;
   --muted: #607168;
-  --muted-soft: #697a70;
+  --muted-soft: #5d6e64;
   --border: #50776820;
   --border-interactive: #507768cc;
   --border-strong: #6a8474;
@@ -222,7 +222,7 @@
   .skip-link {
     position: fixed;
     top: 8px;
-    left: 16px;
+    inset-inline-start: 16px;
     z-index: 100;
     transform: translateY(-150%);
     border-radius: 12px;
@@ -996,7 +996,7 @@
   .theme-track {
     width: 25px;
     height: 15px;
-    margin-left: auto;
+    margin-inline-start: auto;
     border-radius: 20px;
     background: var(--track);
     padding: 3px;
@@ -1069,7 +1069,7 @@
     }
     .auth-theme {
       top: 16px;
-      right: 16px;
+      inset-inline-end: 16px;
     }
     .auth-page {
       padding-top: 84px;
@@ -1331,5 +1331,18 @@ html:active-view-transition .card {
   .btn:hover > svg,
   .icon-button:hover > svg {
     transform: none;
+  }
+}
+
+@layer components {
+  .theme-select {
+    min-width: 0;
+    margin-inline-start: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 5px 24px 5px 8px;
+    background: var(--surface-soft);
+    color: var(--foreground);
+    font-size: 12px;
   }
 }

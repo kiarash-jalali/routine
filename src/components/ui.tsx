@@ -10,6 +10,7 @@ import type {
 } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { AnimatedNumber } from "@/components/Motion";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 function joinClasses(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -204,13 +205,14 @@ export function Stat({
 }
 export function ProgressBar({ value, max }: { value: number; max: number }) {
   const reduced = useReducedMotion();
+  const { t } = useLanguage();
   const percent =
     max > 0 ? Math.max(0, Math.min(100, Math.round((value / max) * 100))) : 0;
   return (
     <div
       className="h-1.5 overflow-hidden rounded-full bg-primary-soft"
       role="progressbar"
-      aria-label="Completion"
+      aria-label={t("common.completion")}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={percent}
@@ -224,14 +226,12 @@ export function ProgressBar({ value, max }: { value: number; max: number }) {
     </div>
   );
 }
-export function LoadingState({
-  label = "Loading your space…",
-}: {
-  label?: string;
-}) {
+export function LoadingState({ label }: { label?: string }) {
+  const { t } = useLanguage();
+  const resolvedLabel = label ?? t("common.loading");
   return (
     <div role="status" className="space-y-6">
-      <span className="sr-only">{label}</span>
+      <span className="sr-only">{resolvedLabel}</span>
       <div aria-hidden="true" className="space-y-5">
         <div className="skeleton h-4 w-36" />
         <div className="skeleton h-9 w-52" />

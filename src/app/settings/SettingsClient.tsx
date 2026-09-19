@@ -72,7 +72,7 @@ export function SettingsClient({
   initialEmail: string;
   initialLoadError: boolean;
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [email, setEmail] = useState(initialEmail);
@@ -263,8 +263,10 @@ export function SettingsClient({
     }
   }
 
+  const deleteWord = language === "fa" ? "حذف" : "DELETE";
+
   async function deleteAccount() {
-    if (deleteConfirmation !== "DELETE" || !deletePassword || busyAction) return;
+    if (deleteConfirmation.trim() !== deleteWord || !deletePassword || busyAction) return;
 
     beginAction("delete");
     try {
@@ -520,11 +522,11 @@ export function SettingsClient({
               >
                 <div className="space-y-4">
                   <p className="text-sm leading-6 text-muted">
-                    {t("settings.typeDelete")}
+                    {t("settings.typeDelete", { word: deleteWord })}
                   </p>
                   <Input
                     value={deleteConfirmation}
-                    placeholder="DELETE"
+                    placeholder={deleteWord}
                     autoComplete="off"
                     disabled={Boolean(busyAction)}
                     onChange={(event) => setDeleteConfirmation(event.target.value)}
@@ -544,7 +546,7 @@ export function SettingsClient({
                     onClick={deleteAccount}
                     disabled={
                       Boolean(busyAction) ||
-                      deleteConfirmation !== "DELETE" ||
+                      deleteConfirmation.trim() !== deleteWord ||
                       !deletePassword
                     }
                     busy={busyAction === "delete"}

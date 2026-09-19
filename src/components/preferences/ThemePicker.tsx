@@ -1,6 +1,7 @@
 "use client";
-import { useSyncExternalStore } from "react";
+
 import { Icon } from "@/components/Icon";
+import { SegmentedControl } from "@/components/ui";
 import { useLanguage } from "./LanguageProvider";
 import {
   setThemeMode,
@@ -8,8 +9,9 @@ import {
   themeSnapshot,
   type ThemeMode,
 } from "@/lib/theme";
+import { useSyncExternalStore } from "react";
 
-const order: ThemeMode[] = ["auto", "light", "dark"];
+const options: ThemeMode[] = ["auto", "light", "dark"];
 
 export function ThemePicker() {
   const { t } = useLanguage();
@@ -19,26 +21,28 @@ export function ThemePicker() {
     () => "auto" as const,
   );
 
-  function cycle() {
-    const index = order.indexOf(mode);
-    setThemeMode(order[(index + 1) % order.length]);
-  }
-
-  const icon = mode === "dark" ? "moon" : mode === "light" ? "sun" : "clock";
-
   return (
-    <div className="grid gap-2 text-sm">
-      <span>{t("theme.title")}</span>
-      <button
-        type="button"
-        className="btn justify-start"
-        aria-label={t("theme.title")}
-        onClick={cycle}
-      >
-        <Icon name={icon} size={18} />
-        {t(`theme.${mode}`)}
-      </button>
-      <span className="text-muted">{t("theme.description")}</span>
+    <div className="grid gap-3 text-sm">
+      <div>
+        <span className="font-medium">{t("theme.title")}</span>
+        <p className="mt-1 text-sm leading-6 text-muted">{t("theme.description")}</p>
+      </div>
+      <SegmentedControl
+        value={mode}
+        onChange={setThemeMode}
+        label={t("theme.title")}
+        options={options.map((value) => ({
+          value,
+          label: t(`theme.${value}`),
+        }))}
+      />
+      <p className="inline-flex items-center gap-2 text-sm text-muted" aria-live="polite">
+        <Icon
+          name={mode === "dark" ? "moon" : mode === "light" ? "sun" : "clock"}
+          size={17}
+        />
+        {t("theme.currentMode", { mode: t(`theme.${mode}`) })}
+      </p>
     </div>
   );
 }

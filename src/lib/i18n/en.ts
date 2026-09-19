@@ -1,5 +1,7 @@
 export const en = {
   "common.save": "Save",
+  "common.completion": "Completion",
+  "theme.currentMode": "Selected: {mode}",
   "common.saving": "Saving…",
   "common.cancel": "Cancel",
   "common.continue": "Continue",
@@ -213,7 +215,7 @@ export const en = {
   "settings.delete": "Delete account",
   "settings.deleteBody":
     "Permanently remove your account and its data. This cannot be undone.",
-  "settings.typeDelete": "Type DELETE to confirm.",
+  "settings.typeDelete": "Type {word} to confirm.",
   "settings.deleteMine": "Delete my account",
   "settings.currentPassword": "Current password",
   "settings.space": "Your space",
