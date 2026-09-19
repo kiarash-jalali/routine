@@ -10,6 +10,8 @@
     en: {
       title: "Today is still here.",
       body: "You can keep checking things off without a connection. Rootine will sync these changes when you’re back online.",
+      staleTitle: "Your last saved day is here.",
+      staleBody: "This device has not saved today’s plan yet. You can review the last saved day offline, but reconnect before changing it.",
       noConnection: "Offline",
       online: "Back online",
       pending: (count) =>
@@ -31,6 +33,8 @@
     fa: {
       title: "امروز هنوز همین‌جاست.",
       body: "بدون اینترنت هم می‌توانی کارها و روتین‌ها را انجام‌شده علامت بزنی. وقتی دوباره آنلاین شوی، روتین تغییرها را همگام می‌کند.",
+      staleTitle: "آخرین روز ذخیره‌شده اینجاست.",
+      staleBody: "برنامه امروز هنوز روی این دستگاه ذخیره نشده است. می‌توانی آخرین روز ذخیره‌شده را ببینی، اما برای تغییر آن دوباره آنلاین شو.",
       noConnection: "آفلاین",
       online: "دوباره آنلاین شدی",
       pending: (count) => `${count} تغییر منتظر همگام‌سازی است.`,
@@ -153,6 +157,14 @@
     return state.language === "fa" ? "fa-IR" : "en-AU";
   }
 
+  function localDateKey() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   function formatSavedAt(value) {
     try {
       return new Intl.DateTimeFormat(locale(), {
@@ -199,6 +211,7 @@
         type: "button",
         className: "offline-item",
         "aria-pressed": item.completed ? "true" : "false",
+        disabled: state.staleDay,
       });
       const mark = el(
         "span",
@@ -245,8 +258,8 @@
     const privacy = document.getElementById("offline-privacy");
     const open = document.getElementById("offline-open");
 
-    title.textContent = c.title;
-    body.textContent = c.body;
+    title.textContent = state.staleDay ? c.staleTitle : c.title;
+    body.textContent = state.staleDay ? c.staleBody : c.body;
     privacy.textContent = c.localOnly;
     open.textContent = c.open;
 
@@ -279,9 +292,9 @@
 
     meta.textContent = c.saved(formatSavedAt(state.snapshot.savedAt));
     const finish = document.getElementById("offline-finish");
-    finish.hidden = false;
+    finish.hidden = state.staleDay;
     finish.textContent = state.snapshot.checkedInToday ? c.finished : c.finish;
-    finish.disabled = state.snapshot.checkedInToday;
+    finish.disabled = state.snapshot.checkedInToday || state.staleDay;
   }
 
   async function refreshPending(statusOverride) {
@@ -389,6 +402,7 @@
     mutations: [],
     language: "en",
     syncing: false,
+    staleDay: false,
   };
 
   async function start() {
@@ -397,6 +411,9 @@
       state.snapshot = loaded.snapshot;
       state.mutations = loaded.mutations;
       state.language = loaded.snapshot?.language === "fa" ? "fa" : "en";
+      state.staleDay = Boolean(
+        loaded.snapshot?.day && loaded.snapshot.day !== localDateKey(),
+      );
     } catch {
       state.snapshot = null;
     }
