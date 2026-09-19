@@ -24,6 +24,12 @@ function readMessage(error: unknown): string | null {
   return null;
 }
 
+export function getErrorCode(error: unknown): string | null {
+  const message = readMessage(error)?.trim();
+  if (!message || !/^[a-z][a-z0-9_]*$/.test(message)) return null;
+  return message;
+}
+
 export function getErrorMessage(error: unknown, fallback: string): string {
   const message = readMessage(error);
   if (!message) return fallback;

@@ -402,6 +402,14 @@ export const en = {
   "history.days": "{count} days",
   "history.loadError": "Your check-in history could not be loaded.",
   "history.repairError": "That missed day could not be repaired.",
+  "history.repairNotAuthenticated": "Sign in again before repairing a rhythm day.",
+  "history.repairDayRequired": "Choose a missed day to repair.",
+  "history.repairAlreadyCheckedIn": "That day already has a finished check-in.",
+  "history.repairAlreadyRepaired": "That day is already repaired.",
+  "history.repairNeedsNeighbors":
+    "Only a missed day between two finished check-ins can be repaired.",
+  "history.repairInsufficientPoints":
+    "You need {count} recovery points to repair a day.",
   "checkin.loadError": "Today’s check-in could not be loaded.",
   "checkin.saveError": "Today’s check-in could not be saved.",
   "feedback.loading": "Opening feedback…",
