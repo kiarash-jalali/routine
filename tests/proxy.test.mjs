@@ -18,7 +18,7 @@ const { config } = loadTypeScriptModule(
   },
 );
 
-test("auth proxy declares every protected app route", () => {
+test("auth proxy protects app routes while leaving public PWA resources reachable", () => {
   const proxy = source("src/proxy.ts");
 
   for (const pathname of [
