@@ -1,5 +1,9 @@
 export type CheckinItemType = "task" | "routine";
 
+export function isCheckinItemType(value: string): value is CheckinItemType {
+  return value === "task" || value === "routine";
+}
+
 export type DailyCheckinSummary = {
   id: string;
   user_id: string;

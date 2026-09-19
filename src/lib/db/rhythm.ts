@@ -1,13 +1,5 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
-type RhythmSummaryRow = {
-  current_days: number;
-  best_days: number;
-  checked_in_today: boolean;
-  recent_checkin_days: string[] | null;
-  recent_repaired_days: string[] | null;
-};
-
 export type RhythmSummary = {
   currentDays: number;
   bestDays: number;
@@ -28,13 +20,13 @@ export async function getRhythmSummary(
     .single();
 
   if (error) throw error;
-  const row = data as RhythmSummaryRow;
+  if (!data) throw new Error("rhythm_summary_missing");
 
   return {
-    currentDays: row.current_days,
-    bestDays: row.best_days,
-    checkedInToday: row.checked_in_today,
-    recentCheckinDays: row.recent_checkin_days ?? [],
-    recentRepairedDays: row.recent_repaired_days ?? [],
+    currentDays: data.current_days,
+    bestDays: data.best_days,
+    checkedInToday: data.checked_in_today,
+    recentCheckinDays: data.recent_checkin_days ?? [],
+    recentRepairedDays: data.recent_repaired_days ?? [],
   };
 }

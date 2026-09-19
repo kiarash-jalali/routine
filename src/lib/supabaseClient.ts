@@ -1,9 +1,10 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 
-let client: SupabaseClient | null = null;
+let client: SupabaseClient<Database> | null = null;
 
-export function supabaseBrowser(): SupabaseClient {
+export function supabaseBrowser(): SupabaseClient<Database> {
   if (!client) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -14,7 +15,7 @@ export function supabaseBrowser(): SupabaseClient {
       );
     }
 
-    client = createBrowserClient(supabaseUrl, supabaseAnonKey);
+    client = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
   }
 
   return client;

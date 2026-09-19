@@ -1,9 +1,5 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import type {
-  MedicationInput,
-  MedicationPlan,
-  MedicationReminder,
-} from "@/types/health";
+import type { MedicationInput } from "@/types/health";
 const planColumns =
   "id,user_id,name,dose,notes,times,days_of_week,timezone,is_active,reminders_enabled,start_date,end_date,created_at,updated_at";
 const reminderColumns =
@@ -25,8 +21,8 @@ export async function loadHealth(userId: string, historyLimit = 100) {
   ]);
   if (plans.error || reminders.error) throw new Error("health_load_failed");
   return {
-    plans: plans.data as MedicationPlan[],
-    reminders: reminders.data as MedicationReminder[],
+    plans: plans.data ?? [],
+    reminders: reminders.data ?? [],
   };
 }
 export async function saveMedication(

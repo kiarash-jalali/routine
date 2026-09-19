@@ -1,9 +1,10 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import type {
-  CheckinItem,
-  CheckinItemType,
-  CheckinItemUpsert,
-  DailyCheckinSummary,
+import {
+  isCheckinItemType,
+  type CheckinItem,
+  type CheckinItemType,
+  type CheckinItemUpsert,
+  type DailyCheckinSummary,
 } from "@/types/checkin";
 
 const DAILY_CHECKIN_COLUMNS = "id,user_id,day,completed_at";
@@ -21,7 +22,7 @@ export async function findDailyCheckin(
     .maybeSingle();
 
   if (error) throw error;
-  return data as DailyCheckinSummary | null;
+  return data;
 }
 
 export async function getOrCreateDailyCheckin(
@@ -46,7 +47,7 @@ export async function getOrCreateDailyCheckin(
   if (error) throw error;
   if (!data) throw new Error("The daily check-in could not be created.");
 
-  return data as DailyCheckinSummary;
+  return data;
 }
 
 export async function listCheckinItems(
@@ -59,12 +60,17 @@ export async function listCheckinItems(
     .eq("checkin_id", checkinId);
 
   if (error) throw error;
-  return (data ?? []) as CheckinItem[];
+  return (data ?? []).map((item) => {
+    if (!isCheckinItemType(item.item_type)) {
+      throw new Error("invalid_checkin_item_type");
+    }
+    return { ...item, item_type: item.item_type };
+  });
 }
 
 export async function getDailyProgress(userId: string, day: string) {
   const checkin = await findDailyCheckin(userId, day);
-  if (!checkin) return { checkin: null, items: [] as CheckinItem[] };
+  if (!checkin) return { checkin: null, items: [] };
 
   return {
     checkin,
@@ -88,7 +94,8 @@ export async function setDailyItemCompletion(
     .single();
 
   if (error) throw error;
-  return data as DailyCheckinSummary;
+  if (!data) throw new Error("daily_item_update_failed");
+  return data;
 }
 
 export async function finishDailyCheckin(
@@ -103,7 +110,8 @@ export async function finishDailyCheckin(
     .single();
 
   if (error) throw error;
-  return data as DailyCheckinSummary;
+  if (!data) throw new Error("checkin_finish_failed");
+  return data;
 }
 
 export async function saveCheckinItems(

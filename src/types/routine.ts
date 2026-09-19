@@ -1,5 +1,9 @@
 export type RoutineFrequency = "daily" | "weekly";
 
+export function isRoutineFrequency(value: string): value is RoutineFrequency {
+  return value === "daily" || value === "weekly";
+}
+
 export type Routine = {
   id: string;
   user_id: string;
