@@ -22,13 +22,35 @@ function isStandalone() {
   );
 }
 
-export function InstallAppCard() {
+export function InstallAppCard({
+  deferUntilReturn = false,
+}: {
+  deferUntilReturn?: boolean;
+}) {
   const { t } = useLanguage();
   const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(isStandalone);
   const [iosInstructions] = useState(iosPushRequiresInstall);
+  const [returnEligible, setReturnEligible] = useState(!deferUntilReturn);
 
   useEffect(() => {
+    if (deferUntilReturn) {
+      const sessionKey = "rootine-install-session";
+      const seenKey = "rootine-seen-before";
+      try {
+        const sessionValue = sessionStorage.getItem(sessionKey);
+        if (sessionValue === null) {
+          const seenBefore = localStorage.getItem(seenKey) === "1";
+          sessionStorage.setItem(sessionKey, seenBefore ? "eligible" : "first");
+          localStorage.setItem(seenKey, "1");
+          setReturnEligible(seenBefore);
+        } else {
+          setReturnEligible(sessionValue === "eligible");
+        }
+      } catch {
+        setReturnEligible(false);
+      }
+    }
 
     function onBeforeInstallPrompt(event: Event) {
       event.preventDefault();
@@ -48,7 +70,7 @@ export function InstallAppCard() {
     };
   }, []);
 
-  if (installed || (!promptEvent && !iosInstructions)) return null;
+  if (!returnEligible || installed || (!promptEvent && !iosInstructions)) return null;
 
   async function install() {
     if (!promptEvent) return;

@@ -1,3 +1,5 @@
+import { translate, type Language } from "@/lib/i18n";
+
 export const MIN_PASSWORD_LENGTH = 10;
 
 const AUTH_CALLBACK_PATHS = new Set(["/onboarding", "/dashboard", "/reset-password"]);
@@ -26,7 +28,10 @@ type AuthErrorLike = {
   message?: unknown;
 };
 
-export function getFriendlySignInError(error: unknown): string {
+export function getFriendlySignInError(
+  error: unknown,
+  language: Language = "en",
+): string {
   const authError =
     typeof error === "object" && error !== null
       ? (error as AuthErrorLike)
@@ -39,11 +44,11 @@ export function getFriendlySignInError(error: unknown): string {
   // invalid email/password pair. Keep that protection while still giving a
   // short, useful message to the person signing in.
   if (code === "invalid_credentials" || message.includes("invalid login credentials")) {
-    return "Email or password doesn’t match. Check both and try again.";
+    return translate(language, "auth.invalidCredentials");
   }
 
   if (code === "email_not_confirmed" || message.includes("email not confirmed")) {
-    return "Confirm your email first, then come back and sign in.";
+    return translate(language, "auth.emailNotConfirmed");
   }
 
   if (
@@ -51,14 +56,14 @@ export function getFriendlySignInError(error: unknown): string {
     code === "over_email_send_rate_limit" ||
     message.includes("too many requests")
   ) {
-    return "Too many tries for now. Give it a minute, then try again.";
+    return translate(language, "auth.rateLimited");
   }
 
   if (code === "user_banned") {
-    return "This account can’t sign in right now.";
+    return translate(language, "auth.userBanned");
   }
 
-  return "Couldn’t sign you in right now. Try again in a moment.";
+  return translate(language, "auth.signInFailed");
 }
 
 export type PasswordStrength = "weak" | "fair" | "strong";

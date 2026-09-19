@@ -68,8 +68,8 @@ export default function LoginPage() {
     } catch (error: unknown) {
       setErrorMessage(
         mode === "login"
-          ? getFriendlySignInError(error)
-          : getErrorMessage(error, "Couldn’t create your account. Try again."),
+          ? getFriendlySignInError(error, language)
+          : getErrorMessage(error, t("login.createError")),
       );
     } finally {
       setLoading(false);

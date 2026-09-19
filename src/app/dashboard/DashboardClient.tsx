@@ -358,7 +358,7 @@ export function DashboardClient({
         }
       />
       <LifeLinks />
-      <InstallAppCard />
+      <InstallAppCard deferUntilReturn />
       <Collapse show={!!firstSuccessRoutine}>
         <Card tone="accent" className="mb-7">
           <div className="flex items-start gap-4">
