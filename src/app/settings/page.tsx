@@ -23,6 +23,7 @@ import {
 } from "@/components/ui";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import { ReminderSettings } from "@/components/notifications/ReminderSettings";
+import { InstallAppCard } from "@/components/pwa/InstallAppCard";
 import { getProfile, saveDisplayName } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
@@ -404,6 +405,8 @@ export default function SettingsPage() {
               </div>
             </div>
           </Card>
+
+          <InstallAppCard />
 
           {userId && <ReminderSettings userId={userId} />}
 
