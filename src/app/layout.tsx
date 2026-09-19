@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { cookies, headers } from "next/headers";
 import { NotificationWorker } from "@/components/notifications/NotificationWorker";
+import { PwaStatus } from "@/components/pwa/PwaStatus";
 import { AppFrame } from "@/components/AppFrame";
 import { ViewTransitions } from "next-view-transitions";
 import { MotionProvider } from "@/components/Motion";
@@ -62,6 +63,7 @@ export default async function RootLayout({
           <LanguageProvider initialLanguage={language}>
             <ThemeController />
             <NotificationWorker />
+            <PwaStatus />
             <MotionProvider>
               <AppFrame>{children}</AppFrame>
             </MotionProvider>

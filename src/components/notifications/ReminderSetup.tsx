@@ -9,10 +9,7 @@ import {
   iosPushRequiresInstall,
   showNotificationTest,
 } from "@/lib/notifications";
-import {
-  saveNotificationPreference,
-  savePushSubscription,
-} from "@/lib/db/notifications";
+import { saveNotificationPreference } from "@/lib/db/notifications";
 export function ReminderSetup({
   userId,
   initialTime = "20:00",
@@ -42,8 +39,7 @@ export function ReminderSetup({
     setError(false);
     try {
       // Call permission directly from this click; iOS requires a user gesture.
-      const { storedSubscription } = await enablePushNotifications();
-      await savePushSubscription(userId, storedSubscription);
+      await enablePushNotifications(userId);
       if (!deviceOnly)
         await saveNotificationPreference(userId, {
           enabled: true,

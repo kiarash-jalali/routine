@@ -1,5 +1,18 @@
 import type { TranslationKey } from "./en";
 export const fa: Record<TranslationKey, string> = {
+  "pwa.appDescription": "راهی آرام و مبتنی بر روتین برای شکل دادن به هر روز.",
+  "pwa.checkinShortcut": "مرور روزانهٔ امروز را باز کن.",
+  "pwa.addTaskShortcut": "یک کار برای به‌خاطر سپردن اضافه کن.",
+  "pwa.offlineTitle": "فعلاً آفلاینی.",
+  "pwa.offlineBody": "می‌توانی با چیزهایی که از قبل باز هستند ادامه بدهی. تغییرات روتین، کار و مرور روز برای همگام‌سازی بعدی نگه داشته می‌شوند.",
+  "pwa.pendingTitle": "تغییرات منتظر همگام‌سازی",
+  "pwa.pending": "{count} تغییر منتظر همگام‌سازی است.",
+  "pwa.syncing": "در حال همگام‌سازی تغییرات ذخیره‌شده…",
+  "pwa.syncError": "تغییراتت هنوز روی این دستگاه محفوظ‌اند، اما فعلاً همگام نشدند.",
+  "pwa.retrySync": "تلاش دوباره برای همگام‌سازی",
+  "pwa.updateTitle": "به‌روزرسانی Rootine آماده است",
+  "pwa.updateBody": "هر وقت آماده‌ای، برای رفتن به نسخهٔ جدید اپ را دوباره بارگذاری کن.",
+  "pwa.updateAction": "به‌روزرسانی و بارگذاری دوباره",
   "common.save": "ذخیره",
   "common.tomorrow": "فردا",
   "common.yesterday": "دیروز",

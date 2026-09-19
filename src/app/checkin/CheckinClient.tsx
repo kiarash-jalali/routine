@@ -37,6 +37,7 @@ import {
 } from "@/lib/checkinProgress";
 import { getLocalDateKey } from "@/lib/today";
 import { useToday } from "@/lib/useToday";
+import { saveOfflineSnapshot } from "@/lib/offlineStore";
 import type {
   CheckinCompletionMap,
   CheckinItem,
@@ -98,7 +99,7 @@ export function CheckinClient({
   initialFinished: boolean;
   initialLoadError: boolean;
 }) {
-  const { t, date, time, number } = useLanguage();
+  const { t, language, date, time, number } = useLanguage();
   const todayDate = useToday();
   const today = getLocalDateKey(todayDate);
   const todayLabel = date(todayDate, {
@@ -248,6 +249,35 @@ export function CheckinClient({
   const completionPercent =
     totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const checkinLocked = saving || (hasFinishedToday && !editingFinishedCheckin);
+
+  useEffect(() => {
+    void saveOfflineSnapshot({
+      version: 1,
+      userId,
+      language,
+      savedAt: new Date().toISOString(),
+      day: today,
+      checkedInToday: hasFinishedToday,
+      routines: routines.slice(0, 50).map((routine) => ({
+        id: routine.id,
+        title: routine.title,
+        completed: isItemCompleted("routine", routine.id),
+      })),
+      tasks: tasks.slice(0, 50).map((task) => ({
+        id: task.id,
+        title: task.title,
+        completed: isItemCompleted("task", task.id),
+      })),
+    }).catch(() => undefined);
+  }, [
+    completionByItem,
+    hasFinishedToday,
+    language,
+    routines,
+    tasks,
+    today,
+    userId,
+  ]);
 
   return (
     <PageShell className="max-w-3xl">
