@@ -25,6 +25,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     background_color: "#f5f5ee",
     theme_color: "#286e5e",
     categories: ["productivity", "lifestyle"],
+    lang: language === "fa" ? "fa-IR" : "en-AU",
+    dir: language === "fa" ? "rtl" : "ltr",
     shortcuts: [
       {
         name: t("nav.checkin"),

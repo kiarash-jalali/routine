@@ -3,13 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
-import { replayOfflineMutation } from "@/lib/db/checkins";
 import {
   clearOfflineData,
   getPendingOfflineMutationCount,
-  listOfflineMutations,
   OFFLINE_QUEUE_EVENT,
-  removeOfflineMutation,
+  syncOfflineMutations,
 } from "@/lib/offlineStore";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
@@ -54,10 +52,9 @@ export function PwaStatus() {
       setSyncing(true);
       setSyncError(false);
       try {
-        const mutations = await listOfflineMutations(activeUserId);
-        for (const mutation of mutations) {
-          await replayOfflineMutation(mutation);
-          await removeOfflineMutation(mutation.id);
+        const result = await syncOfflineMutations(activeUserId);
+        if (!result.ok || result.retryIds.length > 0) {
+          setSyncError(true);
         }
       } catch {
         setSyncError(true);
@@ -80,7 +77,6 @@ export function PwaStatus() {
       } = await supabase.auth.getSession();
       userIdRef.current = session?.user.id ?? null;
       if (!userIdRef.current) {
-        await clearOfflineData().catch(() => undefined);
         setPending(0);
         return;
       }
@@ -125,7 +121,14 @@ export function PwaStatus() {
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
     window.addEventListener(OFFLINE_QUEUE_EVENT, onQueueChanged);
+    function onServiceWorkerMessage(event: MessageEvent) {
+      if (event.data?.type === "ROOTINE_OFFLINE_SYNCED") {
+        void refreshPending();
+      }
+    }
+
     document.addEventListener("visibilitychange", onVisibilityChange);
+    navigator.serviceWorker?.addEventListener("message", onServiceWorkerMessage);
 
     return () => {
       subscription.unsubscribe();
@@ -133,6 +136,10 @@ export function PwaStatus() {
       window.removeEventListener("offline", onOffline);
       window.removeEventListener(OFFLINE_QUEUE_EVENT, onQueueChanged);
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      navigator.serviceWorker?.removeEventListener(
+        "message",
+        onServiceWorkerMessage,
+      );
     };
   }, [flushQueue, refreshPending]);
 

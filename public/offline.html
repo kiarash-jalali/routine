@@ -1,47 +1,179 @@
 <!doctype html>
-<html lang="{{LANG}}" dir="{{DIR}}">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" content="#286e5e" />
-    <title>rootine · {{TITLE}}</title>
+    <title>rootine · offline</title>
     <style>
-      :root { color-scheme: light dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
       * { box-sizing: border-box; }
-      body { margin: 0; min-height: 100vh; background: #f5f5ee; color: #17332d; padding: max(24px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom)); }
+      [hidden] { display: none !important; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #f5f5ee;
+        color: #17332d;
+        padding: max(24px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom));
+      }
+      button, a { font: inherit; }
+      button { cursor: pointer; }
+      button:disabled { cursor: default; opacity: .58; }
       main { max-width: 720px; margin: 0 auto; }
-      .brand { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: lowercase; color: #286e5e; }
-      h1 { margin: 18px 0 8px; font-size: clamp(30px, 7vw, 44px); line-height: 1.05; }
+      .brand {
+        font-size: 13px;
+        font-weight: 750;
+        letter-spacing: .08em;
+        text-transform: lowercase;
+        color: #286e5e;
+      }
+      h1 {
+        margin: 18px 0 8px;
+        font-size: clamp(30px, 7vw, 44px);
+        line-height: 1.05;
+      }
+      h2 { margin: 0 0 10px; font-size: 17px; }
       p { line-height: 1.6; }
       .muted { color: #5d6e64; }
-      .notice, section { margin-top: 18px; border: 1px solid #cad5cf; border-radius: 18px; background: #fffdf7; padding: 16px; }
+      .offline-day {
+        margin: 20px 0 0;
+        font-size: 14px;
+        font-weight: 650;
+        color: #286e5e;
+      }
+      .notice,
+      .offline-section {
+        margin-top: 18px;
+        border: 1px solid #aebfb5;
+        border-radius: 18px;
+        background: #fffdf7;
+        padding: 16px;
+      }
       .notice strong { display: block; margin-bottom: 4px; }
-      h2 { margin: 0 0 10px; font-size: 17px; }
-      ul { list-style: none; margin: 0; padding: 0; }
-      li { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-top: 1px solid #e2e8e4; }
-      li:first-child { border-top: 0; }
-      .mark { width: 22px; flex: 0 0 22px; text-align: center; font-weight: 700; color: #286e5e; }
+      .offline-list { display: grid; }
+      .offline-item {
+        width: 100%;
+        min-height: 48px;
+        display: flex;
+        gap: 11px;
+        align-items: center;
+        border: 0;
+        border-top: 1px solid #e2e8e4;
+        background: transparent;
+        color: inherit;
+        padding: 11px 0;
+        text-align: start;
+      }
+      .offline-item:first-child { border-top: 0; }
+      .offline-item-title { line-height: 1.4; }
+      .offline-mark {
+        width: 26px;
+        height: 26px;
+        flex: 0 0 26px;
+        display: grid;
+        place-items: center;
+        border: 1px solid #7e9b8d;
+        border-radius: 999px;
+        color: #286e5e;
+        font-weight: 750;
+      }
+      .offline-item[aria-pressed="true"] .offline-mark {
+        background: #286e5e;
+        border-color: #286e5e;
+        color: white;
+      }
+      .offline-item[aria-pressed="true"] .offline-item-title {
+        color: #607168;
+        text-decoration: line-through;
+      }
+      .offline-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .action {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        border: 1px solid #8ba497;
+        padding: 10px 15px;
+        text-decoration: none;
+        background: #fffdf7;
+        color: #17332d;
+        font-weight: 650;
+      }
+      .action-primary {
+        border-color: #286e5e;
+        background: #286e5e;
+        color: white;
+      }
       .meta { margin-top: 20px; font-size: 13px; }
+      .privacy {
+        margin-top: 14px;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      :focus-visible {
+        outline: 3px solid #286e5e;
+        outline-offset: 3px;
+      }
       @media (prefers-color-scheme: dark) {
         body { background: #102825; color: #edf4ef; }
-        .brand, .mark { color: #8fc9b8; }
+        .brand, .offline-day { color: #8fc9b8; }
         .muted { color: #b7c8c0; }
-        .notice, section { background: #17332d; border-color: #38574e; }
-        li { border-color: #38574e; }
+        .notice, .offline-section, .action {
+          background: #17332d;
+          border-color: #5e7c70;
+        }
+        .offline-item { border-color: #38574e; }
+        .offline-mark { border-color: #779c88; color: #a4ddbe; }
+        .offline-item[aria-pressed="true"] .offline-mark {
+          background: #a4ddbe;
+          border-color: #a4ddbe;
+          color: #17372d;
+        }
+        .offline-item[aria-pressed="true"] .offline-item-title { color: #b2c5b8; }
+        .action { color: #edf4ef; }
+        .action-primary {
+          background: #a4ddbe;
+          border-color: #a4ddbe;
+          color: #17372d;
+        }
+        :focus-visible { outline-color: #a4ddbe; }
       }
     </style>
+    <script src="/offline.js" defer></script>
   </head>
   <body>
     <main>
       <div class="brand">rootine</div>
-      <h1>{{TITLE}}</h1>
-      <p class="muted">{{BODY}}</p>
+      <h1 id="offline-title">Offline</h1>
+      <p id="offline-body" class="muted">Your saved day is available on this device.</p>
+
       <div class="notice">
-        <strong>{{STATUS_TITLE}}</strong>
-        <span>{{STATUS_BODY}}</span>
+        <strong id="offline-status">Offline</strong>
       </div>
-      {{CONTENT}}
-      <p class="meta muted">{{SAVED}}</p>
+
+      <div id="offline-content"></div>
+
+      <div class="offline-actions">
+        <button id="offline-finish" class="action action-primary" type="button" hidden>
+          Finish day
+        </button>
+        <button id="offline-sync" class="action" type="button" hidden>
+          Sync now
+        </button>
+        <a id="offline-open" class="action" href="/dashboard">Open Rootine</a>
+      </div>
+
+      <p id="offline-meta" class="meta muted"></p>
+      <p id="offline-privacy" class="privacy muted"></p>
     </main>
   </body>
 </html>
