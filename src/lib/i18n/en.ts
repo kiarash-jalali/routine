@@ -200,6 +200,7 @@ export const en = {
   "settings.currentPassword": "Current password",
   "settings.space": "Your space",
   "settings.passwordMismatch": "The two password fields do not match.",
+  "settings.passwordTooShort": "Your new password must be at least {count} characters.",
   "settings.emailConfirm": "Check your inbox to finish the email change.",
   "dashboard.lifeBody":
     "Make space for your health and movement, alongside your everyday plans.",
