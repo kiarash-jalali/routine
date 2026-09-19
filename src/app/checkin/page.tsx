@@ -34,6 +34,7 @@ import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy } from "@/lib/moments";
 import { getSessionUser } from "@/lib/session";
 import {
+  checkinItemKey,
   completionMapFromItems,
   tasksForDailyCheckin,
 } from "@/lib/checkinProgress";
