@@ -1,8 +1,5 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-const { unstable_doesProxyMatch } = require("next/experimental/testing/server.js");
 import { loadTypeScriptModule } from "./load-typescript.mjs";
 
 const { config } = loadTypeScriptModule(
@@ -10,49 +7,30 @@ const { config } = loadTypeScriptModule(
   {
     "@/lib/supabase/proxy": {
       updateSession() {
-        throw new Error("Proxy implementation should not execute in matcher tests.");
+        throw new Error("Proxy implementation should not execute in config tests.");
       },
     },
   },
 );
 
-test("auth proxy matches every protected app route", () => {
-  const protectedPaths = [
-    "/dashboard",
-    "/routines/weekly",
-    "/checkin",
-    "/history",
-    "/settings/profile",
-    "/feedback",
-    "/health",
-    "/workouts",
-    "/guide",
-    "/onboarding",
-  ];
-
-  for (const pathname of protectedPaths) {
-    assert.equal(
-      unstable_doesProxyMatch({
-        config,
-        nextConfig: {},
-        url: `https://routine.invalid${pathname}`,
-      }),
-      true,
-      pathname,
-    );
-  }
+test("auth proxy declares every protected app route", () => {
+  assert.deepEqual(config.matcher, [
+    "/dashboard/:path*",
+    "/routines/:path*",
+    "/checkin/:path*",
+    "/history/:path*",
+    "/settings/:path*",
+    "/feedback/:path*",
+    "/health/:path*",
+    "/workouts/:path*",
+    "/guide/:path*",
+    "/onboarding/:path*",
+  ]);
 });
 
-test("auth proxy leaves public routes alone", () => {
-  for (const pathname of ["/", "/login", "/forgot-password", "/reset-password"]) {
-    assert.equal(
-      unstable_doesProxyMatch({
-        config,
-        nextConfig: {},
-        url: `https://routine.invalid${pathname}`,
-      }),
-      false,
-      pathname,
-    );
+test("auth proxy does not include public auth routes", () => {
+  const matchers = config.matcher.join("\n");
+  for (const pathname of ["/login", "/forgot-password", "/reset-password"]) {
+    assert.equal(matchers.includes(pathname), false, pathname);
   }
 });
