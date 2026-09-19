@@ -199,6 +199,7 @@ export const fa: Record<TranslationKey, string> = {
   "settings.currentPassword": "رمز عبور فعلی",
   "settings.space": "فضای تو",
   "settings.passwordMismatch": "دو رمز عبور یکسان نیستند.",
+  "settings.passwordTooShort": "رمز عبور باید حداقل {count} نویسه باشد.",
   "settings.emailConfirm":
     "برای تکمیل تغییر ایمیل، صندوق ورودی‌ات را بررسی کن.",
   "dashboard.lifeBody":
