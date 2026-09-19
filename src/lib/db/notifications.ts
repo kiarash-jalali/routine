@@ -25,6 +25,22 @@ export async function getNotificationPreference(userId: string) {
   return data;
 }
 
+export async function syncNotificationPreferenceTimezone(
+  userId: string,
+  timezone: string,
+) {
+  const { error } = await supabaseBrowser()
+    .from("notification_preferences")
+    .update({
+      timezone,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId)
+    .neq("timezone", timezone);
+
+  if (error) throw error;
+}
+
 export async function saveNotificationPreference(
   userId: string,
   values: Pick<
