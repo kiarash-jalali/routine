@@ -231,10 +231,13 @@ export default function SettingsPage() {
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        throw new Error(payload?.error ?? t("settings.exportError"));
+        const message =
+          response.status === 401
+            ? t("settings.sessionExpired")
+            : response.status === 429
+              ? t("settings.exportRateLimited")
+              : t("settings.exportError");
+        throw new Error(message);
       }
 
       const blob = await response.blob();
