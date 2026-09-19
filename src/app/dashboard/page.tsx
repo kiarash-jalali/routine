@@ -28,6 +28,10 @@ import {
   SegmentedControl,
   Stat,
 } from "@/components/ui";
+import {
+  listDailyCompletionItems,
+  saveDailyItemCompletion,
+} from "@/lib/db/checkins";
 import { getRhythmSummary, type RhythmSummary } from "@/lib/db/rhythm";
 import { addTask, listTasks, removeTask, setTaskDone } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
@@ -59,6 +63,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [routines, setRoutines] = useState<Routine[]>([]);
+  const [routineCompletion, setRoutineCompletion] = useState<
+    Record<string, boolean>
+  >({});
   const [rhythm, setRhythm] = useState<RhythmSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -105,13 +112,24 @@ export default function DashboardPage() {
           listTasks(),
           listTodaysRoutines(today),
           getRhythmSummary(todayKey, 7),
+          listDailyCompletionItems(user.id, todayKey),
         ]);
         if (cancelled) return;
-        const [taskResult, routineResult, rhythmResult] = results;
+        const [taskResult, routineResult, rhythmResult, completionResult] =
+          results;
         if (taskResult.status === "fulfilled") setTasks(taskResult.value);
         if (routineResult.status === "fulfilled")
           setRoutines(routineResult.value);
         if (rhythmResult.status === "fulfilled") setRhythm(rhythmResult.value);
+        if (completionResult.status === "fulfilled") {
+          setRoutineCompletion(
+            Object.fromEntries(
+              completionResult.value
+                .filter((item) => item.item_type === "routine")
+                .map((item) => [item.item_id, item.completed]),
+            ),
+          );
+        }
         if (results.some((result) => result.status === "rejected"))
           setError(
             "Some of your day couldn’t be loaded. Refresh to try again.",
@@ -187,6 +205,44 @@ export default function DashboardPage() {
       setError(getErrorMessage(error, "Your task couldn’t be updated."));
     } finally {
       pending.current.delete(task.id);
+      setPendingIds([...pending.current]);
+    }
+  }
+
+  async function toggleRoutine(routine: Routine) {
+    if (!userId || pending.current.has(routine.id)) return;
+
+    const previous = Boolean(routineCompletion[routine.id]);
+    const next = !previous;
+    pending.current.add(routine.id);
+    setPendingIds([...pending.current]);
+    setError(null);
+    setRoutineCompletion((current) => ({
+      ...current,
+      [routine.id]: next,
+    }));
+
+    try {
+      await saveDailyItemCompletion(
+        userId,
+        todayKey,
+        "routine",
+        routine.id,
+        next,
+      );
+      showMoment(
+        next ? "checkin_routine_completed" : "task_reopened",
+        `routine-${routine.id}`,
+        next ? "check" : "history",
+      );
+    } catch (error: unknown) {
+      setRoutineCompletion((current) => ({
+        ...current,
+        [routine.id]: previous,
+      }));
+      setError(getErrorMessage(error, t("dashboard.routineUpdateError")));
+    } finally {
+      pending.current.delete(routine.id);
       setPendingIds([...pending.current]);
     }
   }
@@ -314,19 +370,28 @@ export default function DashboardPage() {
               ) : (
                 <ul>
                   {routines.map((routine) => (
-                    <li className="list-row" key={routine.id}>
-                      <span
-                        className={`icon-tile ${routine.preferred_time && routine.preferred_time < "12:00" ? "amber" : ""}`}
-                      >
-                        <Icon
-                          name={
-                            routine.preferred_time &&
-                            routine.preferred_time >= "17:00"
-                              ? "moon"
-                              : "sun"
-                          }
-                        />
-                      </span>
+                    <li
+                      className={`list-row ${routineCompletion[routine.id] ? "is-done" : ""}`}
+                      key={routine.id}
+                    >
+                      <MomentSource id={`routine-${routine.id}`}>
+                        <button
+                          className="check-control -ml-2"
+                          aria-pressed={Boolean(routineCompletion[routine.id])}
+                          aria-label={t(
+                            routineCompletion[routine.id]
+                              ? "routine.reopenNamed"
+                              : "routine.completeNamed",
+                            { name: routine.title },
+                          )}
+                          disabled={pendingIds.includes(routine.id)}
+                          onClick={() => toggleRoutine(routine)}
+                        >
+                          <CheckCircle
+                            checked={Boolean(routineCompletion[routine.id])}
+                          />
+                        </button>
+                      </MomentSource>
                       <div className="min-w-0 flex-1">
                         <p className="row-title">{routine.title}</p>
                         <p className="row-detail">

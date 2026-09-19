@@ -5,7 +5,7 @@ import type {
   DailyCheckinSummary,
 } from "@/types/checkin";
 
-const DAILY_CHECKIN_COLUMNS = "id,user_id,day";
+const DAILY_CHECKIN_COLUMNS = "id,user_id,day,submitted_at";
 
 export async function findDailyCheckin(
   userId: string,
@@ -73,4 +73,57 @@ export async function saveCheckinItems(
     .upsert(items, { onConflict: "checkin_id,item_type,item_id" });
 
   if (error) throw error;
+}
+
+
+export async function submitDailyCheckin(
+  checkinId: string,
+): Promise<DailyCheckinSummary> {
+  const supabase = supabaseBrowser();
+  const { data, error } = await supabase
+    .from("daily_checkins")
+    .update({ submitted_at: new Date().toISOString() })
+    .eq("id", checkinId)
+    .is("submitted_at", null)
+    .select(DAILY_CHECKIN_COLUMNS)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (data) return data as DailyCheckinSummary;
+
+  const { data: existing, error: existingError } = await supabase
+    .from("daily_checkins")
+    .select(DAILY_CHECKIN_COLUMNS)
+    .eq("id", checkinId)
+    .single();
+
+  if (existingError) throw existingError;
+  return existing as DailyCheckinSummary;
+}
+
+export async function listDailyCompletionItems(
+  userId: string,
+  day: string,
+): Promise<CheckinItem[]> {
+  const checkin = await findDailyCheckin(userId, day);
+  return checkin ? listCheckinItems(checkin.id) : [];
+}
+
+export async function saveDailyItemCompletion(
+  userId: string,
+  day: string,
+  itemType: "task" | "routine",
+  itemId: string,
+  completed: boolean,
+): Promise<void> {
+  const checkin = await getOrCreateDailyCheckin(userId, day);
+  await saveCheckinItems([
+    {
+      user_id: userId,
+      checkin_id: checkin.id,
+      item_type: itemType,
+      item_id: itemId,
+      completed,
+    },
+  ]);
 }

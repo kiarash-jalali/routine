@@ -42,3 +42,42 @@ export async function removeTask(taskId: string): Promise<void> {
 
   if (error) throw error;
 }
+
+
+export async function setTaskCompletionStates(
+  userId: string,
+  states: Array<{ id: string; completed: boolean }>,
+): Promise<void> {
+  const completedIds = states
+    .filter((state) => state.completed)
+    .map((state) => state.id);
+  const openIds = states
+    .filter((state) => !state.completed)
+    .map((state) => state.id);
+
+  const db = supabaseBrowser();
+  const operations = [];
+
+  if (completedIds.length > 0) {
+    operations.push(
+      db
+        .from("tasks")
+        .update({ is_done: true })
+        .eq("user_id", userId)
+        .in("id", completedIds),
+    );
+  }
+  if (openIds.length > 0) {
+    operations.push(
+      db
+        .from("tasks")
+        .update({ is_done: false })
+        .eq("user_id", userId)
+        .in("id", openIds),
+    );
+  }
+
+  const results = await Promise.all(operations);
+  const failure = results.find((result) => result.error);
+  if (failure?.error) throw failure.error;
+}

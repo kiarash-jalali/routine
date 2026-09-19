@@ -4,6 +4,7 @@ export type DailyCheckinSummary = {
   id: string;
   user_id: string;
   day: string;
+  submitted_at: string | null;
 };
 
 export type CheckinItem = {

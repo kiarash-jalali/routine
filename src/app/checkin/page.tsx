@@ -28,8 +28,9 @@ import {
   getOrCreateDailyCheckin,
   listCheckinItems,
   saveCheckinItems,
+  submitDailyCheckin,
 } from "@/lib/db/checkins";
-import { listTasks } from "@/lib/db/tasks";
+import { listTasks, setTaskCompletionStates } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy } from "@/lib/moments";
@@ -148,17 +149,24 @@ export default function CheckinPage() {
         const existingItems = existingCheckin
           ? await listCheckinItems(existingCheckin.id)
           : [];
+        const todaysTasks = filterTasksForToday(allTasks, dayDate);
         const existingCompletionMap = createCompletionMap(existingItems);
+
+        if (!existingCheckin?.submitted_at) {
+          for (const task of todaysTasks) {
+            existingCompletionMap[createItemKey("task", task.id)] = task.is_done;
+          }
+        }
 
         if (cancelled) return;
 
         setUserId(user.id);
         setDailyCheckinId(existingCheckin?.id ?? null);
         setRoutines(todaysRoutines);
-        setTasks(filterTasksForToday(allTasks, dayDate));
+        setTasks(todaysTasks);
         setCompletionByItem(existingCompletionMap);
         setSavedCompletionByItem(existingCompletionMap);
-        setHasFinishedToday(Boolean(existingCheckin));
+        setHasFinishedToday(Boolean(existingCheckin?.submitted_at));
         setEditingFinishedCheckin(false);
       } catch (error: unknown) {
         if (!cancelled) {
@@ -239,7 +247,17 @@ export default function CheckinPage() {
         completed: isItemCompleted("task", task.id),
       }));
 
-      await saveCheckinItems([...routineItems, ...taskItems]);
+      await Promise.all([
+        saveCheckinItems([...routineItems, ...taskItems]),
+        setTaskCompletionStates(
+          userId,
+          taskItems.map((item) => ({
+            id: item.item_id,
+            completed: item.completed,
+          })),
+        ),
+      ]);
+      await submitDailyCheckin(checkinId);
       setDailyCheckinId(checkinId);
       setSavedCompletionByItem({ ...completionByItem });
       setHasFinishedToday(true);
