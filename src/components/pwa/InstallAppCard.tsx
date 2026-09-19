@@ -25,12 +25,10 @@ function isStandalone() {
 export function InstallAppCard() {
   const { t } = useLanguage();
   const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(false);
-  const [iosInstructions, setIosInstructions] = useState(false);
+  const [installed, setInstalled] = useState(isStandalone);
+  const [iosInstructions] = useState(iosPushRequiresInstall);
 
   useEffect(() => {
-    setInstalled(isStandalone());
-    setIosInstructions(iosPushRequiresInstall());
 
     function onBeforeInstallPrompt(event: Event) {
       event.preventDefault();
