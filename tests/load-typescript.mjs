@@ -18,7 +18,7 @@ export function loadTypeScriptModule(fileUrl, mocks = {}) {
     },
   }).outputText;
 
-  const module = { exports: {} };
+  const loadedModule = { exports: {} };
   const localRequire = (id) =>
     Object.prototype.hasOwnProperty.call(mocks, id)
       ? mocks[id]
@@ -33,11 +33,11 @@ export function loadTypeScriptModule(fileUrl, mocks = {}) {
     output,
   );
   execute(
-    module.exports,
+    loadedModule.exports,
     localRequire,
-    module,
+    loadedModule,
     filename,
     path.dirname(filename),
   );
-  return module.exports;
+  return loadedModule.exports;
 }
