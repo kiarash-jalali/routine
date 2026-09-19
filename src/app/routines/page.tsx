@@ -1,6 +1,4 @@
 "use client";
-import { ReminderPrompt } from "@/components/notifications/ReminderPrompt";
-import { claimReminderIntroduction } from "@/lib/db/notifications";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 import { useEffect, useRef, useState } from "react";
@@ -50,7 +48,6 @@ import type { Routine, RoutineFormValues } from "@/types/routine";
 export default function RoutinesPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const [reminderOpen, setReminderOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [routines, setRoutines] = useState<Routine[]>([]);
@@ -129,11 +126,7 @@ export default function RoutinesPage() {
         wasEditing ? undefined : "add-routine",
         wasEditing ? "edit" : "plus",
       );
-      if (!wasEditing) {
-        setFilter("all");
-        if (routines.length === 0)
-          setReminderOpen(await claimReminderIntroduction());
-      }
+      if (!wasEditing) setFilter("all");
     } catch (error: unknown) {
       setFormError(getErrorMessage(error, t("routine.saveError")));
     } finally {
@@ -354,13 +347,6 @@ export default function RoutinesPage() {
         </AnimatedList>
       </Card>
 
-      {userId && (
-        <ReminderPrompt
-          userId={userId}
-          open={reminderOpen}
-          onClose={() => setReminderOpen(false)}
-        />
-      )}
       <MomentPopup notice={moment} onDismiss={() => setMoment(null)} />
 
       <Sheet

@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { admin, anonKey, supabaseUrl, user } = auth;
+  const { accessToken, admin, anonKey, supabaseUrl, user } = auth;
 
   try {
     const allowed = await enforceRateLimit(
@@ -89,6 +89,18 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Your current password is incorrect." },
       { status: 401 },
+    );
+  }
+
+  const { error: signOutError } = await admin.auth.admin.signOut(
+    accessToken,
+    "global",
+  );
+
+  if (signOutError) {
+    return NextResponse.json(
+      { error: "Your account sessions could not be closed. Try again in a moment." },
+      { status: 500 },
     );
   }
 

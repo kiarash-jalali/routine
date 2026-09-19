@@ -311,7 +311,6 @@ export type Database = {
           intro_seen: boolean
           locale: string
           onboarding_completed: boolean
-          reminder_intro_seen: boolean
           updated_at: string
           user_id: string
         }
@@ -321,7 +320,6 @@ export type Database = {
           intro_seen?: boolean
           locale?: string
           onboarding_completed?: boolean
-          reminder_intro_seen?: boolean
           updated_at?: string
           user_id: string
         }
@@ -331,7 +329,6 @@ export type Database = {
           intro_seen?: boolean
           locale?: string
           onboarding_completed?: boolean
-          reminder_intro_seen?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -620,7 +617,6 @@ export type Database = {
         Args: { p_category: string; p_event: string; p_subscription: string }
         Returns: boolean
       }
-      claim_reminder_introduction: { Args: never; Returns: boolean }
       consume_api_rate_limit: {
         Args: {
           p_bucket: string

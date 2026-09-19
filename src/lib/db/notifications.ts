@@ -1,12 +1,10 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
+import type { Tables } from "@/types/database";
 
-export type NotificationPreference = {
-  user_id: string;
-  enabled: boolean;
-  reminder_time: string;
-  timezone: string;
-  last_sent_on: string | null;
-};
+export type NotificationPreference = Pick<
+  Tables<"notification_preferences">,
+  "user_id" | "enabled" | "reminder_time" | "timezone" | "last_sent_on"
+>;
 
 export type StoredPushSubscription = {
   endpoint: string;
@@ -19,7 +17,7 @@ export async function getNotificationPreference(userId: string) {
     .from("notification_preferences")
     .select("user_id, enabled, reminder_time, timezone, last_sent_on")
     .eq("user_id", userId)
-    .maybeSingle<NotificationPreference>();
+    .maybeSingle();
 
   if (error) throw error;
   return data;
@@ -125,12 +123,4 @@ export async function removePushSubscription(endpoint: string) {
       ),
     );
   }
-}
-
-export async function claimReminderIntroduction(): Promise<boolean> {
-  const { data, error } = await supabaseBrowser().rpc(
-    "claim_reminder_introduction",
-  );
-  if (error) return false; // Setup remains available in Settings if the prompt cannot be claimed.
-  return data === true;
 }
