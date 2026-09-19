@@ -217,7 +217,7 @@ export default function CheckinPage() {
         completed: isItemCompleted("task", task.id),
       }));
 
-      const checkin = await finishDailyCheckin(today, [
+      await finishDailyCheckin(today, [
         ...routineItems,
         ...taskItems,
       ]);
