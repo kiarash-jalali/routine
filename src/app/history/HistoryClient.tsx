@@ -16,12 +16,7 @@ import {
   SectionHeading,
   Stat,
 } from "@/components/ui";
-import { listCheckinDays, listRecentCheckinHistory } from "@/lib/db/history";
-import {
-  getPointBalance,
-  listStreakRepairs,
-  repairStreakDay,
-} from "@/lib/db/points";
+import { repairStreakDay } from "@/lib/db/points";
 import { getErrorCode, getErrorMessage } from "@/lib/errors";
 import {
   averageCompletionPercent,

@@ -27,7 +27,6 @@ import {
 } from "@/components/ui";
 import {
   addRoutine,
-  listRoutines,
   removeRoutine,
   toggleRoutineActive,
   updateRoutine,
