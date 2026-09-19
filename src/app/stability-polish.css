@@ -46,7 +46,7 @@
 .segmented-indicator {
   top: 3px;
   bottom: 3px;
-  left: 3px;
+  inset-inline-start: 3px;
   width: calc((100% - 6px) / var(--segment-count));
   border-radius: 12px;
   background: color-mix(
@@ -83,7 +83,7 @@
   position: fixed;
   z-index: 80;
   top: var(--sheet-viewport-top, 0px);
-  left: 0;
+  inset-inline-start: 0;
   width: 100%;
   height: var(--sheet-viewport-height, 100dvh);
   display: flex;
@@ -173,7 +173,7 @@
   top: -65%;
   bottom: -65%;
   width: 34%;
-  left: -48%;
+  inset-inline-start: -48%;
   pointer-events: none;
   background: linear-gradient(
     115deg,
@@ -190,7 +190,7 @@
 .moment-shine::before {
   content: "";
   position: absolute;
-  right: 8px;
+  inset-inline-end: 8px;
   bottom: 7px;
   width: 11px;
   height: 11px;
@@ -215,19 +215,19 @@
 @keyframes moment-glint {
   0%,
   58% {
-    left: -48%;
+    inset-inline-start: -48%;
     opacity: 0;
   }
   63% {
     opacity: 1;
   }
   78% {
-    left: 118%;
+    inset-inline-start: 118%;
     opacity: 0.9;
   }
   84%,
   100% {
-    left: 118%;
+    inset-inline-start: 118%;
     opacity: 0;
   }
 }
@@ -258,8 +258,7 @@
 .moment-popup-wrap {
   position: fixed;
   z-index: 110;
-  left: 0;
-  right: 0;
+  inset-inline: 0;
   bottom: 28px;
   width: min(430px, calc(100vw - 32px));
   margin-inline: auto;
@@ -385,10 +384,9 @@
 
 .month-calendar-status {
   position: absolute;
-  left: 9px;
-  right: 9px;
+  inset-inline: 9px;
   bottom: 8px;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.2;
   color: var(--muted);
 }

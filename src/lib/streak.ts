@@ -1,5 +1,6 @@
 import { getLocalDateKey } from "@/lib/today";
 import type { StreakMetrics } from "@/types/streak";
+import { translate, type Language } from "@/lib/i18n";
 
 function dateFromKey(dateKey: string): Date {
   const [year, month, day] = dateKey.split("-").map(Number);
@@ -82,18 +83,24 @@ export function calculateStreakMetrics(
   };
 }
 
-export function streakMessage(metrics: StreakMetrics): string {
+export function streakMessage(
+  metrics: StreakMetrics,
+  language: Language = "en",
+): string {
   if (metrics.state === "checked-in-today") {
-    return "You showed up today. Completion does not need to be perfect for the rhythm to count.";
+    return translate(language, "streak.checkedToday");
   }
-
   if (metrics.state === "open-today") {
-    return "Your rhythm is still alive. A check-in today keeps it moving.";
+    return translate(language, "streak.openToday");
   }
-
-  return "A finished check-in today starts a new rhythm. The goal is returning, not being perfect.";
+  return translate(language, "streak.inactive");
 }
 
-export function formatDayCount(days: number): string {
-  return `${days} ${days === 1 ? "day" : "days"}`;
+export function formatDayCount(
+  days: number,
+  language: Language = "en",
+): string {
+  return translate(language, days === 1 ? "history.oneDay" : "history.days", {
+    count: days,
+  });
 }

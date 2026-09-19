@@ -3,6 +3,7 @@
 import { Icon, type IconName } from "@/components/Icon";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { Card, PageHeader, PageShell } from "@/components/ui";
+import { Link } from "next-view-transitions";
 import type { TranslationKey } from "@/lib/i18n";
 
 type GuideItem = {
@@ -78,6 +79,12 @@ export default function GuidePage() {
         title={t("guide.title")}
         description={t("guide.body")}
       />
+      <div className="mb-6">
+        <Link href="/onboarding?replay=1" className="btn btn-secondary inline-flex">
+          <Icon name="history" size={17} />
+          {t("guide.replay")}
+        </Link>
+      </div>
       <div className="space-y-6">
         {sections.map((section) => (
           <Card key={section.title}>

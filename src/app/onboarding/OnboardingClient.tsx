@@ -23,6 +23,12 @@ import {
 import { rememberFirstRoutineSuccess } from "@/lib/firstRun";
 import type { RoutineFormValues } from "@/types/routine";
 
+const routineTemplates = [
+  "onboarding.template.water",
+  "onboarding.template.walk",
+  "onboarding.template.read",
+] as const;
+
 const intro = {
   title: "intro.welcome",
   body: "intro.welcomeBody",
@@ -37,16 +43,19 @@ export function OnboardingClient({
   userId,
   initialStep,
   initialLoadError,
+  replay = false,
 }: {
   userId: string;
   initialStep: "intro" | "routine";
   initialLoadError: boolean;
+  replay?: boolean;
 }) {
   const router = useRouter();
   const { t } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(initialLoadError);
   const [step, setStep] = useState<"intro" | "routine">(initialStep);
+  const [templateTitle, setTemplateTitle] = useState("");
 
   async function run(action: () => Promise<void>) {
     if (!userId || busy) return;
@@ -63,6 +72,10 @@ export function OnboardingClient({
   }
 
   function beginSetup() {
+    if (replay) {
+      router.replace("/guide");
+      return;
+    }
     return run(async () => {
       await markIntroSeen(userId);
       setStep("routine");
@@ -126,7 +139,7 @@ export function OnboardingClient({
               disabled={busy || !userId}
               onClick={() => void beginSetup()}
             >
-              {t("onboarding.begin")}
+              {replay ? t("common.done") : t("onboarding.begin")}
             </Button>
           </Card>
         )}
@@ -137,8 +150,22 @@ export function OnboardingClient({
               title={t("onboarding.routine")}
               description={t("onboarding.routineBody")}
             />
+            <div className="mb-5">
+              <p className="mb-2 text-sm font-medium">{t("onboarding.quickStart")}</p>
+              <div className="flex flex-wrap gap-2">
+                {routineTemplates.map((key) => {
+                  const title = t(key);
+                  return (
+                    <button key={key} type="button" className="btn btn-secondary" onClick={() => setTemplateTitle(title)}>
+                      {title}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <RoutineForm
-              initialValues={getDefaultRoutineFormValues()}
+              key={templateTitle || "custom"}
+              initialValues={{ ...getDefaultRoutineFormValues(), title: templateTitle }}
               submitLabel={t("onboarding.addAndStart")}
               submittingLabel={t("common.saving")}
               isSubmitting={busy}
@@ -149,14 +176,14 @@ export function OnboardingClient({
         )}
       </AnimatedSwap>
 
-      <Button
+      {!replay && <Button
         className="mt-5"
         variant="ghost"
         disabled={busy || !userId}
         onClick={() => void skipSetup()}
       >
         {t("onboarding.skipAll")}
-      </Button>
+      </Button>}
     </PageShell>
   );
 }

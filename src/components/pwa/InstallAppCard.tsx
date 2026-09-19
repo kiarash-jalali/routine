@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Icon } from "@/components/Icon";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { Button, Card, SectionHeading } from "@/components/ui";
@@ -22,13 +22,45 @@ function isStandalone() {
   );
 }
 
-export function InstallAppCard() {
+export function InstallAppCard({
+  deferUntilReturn = false,
+}: {
+  deferUntilReturn?: boolean;
+}) {
   const { t } = useLanguage();
   const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(isStandalone);
   const [iosInstructions] = useState(iosPushRequiresInstall);
+  const returnEligible = useSyncExternalStore(
+    () => () => {},
+    () => {
+      if (!deferUntilReturn) return true;
+      try {
+        const sessionValue = sessionStorage.getItem("rootine-install-session");
+        if (sessionValue === "eligible") return true;
+        if (sessionValue === "first") return false;
+        return localStorage.getItem("rootine-seen-before") === "1";
+      } catch {
+        return false;
+      }
+    },
+    () => !deferUntilReturn,
+  );
 
   useEffect(() => {
+    if (deferUntilReturn) {
+      const sessionKey = "rootine-install-session";
+      const seenKey = "rootine-seen-before";
+      try {
+        if (sessionStorage.getItem(sessionKey) === null) {
+          const seenBefore = localStorage.getItem(seenKey) === "1";
+          sessionStorage.setItem(sessionKey, seenBefore ? "eligible" : "first");
+          localStorage.setItem(seenKey, "1");
+        }
+      } catch {
+        // Installation remains available from Settings if storage is blocked.
+      }
+    }
 
     function onBeforeInstallPrompt(event: Event) {
       event.preventDefault();
@@ -46,9 +78,9 @@ export function InstallAppCard() {
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
       window.removeEventListener("appinstalled", onInstalled);
     };
-  }, []);
+  }, [deferUntilReturn]);
 
-  if (installed || (!promptEvent && !iosInstructions)) return null;
+  if (!returnEligible || installed || (!promptEvent && !iosInstructions)) return null;
 
   async function install() {
     if (!promptEvent) return;

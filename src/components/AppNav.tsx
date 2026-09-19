@@ -13,6 +13,8 @@ const navItems = [
   { href: "/routines", label: "nav.routines", icon: "routines" },
   { href: "/checkin", label: "nav.checkin", icon: "checkin" },
   { href: "/history", label: "nav.history", icon: "history" },
+  { href: "/health", label: "nav.health", icon: "checkin" },
+  { href: "/workouts", label: "nav.workouts", icon: "sun" },
 ] as const;
 
 function NavPending() {
@@ -50,10 +52,6 @@ export function AppNav() {
         <Link href="/guide" className="logout-button" aria-current={pathname === "/guide" ? "page" : undefined} aria-label={t("nav.guide")}>
           <Icon name="rootine" size={19} />
           <span>{t("nav.guide")}</span>
-        </Link>
-        <Link href="/feedback" className="logout-button" aria-current={pathname === "/feedback" ? "page" : undefined} aria-label={t("nav.feedback")}>
-          <Icon name="mail" size={19} />
-          <span>{t("nav.feedback")}</span>
         </Link>
         <Link
           href="/design-lab"

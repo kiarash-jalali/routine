@@ -12,7 +12,6 @@ import { Sheet } from "@/components/Sheet";
 import {
   AnimatedList,
   AnimatedListItem,
-  AnimatedNumber,
 } from "@/components/Motion";
 import { RoutineForm } from "@/components/routines/RoutineForm";
 import {
@@ -34,7 +33,6 @@ import {
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import {
-  describeRoutine,
   formatPreferredTimeForDatabase,
   getDefaultRoutineFormValues,
   routineToFormValues,
@@ -50,7 +48,7 @@ export function RoutinesClient({
   initialRoutines: Routine[];
   initialLoadError: boolean;
 }) {
-  const { t } = useLanguage();
+  const { t, time, weekday } = useLanguage();
   const [routines, setRoutines] = useState<Routine[]>(initialRoutines);
   const [error, setError] = useState<string | null>(
     initialLoadError ? t("routine.loadError") : null,
@@ -175,6 +173,17 @@ export function RoutinesClient({
     }
   }
 
+  function describeRoutineLocalized(routine: Routine) {
+    const when = routine.preferred_time
+      ? time(routine.preferred_time)
+      : t("common.anytime");
+    if (routine.frequency === "daily") return `${t("routine.everyDay")} · ${when}`;
+    const days = (routine.days_of_week ?? [])
+      .map((day) => weekday(day, "short"))
+      .join(", ");
+    return `${days || t("routine.noDays")} · ${when}`;
+  }
+
   const activeCount = routines.filter((routine) => routine.is_active).length;
   const visible = routines.filter(
     (routine) =>
@@ -218,8 +227,10 @@ export function RoutinesClient({
           ]}
         />
         <span className="text-sm text-muted">
-          <AnimatedNumber value={activeCount} /> active ·{" "}
-          <AnimatedNumber value={routines.length} /> total
+          {t("routine.count", {
+            active: activeCount,
+            total: routines.length,
+          })}
         </span>
       </div>
       <Card>
@@ -272,7 +283,7 @@ export function RoutinesClient({
                   >
                     {routine.title}
                   </p>
-                  <p className="row-detail">{describeRoutine(routine)}</p>
+                  <p className="row-detail">{describeRoutineLocalized(routine)}</p>
                 </div>
                 <div className="hidden sm:block">
                   <Pill muted={!routine.is_active}>
@@ -281,12 +292,12 @@ export function RoutinesClient({
                       : t("common.paused")}
                   </Pill>
                 </div>
-                <div className="flex w-full items-center justify-end gap-2 pl-14 sm:w-auto sm:pl-0">
+                <div className="flex w-full items-center justify-end gap-2 ps-14 sm:w-auto sm:ps-0">
                   <Button
                     variant="ghost"
                     onClick={() => openEditor(routine)}
                     disabled={pendingIds.includes(routine.id)}
-                    aria-label={`Edit ${routine.title}`}
+                    aria-label={t("routine.editNamed", { name: routine.title })}
                   >
                     <Icon name="edit" size={16} />
                     <span>{t("common.edit")}</span>
@@ -298,7 +309,10 @@ export function RoutinesClient({
                         type="button"
                         role="switch"
                         aria-checked={routine.is_active}
-                        aria-label={`${routine.is_active ? "Pause" : "Resume"} ${routine.title}`}
+                        aria-label={t(
+                          routine.is_active ? "routine.pauseNamed" : "routine.resumeNamed",
+                          { name: routine.title },
+                        )}
                         onClick={() => toggleActive(routine)}
                         disabled={pendingIds.includes(routine.id)}
                       />
@@ -306,7 +320,7 @@ export function RoutinesClient({
                   </MomentSource>
                   <button
                     className="icon-button danger"
-                    aria-label={`Delete ${routine.title}`}
+                    aria-label={t("routine.deleteNamed", { name: routine.title })}
                     disabled={pendingIds.includes(routine.id)}
                     onClick={() => {
                       setFormError(null);
@@ -360,7 +374,7 @@ export function RoutinesClient({
         title={t("routine.delete")}
         description={
           deleteTarget
-            ? `“${deleteTarget.title}” will be removed. You can pause it instead if you only need a break.`
+            ? t("routine.deleteBody", { name: deleteTarget.title })
             : undefined
         }
         keyboardAssist={false}
@@ -386,7 +400,7 @@ export function RoutinesClient({
             disabled={saving}
             busy={saving}
           >
-            Delete routine
+            {t("common.delete")}
           </Button>
         </div>
       </Sheet>

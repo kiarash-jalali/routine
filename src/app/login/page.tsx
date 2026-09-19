@@ -6,6 +6,7 @@ import { AnimatedSwap, Collapse } from "@/components/Motion";
 import { BrandMark, Icon } from "@/components/Icon";
 import { Button, ErrorNotice, Input, SegmentedControl } from "@/components/ui";
 import { getFriendlySignInError, MIN_PASSWORD_LENGTH } from "@/lib/auth";
+import { PasswordGuidance } from "@/components/auth/PasswordGuidance";
 import { getProfile } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
@@ -14,7 +15,7 @@ import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { LanguagePicker } from "@/components/preferences/LanguagePicker";
 
 export default function LoginPage() {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -23,6 +24,8 @@ export default function LoginPage() {
   const [confirmationSent, setConfirmationSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -42,6 +45,13 @@ export default function LoginPage() {
         if (error) throw error;
 
         const profile = await getProfile(data.user.id);
+        if (
+          profile?.locale &&
+          (profile.locale === "en" || profile.locale === "fa") &&
+          profile.locale !== language
+        ) {
+          await setLanguage(profile.locale);
+        }
         router.push(
           profile?.onboarding_completed ? "/dashboard" : "/onboarding",
         );
@@ -65,11 +75,32 @@ export default function LoginPage() {
     } catch (error: unknown) {
       setErrorMessage(
         mode === "login"
-          ? getFriendlySignInError(error)
-          : getErrorMessage(error, "Couldn’t create your account. Try again."),
+          ? getFriendlySignInError(error, language)
+          : getErrorMessage(error, t("login.createError")),
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function resendConfirmation() {
+    if (resending || !email) return;
+    setResending(true);
+    setErrorMessage(null);
+    setResent(false);
+    try {
+      const emailRedirectTo = `${window.location.origin}/auth/callback?next=/onboarding`;
+      const { error } = await supabaseBrowser().auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo },
+      });
+      if (error) throw error;
+      setResent(true);
+    } catch (error: unknown) {
+      setErrorMessage(getErrorMessage(error, t("login.resendError")));
+    } finally {
+      setResending(false);
     }
   }
 
@@ -118,6 +149,17 @@ export default function LoginPage() {
                 <p className="text-center text-sm leading-6 text-muted">
                   {t("login.spam")}
                 </p>
+                <Button
+                  className="w-full"
+                  variant="primary"
+                  busy={resending}
+                  disabled={resending}
+                  onClick={() => void resendConfirmation()}
+                >
+                  {resending ? t("login.resending") : t("login.resend")}
+                </Button>
+                {resent && <p className="text-center text-sm text-primary">{t("login.resent")}</p>}
+                {errorMessage && <ErrorNotice>{errorMessage}</ErrorNotice>}
                 <Button
                   className="w-full"
                   onClick={() => setConfirmationSent(false)}
@@ -195,6 +237,7 @@ export default function LoginPage() {
                           <Icon name="eye" size={18} />
                         </button>
                       </div>
+                      {mode === "signup" && <PasswordGuidance password={password} />}
                       {mode === "login" && (
                         <div className="mt-2 flex justify-end">
                           <Link

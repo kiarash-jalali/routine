@@ -1,5 +1,6 @@
 "use client";
 import { LifeLinks } from "@/components/life/LifeLinks";
+import { InstallAppCard } from "@/components/pwa/InstallAppCard";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 import { Link } from "next-view-transitions";
@@ -46,14 +47,23 @@ import type { CheckinCompletionMap } from "@/types/checkin";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
 
-function formatDueTime(task: Task, locale: string, anytime: string) {
+function formatDueTime(
+  task: Task,
+  locale: string,
+  anytime: string,
+  today: Date,
+  labels: { today: string; tomorrow: string; yesterday: string },
+) {
   if (!task.due_at) return anytime;
-  return new Intl.DateTimeFormat(locale, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(task.due_at));
+  const due = new Date(task.due_at);
+  const day = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+  const base = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+  const diff = Math.round((day - base) / 86_400_000);
+  const relative = diff === 0 ? labels.today : diff === 1 ? labels.tomorrow : diff === -1 ? labels.yesterday : null;
+  const clock = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(due);
+  return relative
+    ? `${relative} · ${clock}`
+    : new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(due);
 }
 
 function sortTasks(tasks: Task[]) {
@@ -314,6 +324,7 @@ export function DashboardClient({
         ? tasks.filter((task) => task.is_done)
         : tasks;
   const checkedInToday = rhythm?.checkedInToday ?? false;
+  const dayOne = routines.length === 0 && todayTasks.length === 0 && !checkedInToday;
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
     date.setDate(today.getDate() - ((today.getDay() + 6) % 7) + index);
@@ -347,6 +358,7 @@ export function DashboardClient({
         }
       />
       <LifeLinks />
+      <InstallAppCard deferUntilReturn />
       <Collapse show={!!firstSuccessRoutine}>
         <Card tone="accent" className="mb-7">
           <div className="flex items-start gap-4">
@@ -365,6 +377,10 @@ export function DashboardClient({
               <p className="mt-2 text-sm leading-6 text-muted">
                 {t("dashboard.firstSuccessBody")}
               </p>
+              <Link href="/settings#reminders" className="mt-3 inline-flex min-h-10 items-center gap-2 text-sm font-medium text-primary">
+                <Icon name="clock" size={16} />
+                {t("dashboard.setupReminder")}
+              </Link>
             </div>
             <Button
               variant="ghost"
@@ -375,6 +391,15 @@ export function DashboardClient({
           </div>
         </Card>
       </Collapse>
+      {dayOne && (
+        <Card tone="accent" className="mb-7">
+          <SectionHeading title={t("dashboard.dayOneTitle")} description={t("dashboard.dayOneBody")} />
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/routines" className="btn btn-primary">{t("routine.addSmall")}</Link>
+            <button className="btn btn-secondary" onClick={() => setShowTaskForm(true)}>{t("product.addTask")}</button>
+          </div>
+        </Card>
+      )}
       <Collapse show={!!error}>
         <div className="mb-6">
           <ErrorNotice>{error}</ErrorNotice>
@@ -398,7 +423,7 @@ export function DashboardClient({
           />
         </div>
       </div>
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="dashboard-main-grid grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-6">
           <Card>
             <SectionHeading
@@ -423,7 +448,7 @@ export function DashboardClient({
                     href="/routines"
                   >
                     {t("routine.addSmall")}
-                    <Icon name="arrow" size={16} className="ml-2" />
+                    <Icon name="arrow" size={16} className="ms-2" />
                   </Link>
                 </EmptyState>
               ) : (
@@ -438,7 +463,7 @@ export function DashboardClient({
                     >
                       <MomentSource id={`routine-${routine.id}`}>
                         <button
-                          className="check-control -ml-2"
+                          className="check-control -ms-2"
                           aria-pressed={completed}
                           aria-label={t(
                             completed
@@ -477,7 +502,7 @@ export function DashboardClient({
               title={t("product.tasks")}
               action={
                 <button
-                  className="icon-button -mr-2 -mt-2"
+                  className="icon-button -me-2 -mt-2"
                   aria-label={t("product.addTask")}
                   onClick={() => {
                     setFormError(null);
@@ -509,6 +534,20 @@ export function DashboardClient({
                       : filter === "all"
                         ? t("task.emptyAll")
                         : t("task.emptyToday")}
+                    {filter !== "done" && (
+                      <div className="mt-4">
+                        <Button
+                          variant="primary"
+                          onClick={() => {
+                            setFormError(null);
+                            setShowTaskForm(true);
+                          }}
+                        >
+                          <Icon name="plus" size={16} />
+                          {t("product.addTask")}
+                        </Button>
+                      </div>
+                    )}
                   </EmptyState>
                 </AnimatedListItem>
               ) : (
@@ -519,7 +558,7 @@ export function DashboardClient({
                   >
                     <MomentSource id={`task-${task.id}`}>
                       <button
-                        className="check-control -ml-2"
+                        className="check-control -ms-2"
                         aria-pressed={task.is_done}
                         aria-label={t(
                           task.is_done ? "task.reopenNamed" : "task.completeNamed",
@@ -534,11 +573,15 @@ export function DashboardClient({
                     <div className="min-w-0 flex-1">
                       <p className="row-title">{task.title}</p>
                       <p className="row-detail">
-                      {formatDueTime(task, locale, t("common.anytime"))}
+                      {formatDueTime(task, locale, t("common.anytime"), today, {
+                        today: t("common.today"),
+                        tomorrow: t("common.tomorrow"),
+                        yesterday: t("common.yesterday"),
+                      })}
                     </p>
                     </div>
                     <button
-                      className="icon-button danger -mr-2"
+                      className="icon-button danger -me-2"
                       aria-label={t("task.deleteNamed", { name: task.title })}
                       disabled={pendingIds.includes(checkinItemKey("task", task.id))}
                       onClick={() => {
@@ -554,7 +597,7 @@ export function DashboardClient({
             </AnimatedList>
           </Card>
         </div>
-        <div className="space-y-6">
+        <div className="dashboard-side space-y-6">
           <Card>
             <SectionHeading title={t("product.week")} />
             <p className="mt-1 text-sm text-muted">
