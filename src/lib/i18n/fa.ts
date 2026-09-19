@@ -212,7 +212,8 @@ export const fa: Record<TranslationKey, string> = {
   "settings.delete": "حذف حساب",
   "settings.deleteBody":
     "حساب و اطلاعاتت برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.",
-  "settings.typeDelete": "برای تأیید، DELETE را وارد کن.",
+  "settings.typeDelete": "برای تأیید «{keyword}» را وارد کن.",
+  "settings.deleteKeyword": "حذف",
   "settings.deleteMine": "حسابم را حذف کن",
   "settings.currentPassword": "رمز عبور فعلی",
   "settings.space": "فضای تو",

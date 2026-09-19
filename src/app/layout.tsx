@@ -1,12 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { NotificationWorker } from "@/components/notifications/NotificationWorker";
 import { AppFrame } from "@/components/AppFrame";
 import { ViewTransitions } from "next-view-transitions";
 import { MotionProvider } from "@/components/Motion";
 import { LanguageProvider } from "@/components/preferences/LanguageProvider";
 import { ThemeController } from "@/components/preferences/ThemeController";
-import { languageScript } from "@/lib/i18n";
+import {
+  isLanguage,
+  languageCookieKey,
+  languageScript,
+  type Language,
+} from "@/lib/i18n";
 import { themeScript } from "@/lib/theme";
 import "@fontsource-variable/fraunces/wght.css";
 import "@fontsource-variable/vazirmatn/wght.css";
@@ -43,20 +48,26 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const cookieStore = await cookies();
+  const savedLanguage = cookieStore.get(languageCookieKey)?.value;
+  const initialLanguage: Language = isLanguage(savedLanguage)
+    ? savedLanguage
+    : "en";
+  const direction = initialLanguage === "fa" ? "rtl" : "ltr";
 
   return (
     <ViewTransitions>
-      <html lang="en" suppressHydrationWarning>
+      <html lang={initialLanguage} dir={direction} suppressHydrationWarning>
         <head>
           <script
             nonce={nonce}
             dangerouslySetInnerHTML={{
-              __html: themeScript + ";" + languageScript,
+              __html: themeScript + ";" + languageScript(initialLanguage),
             }}
           />
         </head>
         <body className="antialiased">
-          <LanguageProvider>
+          <LanguageProvider initialLanguage={initialLanguage}>
             <ThemeController />
             <NotificationWorker />
             <MotionProvider>

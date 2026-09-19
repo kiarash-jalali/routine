@@ -10,6 +10,7 @@ import {
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import {
   isLanguage,
+  languageCookieKey,
   languageStorageKey,
   locales,
   translate,
@@ -24,6 +25,13 @@ function applyLanguage(language: Language) {
   } catch {
     /* In-memory preference still works. */
   }
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie =
+    languageCookieKey +
+    "=" +
+    language +
+    "; Path=/; Max-Age=31536000; SameSite=Lax" +
+    secure;
   window.dispatchEvent(new Event("rootine-language"));
 }
 function subscribe(listener: () => void) {
@@ -85,11 +93,17 @@ function makeValue(language: Language) {
   };
 }
 const LanguageContext = createContext(makeValue("en"));
-export function LanguageProvider({ children }: { children: ReactNode }) {
+export function LanguageProvider({
+  children,
+  initialLanguage,
+}: {
+  children: ReactNode;
+  initialLanguage: Language;
+}) {
   const language = useSyncExternalStore(
     subscribe,
     snapshot,
-    () => "en" as const,
+    () => initialLanguage,
   );
   useEffect(() => {
     let cancelled = false;

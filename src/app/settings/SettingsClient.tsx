@@ -263,8 +263,15 @@ export function SettingsClient({
     }
   }
 
+  const deleteKeyword = t("settings.deleteKeyword");
+
   async function deleteAccount() {
-    if (deleteConfirmation !== "DELETE" || !deletePassword || busyAction) return;
+    if (
+      deleteConfirmation.trim() !== deleteKeyword ||
+      !deletePassword ||
+      busyAction
+    )
+      return;
 
     beginAction("delete");
     try {
@@ -520,11 +527,11 @@ export function SettingsClient({
               >
                 <div className="space-y-4">
                   <p className="text-sm leading-6 text-muted">
-                    {t("settings.typeDelete")}
+                    {t("settings.typeDelete", { keyword: deleteKeyword })}
                   </p>
                   <Input
                     value={deleteConfirmation}
-                    placeholder="DELETE"
+                    placeholder={deleteKeyword}
                     autoComplete="off"
                     disabled={Boolean(busyAction)}
                     onChange={(event) => setDeleteConfirmation(event.target.value)}
@@ -544,7 +551,7 @@ export function SettingsClient({
                     onClick={deleteAccount}
                     disabled={
                       Boolean(busyAction) ||
-                      deleteConfirmation !== "DELETE" ||
+                      deleteConfirmation.trim() !== deleteKeyword ||
                       !deletePassword
                     }
                     busy={busyAction === "delete"}

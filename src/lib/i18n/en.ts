@@ -213,7 +213,8 @@ export const en = {
   "settings.delete": "Delete account",
   "settings.deleteBody":
     "Permanently remove your account and its data. This cannot be undone.",
-  "settings.typeDelete": "Type DELETE to confirm.",
+  "settings.typeDelete": "Type “{keyword}” to confirm.",
+  "settings.deleteKeyword": "DELETE",
   "settings.deleteMine": "Delete my account",
   "settings.currentPassword": "Current password",
   "settings.space": "Your space",
