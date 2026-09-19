@@ -46,6 +46,13 @@ export type OfflineMutation =
       items: CheckinItem[];
     };
 
+export type OfflineSyncResult = {
+  ok: boolean;
+  appliedIds: string[];
+  discardedIds: string[];
+  retryIds: string[];
+};
+
 function offlineStorageSupported() {
   return typeof indexedDB !== "undefined";
 }
@@ -96,9 +103,15 @@ function emitQueueChanged() {
   }
 }
 
+function isStringArray(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.every((item) => typeof item === "string" && item.length > 0)
+  );
+}
+
 export function isOfflineLikeError(error: unknown) {
   if (typeof navigator !== "undefined" && !navigator.onLine) return true;
-  if (error instanceof TypeError) return true;
 
   const message =
     typeof error === "object" &&
@@ -108,12 +121,17 @@ export function isOfflineLikeError(error: unknown) {
       ? (error as { message: string }).message
       : String(error ?? "");
 
-  return /failed to fetch|network(?:error| request failed)|load failed/i.test(
+  return /failed to fetch|network(?:error| request failed)|load failed|internet connection appears to be offline|fetch failed/i.test(
     message,
   );
 }
 
 export async function saveOfflineSnapshot(snapshot: OfflineSnapshot) {
+  const current = await getOfflineSnapshot().catch(() => null);
+  if (current && current.userId !== snapshot.userId) {
+    await clearOfflineData();
+  }
+
   const database = await openDatabase();
   const transaction = database.transaction(STATE_STORE, "readwrite");
   const done = transactionDone(transaction);
@@ -199,14 +217,62 @@ export async function getPendingOfflineMutationCount(userId: string) {
   return (await listOfflineMutations(userId)).length;
 }
 
-export async function removeOfflineMutation(id: string) {
+export async function removeOfflineMutations(ids: string[]) {
+  if (ids.length === 0) return;
   const database = await openDatabase();
   const transaction = database.transaction(MUTATION_STORE, "readwrite");
   const done = transactionDone(transaction);
-  transaction.objectStore(MUTATION_STORE).delete(id);
+  const store = transaction.objectStore(MUTATION_STORE);
+  for (const id of new Set(ids)) store.delete(id);
   await done;
   database.close();
   emitQueueChanged();
+}
+
+export async function removeOfflineMutation(id: string) {
+  await removeOfflineMutations([id]);
+}
+
+export async function syncOfflineMutations(
+  userId: string,
+): Promise<OfflineSyncResult> {
+  const mutations = await listOfflineMutations(userId);
+  if (mutations.length === 0) {
+    return { ok: true, appliedIds: [], discardedIds: [], retryIds: [] };
+  }
+
+  const response = await fetch("/api/offline/sync", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mutations }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`offline_sync_failed_${response.status}`);
+  }
+
+  const payload = (await response.json()) as Partial<OfflineSyncResult>;
+  if (
+    typeof payload.ok !== "boolean" ||
+    !isStringArray(payload.appliedIds) ||
+    !isStringArray(payload.discardedIds) ||
+    !isStringArray(payload.retryIds)
+  ) {
+    throw new Error("offline_sync_invalid_response");
+  }
+
+  await removeOfflineMutations([
+    ...payload.appliedIds,
+    ...payload.discardedIds,
+  ]);
+
+  return {
+    ok: payload.ok,
+    appliedIds: payload.appliedIds,
+    discardedIds: payload.discardedIds,
+    retryIds: payload.retryIds,
+  };
 }
 
 export async function clearOfflineData() {
