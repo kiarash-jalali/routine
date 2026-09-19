@@ -25,9 +25,8 @@ import {
 } from "@/components/ui";
 import {
   findDailyCheckin,
-  getOrCreateDailyCheckin,
+  finishDailyCheckin,
   listCheckinItems,
-  saveCheckinItems,
 } from "@/lib/db/checkins";
 import { listTasks } from "@/lib/db/tasks";
 import { listTodaysRoutines } from "@/lib/db/today";
@@ -43,7 +42,6 @@ import type {
   CheckinCompletionMap,
   CheckinItem,
   CheckinItemType,
-  CheckinItemUpsert,
 } from "@/types/checkin";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
@@ -152,13 +150,19 @@ export default function CheckinPage() {
 
         if (cancelled) return;
 
+        const openTasks = filterTasksForToday(allTasks, dayDate);
+        const taskIds = new Set(openTasks.map((task) => task.id));
+        for (const item of existingItems) {
+          if (item.item_type === "task") taskIds.add(item.item_id);
+        }
+
         setUserId(user.id);
         setDailyCheckinId(existingCheckin?.id ?? null);
         setRoutines(todaysRoutines);
-        setTasks(filterTasksForToday(allTasks, dayDate));
+        setTasks(allTasks.filter((task) => taskIds.has(task.id)));
         setCompletionByItem(existingCompletionMap);
         setSavedCompletionByItem(existingCompletionMap);
-        setHasFinishedToday(Boolean(existingCheckin));
+        setHasFinishedToday(Boolean(existingCheckin?.completed_at));
         setEditingFinishedCheckin(false);
       } catch (error: unknown) {
         if (!cancelled) {
@@ -220,27 +224,23 @@ export default function CheckinPage() {
     setErrorMessage(null);
 
     try {
-      const checkinId =
-        dailyCheckinId ?? (await getOrCreateDailyCheckin(userId, today)).id;
-
-      const routineItems: CheckinItemUpsert[] = routines.map((routine) => ({
-        user_id: userId,
-        checkin_id: checkinId,
+      const routineItems: CheckinItem[] = routines.map((routine) => ({
         item_type: "routine",
         item_id: routine.id,
         completed: isItemCompleted("routine", routine.id),
       }));
 
-      const taskItems: CheckinItemUpsert[] = tasks.map((task) => ({
-        user_id: userId,
-        checkin_id: checkinId,
+      const taskItems: CheckinItem[] = tasks.map((task) => ({
         item_type: "task",
         item_id: task.id,
         completed: isItemCompleted("task", task.id),
       }));
 
-      await saveCheckinItems([...routineItems, ...taskItems]);
-      setDailyCheckinId(checkinId);
+      const checkin = await finishDailyCheckin(today, [
+        ...routineItems,
+        ...taskItems,
+      ]);
+      setDailyCheckinId(checkin.id);
       setSavedCompletionByItem({ ...completionByItem });
       setHasFinishedToday(true);
       setEditingFinishedCheckin(false);
