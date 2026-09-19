@@ -5,7 +5,7 @@ import type {
   HistoricalCheckinItem,
 } from "@/types/history";
 
-const CHECKIN_COLUMNS = "id,user_id,day";
+const CHECKIN_COLUMNS = "id,user_id,day,completed_at";
 
 export async function listCheckinDays(userId: string): Promise<string[]> {
   const supabase = supabaseBrowser();
@@ -18,6 +18,7 @@ export async function listCheckinDays(userId: string): Promise<string[]> {
       .from("daily_checkins")
       .select("day")
       .eq("user_id", userId)
+      .not("completed_at", "is", null)
       .order("day", { ascending: true })
       .range(from, from + pageSize - 1);
 
@@ -42,6 +43,7 @@ export async function listRecentCheckinHistory(
     .from("daily_checkins")
     .select(CHECKIN_COLUMNS)
     .eq("user_id", userId)
+    .not("completed_at", "is", null)
     .order("day", { ascending: false })
     .limit(limit);
 
