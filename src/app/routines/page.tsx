@@ -106,7 +106,7 @@ export default function RoutinesPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, t]);
 
   async function saveRoutine(values: RoutineFormValues) {
     if (!userId || saving) return;

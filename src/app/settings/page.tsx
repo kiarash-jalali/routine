@@ -102,7 +102,7 @@ export default function SettingsPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, t]);
 
   function beginAction(action: typeof busyAction) {
     setBusyAction(action);

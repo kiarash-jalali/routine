@@ -125,7 +125,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [router, today, todayKey]);
+  }, [router, t, today, todayKey]);
 
   async function createTask(event: React.FormEvent) {
     event.preventDefault();

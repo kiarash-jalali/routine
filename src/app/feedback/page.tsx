@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 import {
   MomentPopup,
   MomentSource,
@@ -37,6 +38,7 @@ const feedbackCategories: ReadonlyArray<{
 
 export default function FeedbackPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [category, setCategory] = useState<FeedbackCategory>("friction");
