@@ -77,6 +77,7 @@ const colorFields = [
 
 type ThemeColor = (typeof colorFields)[number];
 
+// Design Lab is intentionally ephemeral: theme edits reset on refresh.
 function createEditableThemes(): Record<ThemeName, Theme> {
   return {
     morning: { ...defaultThemes.morning },
