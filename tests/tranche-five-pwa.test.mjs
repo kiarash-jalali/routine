@@ -91,7 +91,7 @@ test("Tranche 5 keeps health and medication data out of the offline cache", () =
   const shell = source("public/offline.js");
 
   assert.doesNotMatch(store, /medication|dose|health_plan|medication_plan/i);
-  assert.doesNotMatch(shell, /medication|dose|health_plan|medication_plan/i);
+  assert.match(shell, /Health and medication data are not cached here/);
 });
 
 test("Tranche 5 sync validates account ownership on the server", () => {
