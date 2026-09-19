@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import {
   isCheckinItemType,
@@ -10,8 +12,11 @@ import type {
 
 const CHECKIN_COLUMNS = "id,user_id,day,completed_at";
 
-export async function listCheckinDays(userId: string): Promise<string[]> {
-  const supabase = supabaseBrowser();
+export async function listCheckinDays(
+  userId: string,
+  client?: SupabaseClient<Database>,
+): Promise<string[]> {
+  const supabase = client ?? supabaseBrowser();
   const pageSize = 500;
   const days: string[] = [];
   let from = 0;
@@ -40,8 +45,9 @@ export async function listCheckinDays(userId: string): Promise<string[]> {
 export async function listRecentCheckinHistory(
   userId: string,
   limit = 30,
+  client?: SupabaseClient<Database>,
 ): Promise<CheckinHistoryEntry[]> {
-  const supabase = supabaseBrowser();
+  const supabase = client ?? supabaseBrowser();
   const { data: checkins, error: checkinsError } = await supabase
     .from("daily_checkins")
     .select(CHECKIN_COLUMNS)
