@@ -99,6 +99,9 @@ export function DashboardClient({
   const [rhythm, setRhythm] = useState<RhythmSummary | null>(initialRhythm);
   const [completionByItem, setCompletionByItem] =
     useState<CheckinCompletionMap>(initialCompletionByItem);
+  const [offlineSnapshotDay, setOfflineSnapshotDay] = useState<string | null>(
+    initialPartialError ? null : initialDayKey,
+  );
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -175,7 +178,10 @@ export function DashboardClient({
         setCompletionByItem(completionMapFromItems(progressResult.value.items));
       }
       if (results.some((result) => result.status === "rejected")) {
+        setOfflineSnapshotDay(null);
         setError(t("dashboard.partialLoadError"));
+      } else if (!initialPartialError) {
+        setOfflineSnapshotDay(todayKey);
       }
     }
 
@@ -337,8 +343,18 @@ export function DashboardClient({
         ? tasks.filter((task) => task.is_done)
         : tasks;
   const checkedInToday = rhythm?.checkedInToday ?? false;
+  const offlineTasks = useMemo(() => {
+    const todayTaskIds = new Set(todayTasks.map((task) => task.id));
+    return tasks.filter(
+      (task) =>
+        todayTaskIds.has(task.id) ||
+        completionByItem[checkinItemKey("task", task.id)] === true,
+    );
+  }, [completionByItem, tasks, todayTasks]);
 
   useEffect(() => {
+    if (offlineSnapshotDay !== todayKey) return;
+
     void saveOfflineSnapshot({
       version: 1,
       userId,
@@ -353,7 +369,7 @@ export function DashboardClient({
           completionByItem[checkinItemKey("routine", routine.id)],
         ),
       })),
-      tasks: tasks.slice(0, 50).map((task) => ({
+      tasks: offlineTasks.slice(0, 50).map((task) => ({
         id: task.id,
         title: task.title,
         completed:
@@ -364,8 +380,9 @@ export function DashboardClient({
     checkedInToday,
     completionByItem,
     language,
+    offlineSnapshotDay,
+    offlineTasks,
     routines,
-    tasks,
     todayKey,
     userId,
   ]);
