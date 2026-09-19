@@ -31,7 +31,8 @@ async function runInChunks<T>(
 }
 
 async function sendNotifications(request: Request) {
-  const expected =\n    process.env.CRON_SECRET ?? process.env.NOTIFICATION_CRON_SECRET;
+  const expected =
+    process.env.CRON_SECRET ?? process.env.NOTIFICATION_CRON_SECRET;
   const supplied = request.headers
     .get("authorization")
     ?.replace(/^Bearer\s+/i, "");
