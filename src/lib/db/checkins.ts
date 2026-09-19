@@ -5,7 +5,6 @@ import {
   isOfflineLikeError,
   queueDailyItemCompletion,
   queueFinishDailyCheckin,
-  type OfflineMutation,
 } from "@/lib/offlineStore";
 import {
   isCheckinItemType,
@@ -165,20 +164,6 @@ export async function finishDailyCheckin(
     await queueFinishDailyCheckin(userId, day, items);
     return null;
   }
-}
-
-export async function replayOfflineMutation(mutation: OfflineMutation) {
-  if (mutation.kind === "daily_item_completion") {
-    await setDailyItemCompletionOnline(
-      mutation.day,
-      mutation.itemType,
-      mutation.itemId,
-      mutation.completed,
-    );
-    return;
-  }
-
-  await finishDailyCheckinOnline(mutation.day, mutation.items);
 }
 
 export async function saveCheckinItems(
