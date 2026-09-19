@@ -23,6 +23,7 @@ import {
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import { ReminderSettings } from "@/components/notifications/ReminderSettings";
 import { InstallAppCard } from "@/components/pwa/InstallAppCard";
+import { PasswordGuidance } from "@/components/auth/PasswordGuidance";
 import { saveDisplayName } from "@/lib/db/profile";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
@@ -450,6 +451,7 @@ export function SettingsClient({
                       disabled={Boolean(busyAction)}
                       onChange={(event) => setNewPassword(event.target.value)}
                     />
+                    <PasswordGuidance password={newPassword} />
                   </label>
                   <label className="grid gap-2 text-sm font-medium">
                     {t("settings.confirmPassword")}

@@ -5,6 +5,7 @@ import { Link } from "next-view-transitions";
 import { BrandMark } from "@/components/Icon";
 import { LanguagePicker } from "@/components/preferences/LanguagePicker";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
+import { PasswordGuidance } from "@/components/auth/PasswordGuidance";
 import { Button, ErrorNotice, Input } from "@/components/ui";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/errors";
@@ -127,6 +128,7 @@ export default function ResetPasswordPage() {
                   autoComplete="new-password"
                   disabled={loading}
                 />
+                <PasswordGuidance password={password} />
               </label>
 
               <label className="grid gap-2 text-sm font-medium">

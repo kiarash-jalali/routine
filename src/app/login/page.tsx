@@ -12,6 +12,7 @@ import { supabaseBrowser } from "@/lib/supabaseClient";
 
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { LanguagePicker } from "@/components/preferences/LanguagePicker";
+import { PasswordGuidance } from "@/components/auth/PasswordGuidance";
 
 export default function LoginPage() {
   const { t, language, setLanguage } = useLanguage();
@@ -23,6 +24,10 @@ export default function LoginPage() {
   const [confirmationSent, setConfirmationSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendStatus, setResendStatus] = useState<"sent" | "error" | null>(
+    null,
+  );
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -76,6 +81,27 @@ export default function LoginPage() {
     }
   }
 
+  async function resendConfirmation() {
+    if (!email || resending) return;
+    setResending(true);
+    setResendStatus(null);
+    try {
+      const emailRedirectTo =
+        `${window.location.origin}/auth/callback?next=/onboarding`;
+      const { error } = await supabaseBrowser().auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo },
+      });
+      if (error) throw error;
+      setResendStatus("sent");
+    } catch {
+      setResendStatus("error");
+    } finally {
+      setResending(false);
+    }
+  }
+
   function switchMode(nextMode: "login" | "signup") {
     setMode(nextMode);
     setErrorMessage(null);
@@ -121,6 +147,27 @@ export default function LoginPage() {
                 <p className="text-center text-sm leading-6 text-muted">
                   {t("login.spam")}
                 </p>
+                <Button
+                  className="w-full"
+                  variant="primary"
+                  busy={resending}
+                  disabled={resending}
+                  onClick={() => void resendConfirmation()}
+                >
+                  {resending ? t("login.resending") : t("login.resend")}
+                </Button>
+                {resendStatus && (
+                  <p
+                    role="status"
+                    className="text-center text-sm leading-6 text-muted"
+                  >
+                    {t(
+                      resendStatus === "sent"
+                        ? "login.resent"
+                        : "login.resendError",
+                    )}
+                  </p>
+                )}
                 <Button
                   className="w-full"
                   onClick={() => setConfirmationSent(false)}
@@ -198,6 +245,9 @@ export default function LoginPage() {
                           <Icon name="eye" size={18} />
                         </button>
                       </div>
+                      {mode === "signup" && (
+                        <PasswordGuidance password={password} />
+                      )}
                       {mode === "login" && (
                         <div className="mt-2 flex justify-end">
                           <Link
