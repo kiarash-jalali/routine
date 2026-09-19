@@ -1,10 +1,5 @@
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import type {
-  SessionInput,
-  WorkoutInput,
-  WorkoutPlan,
-  WorkoutSession,
-} from "@/types/workout";
+import type { SessionInput, WorkoutInput } from "@/types/workout";
 const planColumns =
   "id,user_id,name,activity_type,duration_minutes,exercises,days_of_week,preferred_time,timezone,is_active,reminders_enabled,created_at,updated_at";
 const sessionColumns =
@@ -26,8 +21,8 @@ export async function loadWorkouts(userId: string, limit = 100) {
   ]);
   if (plans.error || sessions.error) throw new Error("workout_load_failed");
   return {
-    plans: plans.data as WorkoutPlan[],
-    sessions: sessions.data as WorkoutSession[],
+    plans: plans.data ?? [],
+    sessions: sessions.data ?? [],
   };
 }
 export async function saveWorkout(
