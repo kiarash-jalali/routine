@@ -23,6 +23,7 @@ The bootstrap is **not** a migration to apply retroactively to the existing prod
 | 20260918071145 | add_workout_tracking | 20260918070800_add_workout_tracking.sql |
 | 20260918184226 | server_only_push_and_streak_hardening | 20260918184226_server_only_push_and_streak_hardening.sql |
 | 20260918194849 | p1_scaling_foundation | 20260918194849_p1_scaling_foundation.sql |
+| 20260919075812 | daily_progress_completion | 20260919075812_daily_progress_completion.sql |
 
 The older points, profiles, and notification-reminder SQL files are also historical repository sources but are not represented as standalone entries in the current production migration history.
 
