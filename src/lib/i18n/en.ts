@@ -38,6 +38,7 @@ export const en = {
   "nav.checkin": "Check-in",
   "nav.history": "History",
   "nav.settings": "Settings",
+  "nav.guide": "Guide",
   "nav.feedback": "Feedback",
   "nav.health": "Health",
   "nav.workouts": "Sport",
@@ -96,6 +97,8 @@ export const en = {
   "onboarding.routine": "Start with one small routine.",
   "onboarding.routineBody":
     "Choose something easy to come back to. You can add more later.",
+  "onboarding.begin": "Start with one routine",
+  "onboarding.addAndStart": "Add routine and open Today",
   "onboarding.start": "Start today",
   "onboarding.skipAll": "Skip setup",
   "onboarding.add": "Add routine",
@@ -467,6 +470,15 @@ export const en = {
   "guide.title": "How rootine works",
   "guide.body":
     "Tasks, routines, check-ins, recovery, reminders, health and movement in one place.",
+  "guide.installTitle": "Install rootine",
+  "guide.installBody":
+    "Install rootine for quicker access and, on supported devices, push notifications.",
+  "guide.installIos": "iPhone & iPad",
+  "guide.installIosBody":
+    "Open rootine in Safari, tap Share → Add to Home Screen, then open it from the Home Screen. iOS requires the installed app before web push can be enabled.",
+  "guide.installBrowser": "Other supported browsers",
+  "guide.installBrowserBody":
+    "Open Settings and use Install rootine when the install button appears. Notification permission is only requested after you choose to enable reminders.",
   "reminder.iosInstall":
     "On iPhone or iPad, first add rootine to your Home Screen in Safari (Share → Add to Home Screen). Then open it from the Home Screen to enable notifications.",
   "install.title": "Install rootine",

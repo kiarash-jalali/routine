@@ -39,6 +39,7 @@ export const fa: Record<TranslationKey, string> = {
   "nav.checkin": "مرور روز",
   "nav.history": "سابقه",
   "nav.settings": "تنظیمات",
+  "nav.guide": "راهنما",
   "nav.feedback": "بازخورد",
   "nav.health": "سلامت",
   "nav.workouts": "ورزش",
@@ -96,6 +97,8 @@ export const fa: Record<TranslationKey, string> = {
   "onboarding.routine": "با یک روتین کوچک شروع کن.",
   "onboarding.routineBody":
     "کاری انتخاب کن که برگشتن به آن آسان باشد. بعداً بیشتر اضافه می‌کنی.",
+  "onboarding.begin": "شروع با یک روتین",
+  "onboarding.addAndStart": "افزودن روتین و رفتن به امروز",
   "onboarding.start": "شروع امروز",
   "onboarding.skipAll": "رد کردن راه‌اندازی",
   "onboarding.add": "افزودن روتین",
@@ -464,6 +467,15 @@ export const fa: Record<TranslationKey, string> = {
   "guide.title": "روتین چطور کار می‌کند",
   "guide.body":
     "کارها، روتین‌ها، مرور روز، جبران، یادآورها، سلامت و تحرک در یک جا.",
+  "guide.installTitle": "نصب روتین",
+  "guide.installBody":
+    "روتین را برای دسترسی سریع‌تر و، روی دستگاه‌های پشتیبانی‌شده، اعلان‌های پوش نصب کن.",
+  "guide.installIos": "آیفون و آیپد",
+  "guide.installIosBody":
+    "روتین را در Safari باز کن، Share → Add to Home Screen را بزن و بعد آن را از صفحهٔ اصلی باز کن. در iOS برای فعال‌کردن اعلان وب باید اپ نصب‌شده را باز کنی.",
+  "guide.installBrowser": "مرورگرهای پشتیبانی‌شدهٔ دیگر",
+  "guide.installBrowserBody":
+    "به تنظیمات برو و وقتی دکمهٔ نصب نمایش داده شد «نصب روتین» را بزن. اجازهٔ اعلان فقط وقتی درخواست می‌شود که خودت یادآورها را فعال کنی.",
   "reminder.iosInstall":
     "در آیفون یا آیپد، اول rootine را در Safari از مسیر Share → Add to Home Screen به صفحهٔ اصلی اضافه کن. بعد آن را از صفحهٔ اصلی باز کن تا اعلان‌ها فعال شوند.",
   "install.title": "نصب روتین",

@@ -47,6 +47,10 @@ export function AppNav() {
           <Icon name="settings" size={19} />
           <span>{t("nav.settings")}</span>
         </Link>
+        <Link href="/guide" className="logout-button" aria-current={pathname === "/guide" ? "page" : undefined} aria-label={t("nav.guide")}>
+          <Icon name="rootine" size={19} />
+          <span>{t("nav.guide")}</span>
+        </Link>
         <Link href="/feedback" className="logout-button" aria-current={pathname === "/feedback" ? "page" : undefined} aria-label={t("nav.feedback")}>
           <Icon name="mail" size={19} />
           <span>{t("nav.feedback")}</span>

@@ -3,41 +3,70 @@
 import { Icon, type IconName } from "@/components/Icon";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { Card, PageHeader, PageShell } from "@/components/ui";
+import type { TranslationKey } from "@/lib/i18n";
+
+type GuideItem = {
+  title: TranslationKey;
+  body: TranslationKey;
+  icon: IconName;
+};
+
+type GuideSection = {
+  title: TranslationKey;
+  body: TranslationKey;
+  items: readonly GuideItem[];
+};
 
 const sections = [
   {
     title: "intro.welcome",
     body: "intro.welcomeBody",
     items: [
-      { key: "task", icon: "today" },
-      { key: "routine", icon: "routines" },
+      { title: "intro.task", body: "intro.taskBody", icon: "today" },
+      { title: "intro.routine", body: "intro.routineBody", icon: "routines" },
     ],
   },
   {
     title: "intro.checkin",
     body: "intro.checkinBody",
     items: [
-      { key: "rhythm", icon: "rootine" },
-      { key: "points", icon: "spark" },
+      { title: "intro.rhythm", body: "intro.rhythmBody", icon: "rootine" },
+      { title: "intro.points", body: "intro.pointsBody", icon: "spark" },
     ],
   },
   {
     title: "intro.perspective",
     body: "intro.perspectiveBody",
     items: [
-      { key: "history", icon: "history" },
-      { key: "reminders", icon: "clock" },
+      { title: "intro.history", body: "intro.historyBody", icon: "history" },
+      { title: "intro.reminders", body: "intro.remindersBody", icon: "clock" },
     ],
   },
   {
     title: "intro.life",
     body: "intro.lifeBody",
     items: [
-      { key: "health", icon: "checkin" },
-      { key: "workout", icon: "sun" },
+      { title: "intro.health", body: "intro.healthBody", icon: "checkin" },
+      { title: "intro.workout", body: "intro.workoutBody", icon: "sun" },
     ],
   },
-] as const;
+  {
+    title: "guide.installTitle",
+    body: "guide.installBody",
+    items: [
+      {
+        title: "guide.installIos",
+        body: "guide.installIosBody",
+        icon: "plus",
+      },
+      {
+        title: "guide.installBrowser",
+        body: "guide.installBrowserBody",
+        icon: "settings",
+      },
+    ],
+  },
+] as const satisfies readonly GuideSection[];
 
 export default function GuidePage() {
   const { t } = useLanguage();
@@ -58,14 +87,14 @@ export default function GuidePage() {
             </p>
             <div className="intro-illustration">
               {section.items.map((item) => (
-                <div key={item.key} className="intro-example">
+                <div key={item.title} className="intro-example">
                   <span className="icon-tile">
-                    <Icon name={item.icon as IconName} />
+                    <Icon name={item.icon} />
                   </span>
                   <div>
-                    <h3 className="font-semibold">{t(`intro.${item.key}`)}</h3>
+                    <h3 className="font-semibold">{t(item.title)}</h3>
                     <p className="mt-1 text-sm leading-6 text-muted">
-                      {t(`intro.${item.key}Body`)}
+                      {t(item.body)}
                     </p>
                   </div>
                 </div>

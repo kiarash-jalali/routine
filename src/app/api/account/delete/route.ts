@@ -1,3 +1,4 @@
+import { authenticatePrivilegedRequest } from "@/lib/server/requestAuth";
 import { enforceRateLimit } from "@/lib/server/rateLimit";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
@@ -9,44 +10,28 @@ type DeletePayload = {
 };
 
 export async function POST(request: Request) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const auth = await authenticatePrivilegedRequest(request);
 
-  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+  if (!auth.ok) {
+    if (auth.error === "server_unavailable") {
+      return NextResponse.json(
+        { error: "Account deletion is not configured yet." },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Account deletion is not configured yet." },
-      { status: 503 },
-    );
-  }
-
-  const authorization = request.headers.get("authorization");
-  const accessToken = authorization?.startsWith("Bearer ")
-    ? authorization.slice("Bearer ".length)
-    : null;
-
-  if (!accessToken) {
-    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
-  }
-
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-
-  const {
-    data: { user },
-    error: userError,
-  } = await admin.auth.getUser(accessToken);
-
-  if (userError || !user) {
-    return NextResponse.json(
-      { error: "Your session is no longer valid." },
+      {
+        error:
+          auth.error === "not_authenticated"
+            ? "Not authenticated."
+            : "Your session is no longer valid.",
+      },
       { status: 401 },
     );
   }
+
+  const { admin, anonKey, supabaseUrl, user } = auth;
 
   try {
     const allowed = await enforceRateLimit(

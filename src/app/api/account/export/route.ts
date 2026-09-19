@@ -1,6 +1,6 @@
+import { authenticatePrivilegedRequest } from "@/lib/server/requestAuth";
 import { enforceRateLimit } from "@/lib/server/rateLimit";
-import type { Database, Tables } from "@/types/database";
-import { createClient } from "@supabase/supabase-js";
+import type { Tables } from "@/types/database";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -32,51 +32,23 @@ function unauthorized(message: string) {
 }
 
 export async function GET(request: Request) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const auth = await authenticatePrivilegedRequest(request);
 
-  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
-    return NextResponse.json(
-      { error: "export_unavailable" },
-      { status: 503 },
+  if (!auth.ok) {
+    if (auth.error === "server_unavailable") {
+      return NextResponse.json(
+        { error: "export_unavailable" },
+        { status: 503 },
+      );
+    }
+    return unauthorized(
+      auth.error === "not_authenticated"
+        ? "not_authenticated"
+        : "session_invalid",
     );
   }
 
-  const authorization = request.headers.get("authorization");
-  const accessToken = authorization?.startsWith("Bearer ")
-    ? authorization.slice("Bearer ".length)
-    : null;
-
-  if (!accessToken) return unauthorized("not_authenticated");
-
-  const userDb = createClient<Database>(supabaseUrl, anonKey, {
-    global: {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-
-  const {
-    data: { user },
-    error: userError,
-  } = await userDb.auth.getUser(accessToken);
-
-  if (userError || !user) {
-    return unauthorized("session_invalid");
-  }
-
-  const admin = createClient<Database>(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
+  const { admin, user, userDb } = auth;
 
   try {
     const allowed = await enforceRateLimit(
