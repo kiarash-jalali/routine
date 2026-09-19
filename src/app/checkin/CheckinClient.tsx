@@ -122,6 +122,9 @@ export function CheckinClient({
     useState<CheckinCompletionMap>(initialCompletionByItem);
   const [hasFinishedToday, setHasFinishedToday] = useState(initialFinished);
   const [editingFinishedCheckin, setEditingFinishedCheckin] = useState(false);
+  const [offlineSnapshotDay, setOfflineSnapshotDay] = useState<string | null>(
+    initialLoadError ? null : initialDayKey,
+  );
 
   useEffect(() => {
     if (initialDayKey === today && !initialLoadError) return;
@@ -148,8 +151,10 @@ export function CheckinClient({
         setSavedCompletionByItem(existingCompletionMap);
         setHasFinishedToday(Boolean(existingCheckin?.completed_at));
         setEditingFinishedCheckin(false);
+        setOfflineSnapshotDay(today);
       } catch (error: unknown) {
         if (!cancelled) {
+          setOfflineSnapshotDay(null);
           setErrorMessage(getErrorMessage(error, t("checkin.loadError")));
         }
       }
@@ -251,6 +256,8 @@ export function CheckinClient({
   const checkinLocked = saving || (hasFinishedToday && !editingFinishedCheckin);
 
   useEffect(() => {
+    if (offlineSnapshotDay !== today) return;
+
     void saveOfflineSnapshot({
       version: 1,
       userId,
@@ -273,6 +280,7 @@ export function CheckinClient({
     completionByItem,
     hasFinishedToday,
     language,
+    offlineSnapshotDay,
     routines,
     tasks,
     today,
