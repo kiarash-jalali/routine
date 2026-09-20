@@ -307,10 +307,23 @@ export const fa: Record<TranslationKey, string> = {
     "یادآوری فعال نشد. برنامه‌هایت ذخیره شده‌اند. اتصال اینترنت را بررسی کن و دوباره امتحان کن.",
   "reminder.unconfigured":
     "اعلان‌ها فعلاً در دسترس نیستند. کمی بعد دوباره امتحان کن.",
-  "reminder.settingsTitle": "یادآوری مرور روزانه",
-  "reminder.off": "خاموش کردن یادآوری مرور روزانه",
-  "reminder.offDone":
-    "یادآوری مرور روزانه خاموش است. یادآوری سلامت و ورزش تنظیمات جداگانه دارند.",
+  "reminder.settingsTitle": "اعلان‌ها",
+  "reminder.settingsBody":
+    "انتخاب کن کدام بخش‌های rootine برایت یادآوری بفرستند. این تنظیم‌ها برای حسابت اعمال می‌شوند.",
+  "reminder.firstTitle": "یادآورها را برای روزت فعال کن",
+  "reminder.firstBody":
+    "اعلان‌های کارها، روتین‌ها، دارو، ورزش و مرور روز را فعال کن. بعداً می‌توانی هرکدام را در تنظیمات تغییر بدهی.",
+  "reminder.allowAll": "فعال کردن اعلان‌ها",
+  "reminder.notNow": "فعلاً نه",
+  "reminder.master": "همهٔ اعلان‌ها",
+  "reminder.masterBody": "کلید اصلی یادآوری‌های rootine.",
+  "reminder.tasks": "کارها",
+  "reminder.routines": "روتین‌ها",
+  "reminder.medication": "دارو",
+  "reminder.sport": "ورزش",
+  "reminder.checkin": "مرور روز",
+  "reminder.off": "خاموش کردن اعلان‌ها",
+  "reminder.offDone": "اعلان‌های حسابت خاموش شدند.",
   "reminder.device": "اعلان‌های دستگاه",
   "reminder.deviceBody":
     "برای برنامه‌های ذخیره‌شده اعلان دریافت کن. پیش‌نمایش اعلان هرگز نام دارو، مقدار مصرف یا یادداشت‌ها را نشان نمی‌دهد.",
