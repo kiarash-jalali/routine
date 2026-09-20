@@ -1,4 +1,4 @@
-const SW_VERSION = "v2";
+const SW_VERSION = "v3";
 const CACHE_PREFIX = "rootine-";
 const SHELL_CACHE = `${CACHE_PREFIX}shell-${SW_VERSION}`;
 const ASSET_CACHE = `${CACHE_PREFIX}assets-${SW_VERSION}`;
@@ -256,8 +256,10 @@ self.addEventListener("push", (event) => {
   } catch {
     /* Older empty pushes use the check-in fallback. */
   }
-  const allowedUrls = ["/checkin", "/health", "/workouts"];
-  const url = allowedUrls.includes(message.url) ? message.url : "/checkin";
+  const allowedUrls = ["/dashboard", "/checkin", "/health", "/workouts"];
+  const url = allowedUrls.includes(message.url) ? message.url : "/dashboard";
+  const tag =
+    typeof message.tag === "string" ? message.tag.slice(0, 128) : undefined;
   event.waitUntil(
     self.registration.showNotification("rootine", {
       body:
@@ -268,7 +270,7 @@ self.addEventListener("push", (event) => {
       dir: message.lang === "fa" ? "rtl" : "ltr",
       icon: "/pwa/icon-192",
       badge: "/pwa/icon-192",
-      tag: `rootine-${url.slice(1)}`,
+      ...(tag ? { tag } : {}),
       renotify: false,
       data: { url },
     }),
@@ -278,7 +280,9 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const requested = event.notification.data?.url;
-  const targetUrl = ["/checkin", "/health", "/workouts"].includes(requested)
+  const targetUrl = ["/dashboard", "/checkin", "/health", "/workouts"].includes(
+    requested,
+  )
     ? requested
     : "/dashboard";
 
