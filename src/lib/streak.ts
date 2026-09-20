@@ -1,14 +1,9 @@
-import { getLocalDateKey } from "@/lib/today";
+import { getLocalDateKey, localDateFromKey } from "@/lib/today";
 import type { StreakMetrics } from "@/types/streak";
 import { translate, type Language } from "@/lib/i18n";
 
-function dateFromKey(dateKey: string): Date {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
 function previousDateKey(dateKey: string): string {
-  const date = dateFromKey(dateKey);
+  const date = localDateFromKey(dateKey);
   date.setDate(date.getDate() - 1);
   return getLocalDateKey(date);
 }
@@ -24,7 +19,11 @@ function longestRun(days: string[]): number {
   let current = 1;
 
   for (let index = 1; index < days.length; index += 1) {
-    if (previousDateKey(days[index]) === days[index - 1]) {
+    const day = days[index];
+    const previousDay = days[index - 1];
+    if (!day || !previousDay) continue;
+
+    if (previousDateKey(day) === previousDay) {
       current += 1;
       best = Math.max(best, current);
     } else {
