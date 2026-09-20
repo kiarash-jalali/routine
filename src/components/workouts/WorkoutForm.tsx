@@ -146,16 +146,6 @@ export function WorkoutForm({
             onChange={(e) => change("exercises", e.target.value)}
           />
         </label>
-        {!onLog && (
-          <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={values.reminders_enabled}
-              onChange={(e) => change("reminders_enabled", e.target.checked)}
-            />
-            {t("schedule.reminders")}
-          </label>
-        )}
       </fieldset>
       <Button
         type="submit"
