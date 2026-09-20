@@ -24,7 +24,8 @@ export function FirstNotificationPrompt({
 }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(
-    initialPreference === null && notificationsSupported(),
+    (initialPreference === null || initialPreference?.prompt_seen === false) &&
+      notificationsSupported(),
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
