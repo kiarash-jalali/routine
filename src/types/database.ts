@@ -248,31 +248,49 @@ export type Database = {
       }
       notification_preferences: {
         Row: {
+          checkin_enabled: boolean
           created_at: string
           enabled: boolean
+          health_enabled: boolean
           last_sent_on: string | null
+          prompt_seen: boolean
           reminder_time: string
+          routine_enabled: boolean
+          task_enabled: boolean
           timezone: string
           updated_at: string
           user_id: string
+          workout_enabled: boolean
         }
         Insert: {
+          checkin_enabled?: boolean
           created_at?: string
           enabled?: boolean
+          health_enabled?: boolean
           last_sent_on?: string | null
+          prompt_seen?: boolean
           reminder_time?: string
+          routine_enabled?: boolean
+          task_enabled?: boolean
           timezone?: string
           updated_at?: string
           user_id: string
+          workout_enabled?: boolean
         }
         Update: {
+          checkin_enabled?: boolean
           created_at?: string
           enabled?: boolean
+          health_enabled?: boolean
           last_sent_on?: string | null
+          prompt_seen?: boolean
           reminder_time?: string
+          routine_enabled?: boolean
+          task_enabled?: boolean
           timezone?: string
           updated_at?: string
           user_id?: string
+          workout_enabled?: boolean
         }
         Relationships: []
       }
