@@ -136,14 +136,6 @@ export function MedicationForm({
             onChange={(e) => change("notes", e.target.value)}
           />
         </label>
-        <label className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={values.reminders_enabled}
-            onChange={(e) => change("reminders_enabled", e.target.checked)}
-          />
-          {t("schedule.reminders")}
-        </label>
         <p className="text-sm text-muted">{t("health.privacy")}</p>
       </fieldset>
       <Button
