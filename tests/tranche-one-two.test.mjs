@@ -72,3 +72,12 @@ test("Dashboard has a route-shaped loading state and timezone handoff", () => {
   assert.match(worker, /ROOTINE_TIMEZONE_COOKIE/);
   assert.match(page, /getServerLocalDay/);
 });
+
+test("repository secret hardening is enforced in CI", () => {
+  const pkg = source("package.json");
+  const workflow = source(".github/workflows/secret-scan.yml");
+
+  assert.match(pkg, /"archive:safe": "git archive/);
+  assert.match(workflow, /gitleaks\/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e/);
+  assert.match(workflow, /fetch-depth: 0/);
+});
