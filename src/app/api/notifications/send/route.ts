@@ -230,7 +230,7 @@ async function sendNotifications(request: Request) {
 
     const { data: taskRows, error: taskError } = await admin
       .from("tasks")
-      .select("id,user_id,due_at")
+      .select("id,user_id,title,due_at")
       .in("user_id", userIds)
       .eq("is_done", false)
       .not("due_at", "is", null)
@@ -255,13 +255,14 @@ async function sendNotifications(request: Request) {
           "checkin",
           "task",
           `task:${task.id}:${eventBucket}`,
+          task.title,
         );
       });
     }
 
     const { data: routineRows, error: routineError } = await admin
       .from("routines")
-      .select("id,user_id,frequency,days_of_week,preferred_time")
+      .select("id,user_id,title,frequency,days_of_week,preferred_time")
       .in("user_id", userIds)
       .eq("is_active", true)
       .not("preferred_time", "is", null)
@@ -312,6 +313,7 @@ async function sendNotifications(request: Request) {
           "checkin",
           "routine",
           `routine:${routine.id}:${clock.day}`,
+          routine.title,
         );
       });
     }
@@ -327,7 +329,7 @@ async function sendNotifications(request: Request) {
     const { data: healthRows, error: healthError } = await admin
       .from("medication_reminders")
       .select(
-        "id,user_id,notified_at,medication_plans!inner(is_active)",
+        "id,user_id,name,notified_at,medication_plans!inner(is_active)",
       )
       .in("user_id", userIds)
       .is("taken_at", null)
@@ -347,6 +349,7 @@ async function sendNotifications(request: Request) {
           "health",
           "health",
           `health:${reminder.id}:${eventBucket}`,
+          reminder.name,
         );
 
         if (accepted && !reminder.notified_at) {
@@ -372,7 +375,7 @@ async function sendNotifications(request: Request) {
 
     const { data: workoutRows, error: workoutError } = await admin
       .from("workout_sessions")
-      .select("id,user_id,workout_plans!inner(is_active)")
+      .select("id,user_id,name,workout_plans!inner(is_active)")
       .in("user_id", userIds)
       .is("completed_at", null)
       .is("notified_at", null)
@@ -397,6 +400,7 @@ async function sendNotifications(request: Request) {
             "workout",
             "workout",
             `workout:${session.id}`,
+            session.name,
           )
         ) {
           const { error: updateError } = await admin
