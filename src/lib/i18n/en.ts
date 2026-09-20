@@ -94,8 +94,9 @@ export const en = {
   "language.error": "Your language could not be saved. Try again.",
   "theme.title": "Appearance",
   "theme.description":
-    "Let the palette follow your local day, or choose a fixed theme.",
+    "Follow your local day, your device appearance, or choose a fixed theme.",
   "theme.auto": "Automatic time-of-day",
+  "theme.system": "Follow device",
   "theme.light": "Light",
   "theme.dark": "Dark",
   "theme.morning": "Morning",
