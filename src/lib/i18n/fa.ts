@@ -320,6 +320,8 @@ export const fa: Record<TranslationKey, string> = {
     "دریافت اعلان به اتصال اینترنت و تنظیمات دستگاه بستگی دارد. برنامه‌ات را در اپ ببین.",
   "reminder.test": "اعلان‌ها آماده‌اند. یادآوری‌ها آرام و کوتاه خواهند بود.",
   "reminder.generic": "یادآوری کوتاه برای مرور روزت.",
+  "reminder.missedCheckin":
+    "مرور دیروزت جا ماند، اما اشکالی ندارد. هر وقت آماده بودی rootine را باز کن.",
   "reminder.genericHealth":
     "یک یادآوری برنامه‌ریزی‌شده داری. برای دیدنش rootine را باز کن.",
   "reminder.genericWorkout":
