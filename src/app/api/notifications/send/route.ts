@@ -20,7 +20,13 @@ const SCHEDULE_CATCHUP_MINUTES = 15;
 
 type PreferenceRow = Pick<
   Tables<"notification_preferences">,
-  "user_id" | "timezone"
+  | "user_id"
+  | "timezone"
+  | "task_enabled"
+  | "routine_enabled"
+  | "health_enabled"
+  | "workout_enabled"
+  | "checkin_enabled"
 >;
 
 async function runInChunks<T>(
@@ -96,7 +102,9 @@ async function sendNotifications(request: Request) {
 
   const { data: preferenceRows, error: preferenceError } = await admin
     .from("notification_preferences")
-    .select("user_id,timezone")
+    .select(
+      "user_id,timezone,task_enabled,routine_enabled,health_enabled,workout_enabled,checkin_enabled",
+    )
     .eq("enabled", true);
 
   if (preferenceError) {
@@ -122,6 +130,9 @@ async function sendNotifications(request: Request) {
   }
 
   const userIds = preferences.map((preference) => preference.user_id);
+  const preferenceByUser = new Map(
+    preferences.map((preference) => [preference.user_id, preference]),
+  );
   let dueTasks = 0;
   let dueRoutines = 0;
   let dueCheckins = 0;
@@ -179,7 +190,7 @@ async function sendNotifications(request: Request) {
 
     await runInChunks(preferences, 25, async (preference) => {
       const clock = clocks.get(preference.user_id);
-      if (!clock) return;
+      if (!clock || !preference.checkin_enabled) return;
 
       const currentKey = `${preference.user_id}:${clock.day}`;
       const dueTimes = CHECKIN_REMINDER_TIMES.filter((time) =>
@@ -231,7 +242,12 @@ async function sendNotifications(request: Request) {
       counts.failed++;
     } else {
       await runInChunks(taskRows ?? [], 25, async (task) => {
-        if (!task.due_at) return;
+        if (
+          !task.due_at ||
+          !preferenceByUser.get(task.user_id)?.task_enabled
+        ) {
+          return;
+        }
 
         dueTasks++;
         await deliver(
@@ -256,7 +272,13 @@ async function sendNotifications(request: Request) {
     } else {
       await runInChunks(routineRows ?? [], 25, async (routine) => {
         const clock = clocks.get(routine.user_id);
-        if (!clock || !routine.preferred_time) return;
+        if (
+          !clock ||
+          !routine.preferred_time ||
+          !preferenceByUser.get(routine.user_id)?.routine_enabled
+        ) {
+          return;
+        }
         if (routine.frequency !== "daily" && routine.frequency !== "weekly")
           return;
         if (
@@ -305,12 +327,11 @@ async function sendNotifications(request: Request) {
     const { data: healthRows, error: healthError } = await admin
       .from("medication_reminders")
       .select(
-        "id,user_id,notified_at,medication_plans!inner(is_active,reminders_enabled)",
+        "id,user_id,notified_at,medication_plans!inner(is_active)",
       )
       .in("user_id", userIds)
       .is("taken_at", null)
       .eq("medication_plans.is_active", true)
-      .eq("medication_plans.reminders_enabled", true)
       .lte("scheduled_at", now.toISOString())
       .order("scheduled_at", { ascending: false })
       .limit(500);
@@ -319,6 +340,8 @@ async function sendNotifications(request: Request) {
       counts.failed++;
     } else {
       await runInChunks(healthRows ?? [], 25, async (reminder) => {
+        if (!preferenceByUser.get(reminder.user_id)?.health_enabled) return;
+
         const accepted = await deliver(
           reminder.user_id,
           "health",
@@ -349,12 +372,11 @@ async function sendNotifications(request: Request) {
 
     const { data: workoutRows, error: workoutError } = await admin
       .from("workout_sessions")
-      .select("id,user_id,workout_plans!inner(is_active,reminders_enabled)")
+      .select("id,user_id,workout_plans!inner(is_active)")
       .in("user_id", userIds)
       .is("completed_at", null)
       .is("notified_at", null)
       .eq("workout_plans.is_active", true)
-      .eq("workout_plans.reminders_enabled", true)
       .lte("scheduled_at", now.toISOString())
       .gte(
         "scheduled_at",
@@ -367,6 +389,8 @@ async function sendNotifications(request: Request) {
       counts.failed++;
     } else {
       await runInChunks(workoutRows ?? [], 25, async (session) => {
+        if (!preferenceByUser.get(session.user_id)?.workout_enabled) return;
+
         if (
           await deliver(
             session.user_id,
