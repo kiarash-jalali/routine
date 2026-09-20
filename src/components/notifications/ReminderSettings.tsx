@@ -177,38 +177,47 @@ export function ReminderSettings({ userId }: { userId: string }) {
             </p>
           )}
 
-          <label className="flex items-center justify-between gap-4 rounded-2xl border border-border p-4">
-            <span>
-              <span className="block font-medium">{t("reminder.master")}</span>
-              <span className="mt-1 block text-sm text-muted">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-border p-4">
+            <div>
+              <label htmlFor="notification-master" className="block font-medium">
+                {t("reminder.master")}
+              </label>
+              <p className="mt-1 text-sm text-muted">
                 {t("reminder.masterBody")}
-              </span>
-            </span>
+              </p>
+            </div>
             <input
+              id="notification-master"
               type="checkbox"
               checked={Boolean(preference?.enabled)}
               disabled={busy || !available || blocked}
               onChange={(event) => void setMaster(event.target.checked)}
             />
-          </label>
+          </div>
 
           <div className="space-y-2">
-            {categories.map((category) => (
-              <label
-                key={category.field}
-                className="flex items-center justify-between gap-4 rounded-2xl border border-border px-4 py-3"
-              >
-                <span className="font-medium">{t(category.label)}</span>
-                <input
-                  type="checkbox"
-                  checked={preference?.[category.field] ?? true}
-                  disabled={busy}
-                  onChange={(event) =>
-                    void setCategory(category.field, event.target.checked)
-                  }
-                />
-              </label>
-            ))}
+            {categories.map((category) => {
+              const inputId = `notification-${category.field}`;
+              return (
+                <div
+                  key={category.field}
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-border px-4 py-3"
+                >
+                  <label htmlFor={inputId} className="font-medium">
+                    {t(category.label)}
+                  </label>
+                  <input
+                    id={inputId}
+                    type="checkbox"
+                    checked={preference?.[category.field] ?? true}
+                    disabled={busy}
+                    onChange={(event) =>
+                      void setCategory(category.field, event.target.checked)
+                    }
+                  />
+                </div>
+              );
+            })}
           </div>
 
           <p className="text-sm text-muted">
