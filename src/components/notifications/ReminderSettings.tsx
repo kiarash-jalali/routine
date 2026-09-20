@@ -48,6 +48,7 @@ export function ReminderSettings({ userId }: { userId: string }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [clientReady, setClientReady] = useState(false);
   const [status, setStatus] = useState<
     "reminder.offDone" | "reminder.deviceOffDone" | null
   >(null);
@@ -59,6 +60,7 @@ export function ReminderSettings({ userId }: { userId: string }) {
   }
 
   useEffect(() => {
+    setClientReady(true);
     let cancelled = false;
     getNotificationPreference(userId)
       .then((value) => {
@@ -145,8 +147,9 @@ export function ReminderSettings({ userId }: { userId: string }) {
     }
   }
 
-  const available = notificationsSupported();
-  const blocked = currentNotificationPermission() === "denied";
+  const available = clientReady && notificationsSupported();
+  const blocked =
+    clientReady && currentNotificationPermission() === "denied";
 
   return (
     <Card>
@@ -161,7 +164,7 @@ export function ReminderSettings({ userId }: { userId: string }) {
         <LoadingState label={t("common.loading")} />
       ) : (
         <div className="mt-5 space-y-5">
-          {!available && (
+          {clientReady && !available && (
             <p role="status" className="notice">
               {t("reminder.unsupported")}
             </p>
