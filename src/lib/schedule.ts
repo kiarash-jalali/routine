@@ -22,8 +22,8 @@ export function localClock(now: Date, timeZone: string) {
 }
 
 function clockMinutes(value: string) {
-  const [hour, minute] = value.slice(0, 5).split(":").map(Number);
-  return hour * 60 + minute;
+  const [hour = "0", minute = "0"] = value.slice(0, 5).split(":");
+  return Number(hour) * 60 + Number(minute);
 }
 
 export function isLocalTimeDue(
