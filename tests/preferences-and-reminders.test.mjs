@@ -28,7 +28,10 @@ test("theme boundaries agree before and after hydration", () => {
     for (const preference of [null, "light", "dark"]) {
       const root = { dataset: {} };
       runInNewContext(themeScript, {
-        document: { documentElement: root },
+        document: {
+          documentElement: root,
+          querySelectorAll: () => [],
+        },
         localStorage: { getItem: () => preference },
         window: { matchMedia: () => ({ matches: false }) },
         Date: class {
