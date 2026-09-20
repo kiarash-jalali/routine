@@ -4,20 +4,26 @@ import type { Database, Tables } from "@/types/database";
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { reminderDelivery } from "@/lib/server/reminderDelivery";
-import { localClock } from "@/lib/schedule";
+import {
+  fiveMinuteBucket,
+  isLocalTimeDue,
+  localClock,
+  previousDateKey,
+  routineOccursOnDay,
+} from "@/lib/schedule";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+const CHECKIN_REMINDER_TIMES = ["18:00", "21:00", "22:00", "23:00", "23:30"];
+const SCHEDULE_CATCHUP_MINUTES = 15;
+const TASK_MIDNIGHT_GRACE_MS = 10 * 60 * 1000;
+const MEDICATION_REPEAT_WINDOW_MS = 60 * 60 * 1000;
+
 type PreferenceRow = Pick<
   Tables<"notification_preferences">,
-  "user_id" | "reminder_time" | "timezone" | "last_sent_on"
+  "user_id" | "timezone"
 >;
-
-type DuePreference = {
-  preference: PreferenceRow;
-  clock: ReturnType<typeof localClock>;
-};
 
 async function runInChunks<T>(
   items: T[],
@@ -88,173 +94,360 @@ async function sendNotifications(request: Request) {
 
   const { counts, deliver } = reminderDelivery(admin);
   const now = new Date();
-  let skippedCheckedIn = 0;
+  const eventBucket = fiveMinuteBucket(now);
 
-  const { data: preferences, error } = await admin
+  const { data: preferenceRows, error: preferenceError } = await admin
     .from("notification_preferences")
-    .select("user_id,reminder_time,timezone,last_sent_on")
+    .select("user_id,timezone")
     .eq("enabled", true);
 
-  if (error) {
+  if (preferenceError) {
     return NextResponse.json(
       { error: "Reminders could not be loaded." },
       { status: 500 },
     );
   }
 
-  const duePreferences: DuePreference[] = [];
-  for (const preference of preferences ?? []) {
+  const preferences: PreferenceRow[] = [];
+  const clocks = new Map<string, ReturnType<typeof localClock>>();
+  const timezones = new Map<string, string>();
+
+  for (const preference of preferenceRows ?? []) {
     try {
-      const clock = localClock(now, preference.timezone);
-      if (
-        clock.time >= preference.reminder_time.slice(0, 5) &&
-        preference.last_sent_on !== clock.day
-      ) {
-        duePreferences.push({ preference, clock });
-      }
+      clocks.set(
+        preference.user_id,
+        localClock(now, preference.timezone),
+      );
+      timezones.set(preference.user_id, preference.timezone);
+      preferences.push(preference);
     } catch {
       counts.failed++;
     }
   }
 
-  for (let index = 0; index < duePreferences.length; index += 100) {
-    const batch = duePreferences.slice(index, index + 100);
-    const userIds = [
-      ...new Set(batch.map(({ preference }) => preference.user_id)),
+  const userIds = preferences.map((preference) => preference.user_id);
+  let dueTasks = 0;
+  let dueRoutines = 0;
+  let dueCheckins = 0;
+  let dueMissedCheckins = 0;
+  let skippedCheckedIn = 0;
+
+  if (userIds.length > 0) {
+    const relevantDays = [
+      ...new Set(
+        preferences.flatMap((preference) => {
+          const day = clocks.get(preference.user_id)?.day;
+          return day ? [day, previousDateKey(day)] : [];
+        }),
+      ),
     ];
-    const days = [...new Set(batch.map(({ clock }) => clock.day))];
 
     const { data: checkins, error: checkinError } = await admin
       .from("daily_checkins")
-      .select("user_id,day")
+      .select("id,user_id,day,completed_at")
       .in("user_id", userIds)
-      .in("day", days)
-      .not("completed_at", "is", null);
+      .in("day", relevantDays);
 
     if (checkinError) {
-      counts.failed += batch.length;
-      continue;
+      counts.failed++;
     }
 
-    const checkedIn = new Set(
-      (checkins ?? []).map((row) => `${row.user_id}:${row.day}`),
-    );
+    const finishedCheckins = new Set<string>();
+    const checkinIdsByUserDay = new Map<string, string>();
 
-    await runInChunks(batch, 25, async ({ preference, clock }) => {
-      const hasCheckin = checkedIn.has(
-        `${preference.user_id}:${clock.day}`,
+    for (const checkin of checkins ?? []) {
+      const key = `${checkin.user_id}:${checkin.day}`;
+      checkinIdsByUserDay.set(key, checkin.id);
+      if (checkin.completed_at) finishedCheckins.add(key);
+    }
+
+    const checkinIds = [...checkinIdsByUserDay.values()];
+    const completedRoutineItems = new Set<string>();
+
+    if (checkinIds.length > 0) {
+      const { data: routineItems, error: routineItemError } = await admin
+        .from("checkin_items")
+        .select("checkin_id,item_id")
+        .in("checkin_id", checkinIds)
+        .eq("item_type", "routine")
+        .eq("completed", true);
+
+      if (routineItemError) {
+        counts.failed++;
+      } else {
+        for (const item of routineItems ?? []) {
+          completedRoutineItems.add(`${item.checkin_id}:${item.item_id}`);
+        }
+      }
+    }
+
+    await runInChunks(preferences, 25, async (preference) => {
+      const clock = clocks.get(preference.user_id);
+      if (!clock) return;
+
+      const currentKey = `${preference.user_id}:${clock.day}`;
+      const dueTimes = CHECKIN_REMINDER_TIMES.filter((time) =>
+        isLocalTimeDue(clock.time, time, SCHEDULE_CATCHUP_MINUTES),
       );
-      if (hasCheckin) skippedCheckedIn++;
 
-      const handled =
-        hasCheckin ||
-        (await deliver(preference.user_id, "checkin", clock.day));
+      if (finishedCheckins.has(currentKey)) {
+        skippedCheckedIn += dueTimes.length;
+      } else {
+        for (const time of dueTimes) {
+          dueCheckins++;
+          await deliver(
+            preference.user_id,
+            "checkin",
+            "checkin",
+            `checkin:${clock.day}:${time}`,
+          );
+        }
+      }
 
-      if (!handled) return;
-
-      const { error: updateError } = await admin
-        .from("notification_preferences")
-        .update({
-          last_sent_on: clock.day,
-          updated_at: now.toISOString(),
-        })
-        .eq("user_id", preference.user_id);
-
-      if (updateError) counts.failed++;
+      if (
+        isLocalTimeDue(clock.time, "00:05", SCHEDULE_CATCHUP_MINUTES)
+      ) {
+        const missedDay = previousDateKey(clock.day);
+        const missedKey = `${preference.user_id}:${missedDay}`;
+        if (!finishedCheckins.has(missedKey)) {
+          dueMissedCheckins++;
+          await deliver(
+            preference.user_id,
+            "checkin",
+            "checkin_missed",
+            `checkin-missed:${missedDay}`,
+          );
+        }
+      }
     });
-  }
 
-  const { error: syncError } = await admin.rpc("sync_medication_reminders");
-  if (syncError) {
-    return NextResponse.json(
-      { error: "Scheduled reminders could not be prepared." },
-      { status: 500 },
+    const { data: taskRows, error: taskError } = await admin
+      .from("tasks")
+      .select("id,user_id,due_at")
+      .in("user_id", userIds)
+      .eq("is_done", false)
+      .not("due_at", "is", null)
+      .lte("due_at", now.toISOString())
+      .gte(
+        "due_at",
+        new Date(now.getTime() - 36 * 60 * 60 * 1000).toISOString(),
+      )
+      .order("due_at")
+      .limit(500);
+
+    if (taskError) {
+      counts.failed++;
+    } else {
+      await runInChunks(taskRows ?? [], 25, async (task) => {
+        if (!task.due_at) return;
+
+        const timezone = timezones.get(task.user_id);
+        const clock = clocks.get(task.user_id);
+        if (!timezone || !clock) return;
+
+        const dueAt = new Date(task.due_at);
+        const dueClock = localClock(dueAt, timezone);
+        const ageMs = now.getTime() - dueAt.getTime();
+        const stillToday =
+          dueClock.day === clock.day ||
+          (ageMs >= 0 && ageMs <= TASK_MIDNIGHT_GRACE_MS);
+
+        if (!stillToday) return;
+
+        dueTasks++;
+        await deliver(
+          task.user_id,
+          "checkin",
+          "task",
+          `task:${task.id}:${eventBucket}`,
+        );
+      });
+    }
+
+    const { data: routineRows, error: routineError } = await admin
+      .from("routines")
+      .select("id,user_id,frequency,days_of_week,preferred_time")
+      .in("user_id", userIds)
+      .eq("is_active", true)
+      .not("preferred_time", "is", null)
+      .limit(1000);
+
+    if (routineError) {
+      counts.failed++;
+    } else {
+      await runInChunks(routineRows ?? [], 25, async (routine) => {
+        const clock = clocks.get(routine.user_id);
+        if (!clock || !routine.preferred_time) return;
+        if (routine.frequency !== "daily" && routine.frequency !== "weekly")
+          return;
+        if (
+          !routineOccursOnDay(
+            routine.frequency,
+            routine.days_of_week,
+            clock.day,
+          ) ||
+          !isLocalTimeDue(
+            clock.time,
+            routine.preferred_time,
+            SCHEDULE_CATCHUP_MINUTES,
+          )
+        ) {
+          return;
+        }
+
+        const checkinId = checkinIdsByUserDay.get(
+          `${routine.user_id}:${clock.day}`,
+        );
+        if (
+          checkinId &&
+          completedRoutineItems.has(`${checkinId}:${routine.id}`)
+        ) {
+          return;
+        }
+
+        dueRoutines++;
+        await deliver(
+          routine.user_id,
+          "checkin",
+          "routine",
+          `routine:${routine.id}:${clock.day}`,
+        );
+      });
+    }
+
+    const { error: syncError } = await admin.rpc("sync_medication_reminders");
+    if (syncError) {
+      return NextResponse.json(
+        { error: "Scheduled reminders could not be prepared." },
+        { status: 500 },
+      );
+    }
+
+    const { data: healthRows, error: healthError } = await admin
+      .from("medication_reminders")
+      .select(
+        "id,user_id,notified_at,medication_plans!inner(is_active,reminders_enabled)",
+      )
+      .in("user_id", userIds)
+      .is("taken_at", null)
+      .eq("medication_plans.is_active", true)
+      .eq("medication_plans.reminders_enabled", true)
+      .lte("scheduled_at", now.toISOString())
+      .gte(
+        "scheduled_at",
+        new Date(now.getTime() - MEDICATION_REPEAT_WINDOW_MS).toISOString(),
+      )
+      .order("scheduled_at")
+      .limit(500);
+
+    if (healthError) {
+      counts.failed++;
+    } else {
+      await runInChunks(healthRows ?? [], 25, async (reminder) => {
+        const accepted = await deliver(
+          reminder.user_id,
+          "health",
+          "health",
+          `health:${reminder.id}:${eventBucket}`,
+        );
+
+        if (accepted && !reminder.notified_at) {
+          const { error: updateError } = await admin
+            .from("medication_reminders")
+            .update({ notified_at: now.toISOString() })
+            .eq("id", reminder.id)
+            .is("notified_at", null);
+          if (updateError) counts.failed++;
+        }
+      });
+    }
+
+    const { error: workoutSyncError } = await admin.rpc(
+      "sync_workout_sessions",
     );
+    if (workoutSyncError) {
+      return NextResponse.json(
+        { error: "Scheduled sessions could not be prepared." },
+        { status: 500 },
+      );
+    }
+
+    const { data: workoutRows, error: workoutError } = await admin
+      .from("workout_sessions")
+      .select("id,user_id,workout_plans!inner(is_active,reminders_enabled)")
+      .in("user_id", userIds)
+      .is("completed_at", null)
+      .is("notified_at", null)
+      .eq("workout_plans.is_active", true)
+      .eq("workout_plans.reminders_enabled", true)
+      .lte("scheduled_at", now.toISOString())
+      .gte(
+        "scheduled_at",
+        new Date(now.getTime() - 60 * 60 * 1000).toISOString(),
+      )
+      .order("scheduled_at")
+      .limit(500);
+
+    if (workoutError) {
+      counts.failed++;
+    } else {
+      await runInChunks(workoutRows ?? [], 25, async (session) => {
+        if (
+          await deliver(
+            session.user_id,
+            "workout",
+            "workout",
+            `workout:${session.id}`,
+          )
+        ) {
+          const { error: updateError } = await admin
+            .from("workout_sessions")
+            .update({ notified_at: now.toISOString() })
+            .eq("id", session.id)
+            .is("notified_at", null);
+          if (updateError) counts.failed++;
+        }
+      });
+    }
+
+    const result = {
+      ok: counts.failed === 0,
+      ...counts,
+      skippedCheckedIn,
+      dueTasks,
+      dueRoutines,
+      dueCheckins,
+      dueMissedCheckins,
+      dueMedication: healthRows?.length ?? 0,
+      dueWorkouts: workoutRows?.length ?? 0,
+      durationMs: Date.now() - startedAt,
+    };
+
+    await admin
+      .from("push_deliveries")
+      .delete()
+      .lt(
+        "attempted_at",
+        new Date(now.getTime() - 30 * 86400000).toISOString(),
+      );
+
+    const log = JSON.stringify({ kind: "notification_cron", ...result });
+    if (result.ok) console.info(log);
+    else console.error(log);
+
+    return NextResponse.json(result, { status: result.ok ? 200 : 500 });
   }
-
-  const { data: healthRows, error: healthError } = await admin
-    .from("medication_reminders")
-    .select("id,user_id,medication_plans!inner(is_active,reminders_enabled)")
-    .is("taken_at", null)
-    .is("notified_at", null)
-    .eq("medication_plans.is_active", true)
-    .eq("medication_plans.reminders_enabled", true)
-    .lte("scheduled_at", now.toISOString())
-    .gte(
-      "scheduled_at",
-      new Date(now.getTime() - 60 * 60 * 1000).toISOString(),
-    )
-    .order("scheduled_at")
-    .limit(100);
-
-  if (healthError) counts.failed++;
-  await runInChunks(
-    healthRows ?? [],
-    25,
-    async (reminder) => {
-      if (await deliver(reminder.user_id, "health", reminder.id)) {
-        const { error: updateError } = await admin
-          .from("medication_reminders")
-          .update({ notified_at: now.toISOString() })
-          .eq("id", reminder.id);
-        if (updateError) counts.failed++;
-      }
-    },
-  );
-
-  const { error: workoutSyncError } = await admin.rpc("sync_workout_sessions");
-  if (workoutSyncError) {
-    return NextResponse.json(
-      { error: "Scheduled sessions could not be prepared." },
-      { status: 500 },
-    );
-  }
-
-  const { data: workoutRows, error: workoutError } = await admin
-    .from("workout_sessions")
-    .select("id,user_id,workout_plans!inner(is_active,reminders_enabled)")
-    .is("completed_at", null)
-    .is("notified_at", null)
-    .eq("workout_plans.is_active", true)
-    .eq("workout_plans.reminders_enabled", true)
-    .lte("scheduled_at", now.toISOString())
-    .gte(
-      "scheduled_at",
-      new Date(now.getTime() - 60 * 60 * 1000).toISOString(),
-    )
-    .order("scheduled_at")
-    .limit(100);
-
-  if (workoutError) counts.failed++;
-  await runInChunks(
-    workoutRows ?? [],
-    25,
-    async (session) => {
-      if (await deliver(session.user_id, "workout", session.id)) {
-        const { error: updateError } = await admin
-          .from("workout_sessions")
-          .update({ notified_at: now.toISOString() })
-          .eq("id", session.id);
-        if (updateError) counts.failed++;
-      }
-    },
-  );
-
-  await admin
-    .from("push_deliveries")
-    .delete()
-    .lt(
-      "attempted_at",
-      new Date(now.getTime() - 30 * 86400000).toISOString(),
-    );
 
   const result = {
     ok: counts.failed === 0,
     ...counts,
     skippedCheckedIn,
-    dueCheckins: duePreferences.length,
-    dueMedication: healthRows?.length ?? 0,
-    dueWorkouts: workoutRows?.length ?? 0,
+    dueTasks,
+    dueRoutines,
+    dueCheckins,
+    dueMissedCheckins,
+    dueMedication: 0,
+    dueWorkouts: 0,
     durationMs: Date.now() - startedAt,
   };
 
@@ -264,7 +457,6 @@ async function sendNotifications(request: Request) {
 
   return NextResponse.json(result, { status: result.ok ? 200 : 500 });
 }
-
 
 export async function GET(request: Request) {
   return sendNotifications(request);
