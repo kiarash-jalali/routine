@@ -19,6 +19,7 @@ export function reminderDelivery(admin: SupabaseClient<Database>) {
     category: ReminderCategory,
     kind: PushKind,
     event: string,
+    label?: string | null,
   ) {
     if (!targets.has(userId)) {
       const [subscriptions, profile] = await Promise.all([
@@ -64,6 +65,7 @@ export function reminderDelivery(admin: SupabaseClient<Database>) {
         kind,
         languages.get(userId) ?? "en",
         event,
+        label,
       );
 
       if (status >= 200 && status < 300) {
