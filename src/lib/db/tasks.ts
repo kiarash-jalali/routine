@@ -5,13 +5,16 @@ import { supabaseBrowser } from "@/lib/supabaseClient";
 
 type CreateTaskInput = Pick<Task, "user_id" | "title" | "due_at">;
 
+const TASK_COLUMNS =
+  "id,user_id,title,notes,due_at,is_done,created_at,updated_at";
+
 export async function listTasks(
   client?: SupabaseClient<Database>,
 ): Promise<Task[]> {
   const supabase = client ?? supabaseBrowser();
   const { data, error } = await supabase
     .from("tasks")
-    .select("*")
+    .select(TASK_COLUMNS)
     .order("is_done", { ascending: true })
     .order("due_at", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
@@ -25,7 +28,7 @@ export async function addTask(input: CreateTaskInput): Promise<Task> {
   const { data, error } = await supabase
     .from("tasks")
     .insert(input)
-    .select("*")
+    .select(TASK_COLUMNS)
     .single();
 
   if (error) throw error;
