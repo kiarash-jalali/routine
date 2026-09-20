@@ -14,13 +14,16 @@ type RoutineWriteFields = Pick<
 type CreateRoutineInput = RoutineWriteFields & Pick<Routine, "user_id">;
 type UpdateRoutineInput = RoutineWriteFields;
 
+const ROUTINE_COLUMNS =
+  "id,user_id,title,frequency,days_of_week,preferred_time,is_active,created_at,updated_at";
+
 export async function listRoutines(
   client?: SupabaseClient<Database>,
 ): Promise<Routine[]> {
   const supabase = client ?? supabaseBrowser();
   const { data, error } = await supabase
     .from("routines")
-    .select("*")
+    .select(ROUTINE_COLUMNS)
     .order("is_active", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -38,7 +41,7 @@ export async function addRoutine(input: CreateRoutineInput): Promise<Routine> {
   const { data, error } = await supabase
     .from("routines")
     .insert(input)
-    .select("*")
+    .select(ROUTINE_COLUMNS)
     .single();
 
   if (error) throw error;
@@ -57,7 +60,7 @@ export async function updateRoutine(
     .from("routines")
     .update(input)
     .eq("id", routineId)
-    .select("*")
+    .select(ROUTINE_COLUMNS)
     .single();
 
   if (error) throw error;
