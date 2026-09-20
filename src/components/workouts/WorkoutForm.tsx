@@ -75,7 +75,6 @@ export function WorkoutForm({
         <label className="grid gap-2 text-sm">
           {t("workout.name")}
           <Input
-            autoFocus
             required
             value={values.name}
             maxLength={120}
