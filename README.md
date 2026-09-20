@@ -118,7 +118,7 @@ tests/                   Audit, domain, i18n, and PWA contract tests
 docs/                    Architecture and product implementation notes
 ```
 
-Pages should not duplicate/ database queries or domain rules. Database access
+Pages should not duplicate database queries or domain rules. Database access
 belongs in `src/lib/db`, reusable rules belong in `src/lib`, and shared data
 shapes belong in `src/types`. Reusable visual primitives live in
 `src/components/ui.tsx`; authenticated pages share `src/components/AppNav.tsx`;
