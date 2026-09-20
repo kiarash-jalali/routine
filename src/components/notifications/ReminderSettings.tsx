@@ -22,6 +22,7 @@ import {
   saveNotificationPreference,
   type NotificationCategoryField,
   type NotificationPreference,
+  type NotificationPreferenceUpdate,
 } from "@/lib/db/notifications";
 
 const categories: {
@@ -116,12 +117,13 @@ export function ReminderSettings({ userId }: { userId: string }) {
     setStatus(null);
 
     try {
-      await saveNotificationPreference(userId, {
+      const update: NotificationPreferenceUpdate = {
         prompt_seen: true,
         timezone,
         ...(preference ? {} : allNotificationCategoriesEnabled),
-        [field]: enabled,
-      });
+      };
+      update[field] = enabled;
+      await saveNotificationPreference(userId, update);
       await refresh();
     } catch {
       setError(true);
