@@ -33,7 +33,7 @@ test("Tranche 3 exposes explicit theme choices and localized destructive confirm
 
 test("Tranche 3 improves accessibility and RTL-safe styling", () => {
   const ui = source("src/components/ui.tsx");
-  const polish = source("src/app/stability-polish.css");
+  const polish = source("src/app/globals.css");
   const globals = source("src/app/globals.css");
 
   assert.match(ui, /common\.completion/);

@@ -48,7 +48,7 @@ import type { Task } from "@/types/task";
 
 type CheckinChoiceProps = {
   title: string;
-  detail?: string;
+  detail?: string | undefined;
   completed: boolean;
   locked: boolean;
   onToggle: () => void;

@@ -11,10 +11,10 @@ export function WorkoutForm({
   onSave,
   onLog,
 }: {
-  initial?: WorkoutPlan;
+  initial?: WorkoutPlan | undefined;
   busy: boolean;
-  onSave?: (values: WorkoutInput) => Promise<void>;
-  onLog?: (values: SessionInput) => Promise<void>;
+  onSave?: ((values: WorkoutInput) => Promise<void>) | undefined;
+  onLog?: ((values: SessionInput) => Promise<void>) | undefined;
 }) {
   const { t } = useLanguage();
   const timezone = getDeviceTimeZone();

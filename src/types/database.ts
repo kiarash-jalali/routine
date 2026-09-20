@@ -1,4 +1,3 @@
-// Generated from the live Supabase schema. Do not edit by hand.
 export type Json =
   | string
   | number
@@ -277,6 +276,27 @@ export type Database = {
         }
         Relationships: []
       }
+      point_rules: {
+        Row: {
+          checkin_reward_points: number
+          id: string
+          streak_repair_cost_points: number
+          updated_at: string
+        }
+        Insert: {
+          checkin_reward_points: number
+          id: string
+          streak_repair_cost_points: number
+          updated_at?: string
+        }
+        Update: {
+          checkin_reward_points?: number
+          id?: string
+          streak_repair_cost_points?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       point_transactions: {
         Row: {
           amount: number
@@ -444,7 +464,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          cost_points?: number
+          cost_points: number
           created_at?: string
           day: string
           id?: string
@@ -636,6 +656,13 @@ export type Database = {
         }[]
       }
       get_point_balance: { Args: never; Returns: number }
+      get_point_rules: {
+        Args: never
+        Returns: {
+          checkin_reward_points: number
+          streak_repair_cost_points: number
+        }[]
+      }
       get_rhythm_summary: {
         Args: { p_today: string; p_window_days?: number }
         Returns: {

@@ -1,14 +1,9 @@
-import { getLocalDateKey } from "@/lib/today";
+import { getLocalDateKey, localDateFromKey } from "@/lib/today";
 import type {
   CheckinHistoryEntry,
   CheckinHistorySummary,
   RhythmDay,
 } from "@/types/history";
-
-function dateFromKey(dateKey: string): Date {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  return new Date(year, month - 1, day, 12);
-}
 
 function localeMonthKey(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale, {
@@ -35,7 +30,7 @@ export function formatHistoryDate(
     weekday: "short",
     month: "short",
     day: "numeric",
-  }).format(dateFromKey(dateKey));
+  }).format(localDateFromKey(dateKey, 12));
 }
 
 export function summarizeCheckin(
@@ -81,7 +76,7 @@ export function countRecentCheckins(
   const earliest = new Date(referenceDate);
   earliest.setHours(0, 0, 0, 0);
   earliest.setDate(earliest.getDate() - (days - 1));
-  return history.filter((entry) => dateFromKey(entry.day) >= earliest).length;
+  return history.filter((entry) => localDateFromKey(entry.day) >= earliest).length;
 }
 
 export function buildRhythmDays(

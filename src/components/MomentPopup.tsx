@@ -10,11 +10,11 @@ export type MomentTone = "success" | "warm" | "info";
 export type MomentNotice = {
   id: string;
   title: string;
-  detail?: string;
-  icon?: IconName;
-  tone?: MomentTone;
-  sourceId?: string;
-  durationMs?: number;
+  detail?: string | undefined;
+  icon?: IconName | undefined;
+  tone?: MomentTone | undefined;
+  sourceId?: string | undefined;
+  durationMs?: number | undefined;
 };
 
 function useMobileMomentLayout() {

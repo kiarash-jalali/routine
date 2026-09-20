@@ -58,7 +58,7 @@ test("task creation no longer refetches the complete task list", () => {
   const client = source("src/app/dashboard/DashboardClient.tsx");
   const tasks = source("src/lib/db/tasks.ts");
 
-  assert.match(tasks, /insert\(input\)[\s\S]*select\("\*"\)[\s\S]*single\(\)/);
+  assert.match(tasks, /insert\(input\)[\s\S]*select\(TASK_COLUMNS\)[\s\S]*single\(\)/);
   assert.match(client, /const created = await addTask/);
   assert.doesNotMatch(client, /setTasks\(await listTasks\(\)\)/);
 });

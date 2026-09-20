@@ -5,9 +5,21 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
+  {
+    files: ["src/app/**/*.tsx", "src/components/**/*.tsx"],
+    ignores: ["src/app/design-lab/**/*.tsx"],
+    rules: {
+      "react/jsx-no-literals": [
+        "error",
+        {
+          noStrings: true,
+          ignoreProps: true,
+          allowedStrings: ["rootine", "—", "✓", "·", "/", ":", "%"],
+        },
+      ],
+    },
+  },
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",

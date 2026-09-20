@@ -1,17 +1,18 @@
 import { HistoryClient } from "./HistoryClient";
 import { listCheckinDays, listRecentCheckinHistory } from "@/lib/db/history";
-import { getPointBalance, listStreakRepairs } from "@/lib/db/points";
+import { getPointBalance, getPointRules, listStreakRepairs } from "@/lib/db/points";
 import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {
   const { supabase, userId } = await requireServerUser();
-  const [history, days, repairs, balance] = await Promise.allSettled([
+  const [history, days, repairs, balance, pointRules] = await Promise.allSettled([
     listRecentCheckinHistory(userId, 30, supabase),
     listCheckinDays(userId, supabase),
     listStreakRepairs(userId, supabase),
     getPointBalance(supabase),
+    getPointRules(supabase),
   ]);
 
   return (
@@ -20,7 +21,8 @@ export default async function HistoryPage() {
       initialCheckinDays={days.status === "fulfilled" ? days.value : []}
       initialRepairs={repairs.status === "fulfilled" ? repairs.value : []}
       initialPointBalance={balance.status === "fulfilled" ? balance.value : 0}
-      initialLoadError={[history, days, repairs, balance].some(
+      initialPointRules={pointRules.status === "fulfilled" ? pointRules.value : null}
+      initialLoadError={[history, days, repairs, balance, pointRules].some(
         (result) => result.status === "rejected",
       )}
     />

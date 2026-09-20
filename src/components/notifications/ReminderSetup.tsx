@@ -17,9 +17,9 @@ export function ReminderSetup({
   deviceOnly = false,
 }: {
   userId: string;
-  initialTime?: string;
-  onDone?: () => void;
-  deviceOnly?: boolean;
+  initialTime?: string | undefined;
+  onDone?: (() => void) | undefined;
+  deviceOnly?: boolean | undefined;
 }) {
   const { t, language } = useLanguage();
   const [time, setTime] = useState(initialTime);

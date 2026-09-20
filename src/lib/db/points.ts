@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import type { StreakRepair } from "@/types/points";
+import type { PointRules, StreakRepair } from "@/types/points";
 
 export async function getPointBalance(
   client?: SupabaseClient<Database>,
@@ -11,6 +11,17 @@ export async function getPointBalance(
 
   if (error) throw error;
   return Number(data ?? 0);
+}
+
+export async function getPointRules(
+  client?: SupabaseClient<Database>,
+): Promise<PointRules> {
+  const supabase = client ?? supabaseBrowser();
+  const { data, error } = await supabase.rpc("get_point_rules").single();
+
+  if (error) throw error;
+  if (!data) throw new Error("point_rules_unavailable");
+  return data;
 }
 
 export async function listStreakRepairs(

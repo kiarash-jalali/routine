@@ -30,10 +30,10 @@ export function LanguagePicker() {
           }}
         >
           <option value="en" lang="en">
-            English
+            {t("language.english")}
           </option>
           <option value="fa" lang="fa">
-            فارسی
+            {t("language.persian")}
           </option>
         </select>
       </label>

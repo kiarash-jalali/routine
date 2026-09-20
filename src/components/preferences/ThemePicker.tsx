@@ -11,7 +11,7 @@ import {
 } from "@/lib/theme";
 import { useSyncExternalStore } from "react";
 
-const options: ThemeMode[] = ["auto", "light", "dark"];
+const options: ThemeMode[] = ["auto", "system", "light", "dark"];
 
 export function ThemePicker() {
   const { t } = useLanguage();

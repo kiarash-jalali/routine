@@ -125,5 +125,7 @@ export function getMomentCopy(
   language: Language = currentMomentLanguage(),
 ): MomentLine {
   const options = language === "fa" ? persianMoments[key] : englishMoments[key];
-  return options[Math.floor(Math.random() * options.length)] ?? options[0];
+  const fallback = options[0];
+  if (!fallback) throw new Error(`moment_copy_missing:${key}`);
+  return options[Math.floor(Math.random() * options.length)] ?? fallback;
 }
