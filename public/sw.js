@@ -260,10 +260,12 @@ self.addEventListener("push", (event) => {
   const url = allowedUrls.includes(message.url) ? message.url : "/dashboard";
   const tag =
     typeof message.tag === "string" ? message.tag.slice(0, 128) : undefined;
+  const title =
+    typeof message.title === "string"
+      ? message.title.slice(0, 120)
+      : "rootine";
   event.waitUntil(
-    self.registration.showNotification(
-      typeof message.title === "string" ? message.title.slice(0, 120) : "rootine",
-      {
+    self.registration.showNotification(title, {
       body:
         typeof message.body === "string"
           ? message.body.slice(0, 300)
@@ -275,8 +277,7 @@ self.addEventListener("push", (event) => {
       ...(tag ? { tag } : {}),
       renotify: false,
       data: { url },
-    },
-    ),
+    }),
   );
 });
 
