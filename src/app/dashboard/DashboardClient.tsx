@@ -1,6 +1,7 @@
 "use client";
 import { LifeLinks } from "@/components/life/LifeLinks";
 import { InstallAppCard } from "@/components/pwa/InstallAppCard";
+import { FirstNotificationPrompt } from "@/components/notifications/FirstNotificationPrompt";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 import { Link } from "next-view-transitions";
@@ -47,6 +48,7 @@ import { saveOfflineSnapshot } from "@/lib/offlineStore";
 import type { CheckinCompletionMap } from "@/types/checkin";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
+import type { NotificationPreference } from "@/lib/db/notifications";
 
 function formatDueTime(
   task: Task,
@@ -84,6 +86,7 @@ export function DashboardClient({
   initialRhythm,
   initialCompletionByItem,
   initialDayKey,
+  initialNotificationPreference,
   initialPartialError,
 }: {
   userId: string;
@@ -92,6 +95,7 @@ export function DashboardClient({
   initialRhythm: RhythmSummary | null;
   initialCompletionByItem: CheckinCompletionMap;
   initialDayKey: string | null;
+  initialNotificationPreference: NotificationPreference | null | undefined;
   initialPartialError: boolean;
 }) {
   const { t, language, locale, date, time, number, weekday } = useLanguage();
@@ -396,6 +400,10 @@ export function DashboardClient({
 
   return (
     <PageShell>
+      <FirstNotificationPrompt
+        userId={userId}
+        initialPreference={initialNotificationPreference}
+      />
       <PageHeader
         eyebrow={date(today, {
           weekday: "long",
