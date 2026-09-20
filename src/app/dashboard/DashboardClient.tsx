@@ -738,7 +738,6 @@ export function DashboardClient({
           <label className="grid gap-2 text-sm font-medium">
             {t("product.task")}
             <Input
-              autoFocus
               placeholder={t("product.taskPlaceholder")}
               value={title}
               onChange={(event) => setTitle(event.target.value)}

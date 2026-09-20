@@ -71,7 +71,6 @@ export function RoutineForm({
         <label className="grid gap-2 text-sm font-medium">
           {t("common.name")}
           <Input
-            autoFocus
             placeholder={t("routine.placeholder")}
             value={values.title}
             onChange={(event) =>
