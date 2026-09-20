@@ -18,7 +18,7 @@ export function Sheet({
   open: boolean;
   onClose: () => void;
   title: string;
-  description?: string;
+  description?: string | undefined;
   busy?: boolean;
   keyboardAssist?: boolean;
   compact?: boolean;
@@ -94,12 +94,13 @@ export function Sheet({
             'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]',
           ),
         ).filter((item) => item.getClientRects().length);
-        const first = items[0],
-          last = items[items.length - 1];
+        const first = items[0];
         if (!first) {
           event.preventDefault();
           panelElement.focus();
-        } else if (
+        } else {
+          const last = items.at(-1) ?? first;
+          if (
           event.shiftKey &&
           (document.activeElement === first ||
             !panelElement.contains(document.activeElement) ||
@@ -114,6 +115,7 @@ export function Sheet({
         ) {
           event.preventDefault();
           first.focus();
+          }
         }
       }
       if (event.key === "Escape" && !busyRef.current) {
