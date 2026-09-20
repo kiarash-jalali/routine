@@ -9,7 +9,13 @@ const { getThemePeriod, themeScript } = loadTypeScriptModule(
 const { isValidPushEndpoint } = loadTypeScriptModule(
   new URL("../src/lib/pushEndpoint.ts", import.meta.url),
 );
-const { localClock } = loadTypeScriptModule(
+const {
+  fiveMinuteBucket,
+  isLocalTimeDue,
+  localClock,
+  previousDateKey,
+  routineOccursOnDay,
+} = loadTypeScriptModule(
   new URL("../src/lib/schedule.ts", import.meta.url),
 );
 
@@ -59,6 +65,21 @@ test("device clocks handle offsets and midnight boundaries", () => {
     day: "2026-09-18",
     time: "00:00",
   });
+});
+
+test("notification schedule helpers keep five-minute cadence and local days", () => {
+  assert.equal(
+    fiveMinuteBucket(new Date("2026-09-20T16:07:59Z")),
+    "2026-09-20T16:05:00.000Z",
+  );
+  assert.equal(isLocalTimeDue("18:00", "18:00"), true);
+  assert.equal(isLocalTimeDue("18:14", "18:00"), true);
+  assert.equal(isLocalTimeDue("18:15", "18:00"), false);
+  assert.equal(isLocalTimeDue("00:07", "00:05"), true);
+  assert.equal(previousDateKey("2026-03-01"), "2026-02-28");
+  assert.equal(routineOccursOnDay("daily", null, "2026-09-22"), true);
+  assert.equal(routineOccursOnDay("weekly", [1, 3], "2026-09-21"), true);
+  assert.equal(routineOccursOnDay("weekly", [1, 3], "2026-09-22"), false);
 });
 
 test("push transport rejects SSRF destinations", () => {
