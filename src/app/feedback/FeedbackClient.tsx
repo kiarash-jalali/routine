@@ -22,19 +22,20 @@ import {
 } from "@/lib/db/feedback";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy } from "@/lib/moments";
+import type { TranslationKey } from "@/lib/i18n";
 
-const feedbackCategories: ReadonlyArray<{
+const feedbackCategories = [
+  { value: "friction", labelKey: "feedback.friction" },
+  { value: "bug", labelKey: "feedback.bug" },
+  { value: "idea", labelKey: "feedback.idea" },
+  { value: "other", labelKey: "feedback.other" },
+] as const satisfies ReadonlyArray<{
   value: FeedbackCategory;
-  label: string;
-}> = [
-  { value: "friction", label: "Something felt confusing or awkward" },
-  { value: "bug", label: "Something broke" },
-  { value: "idea", label: "Idea or request" },
-  { value: "other", label: "Something else" },
-];
+  labelKey: TranslationKey;
+}>;
 
 export function FeedbackClient({ userId }: { userId: string }) {
-  const { t } = useLanguage();
+  const { t, number } = useLanguage();
   const [category, setCategory] = useState<FeedbackCategory>("friction");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -73,9 +74,9 @@ export function FeedbackClient({ userId }: { userId: string }) {
   return (
     <PageShell className="max-w-3xl">
       <PageHeader
-        eyebrow="Private alpha"
-        title="Tell us what felt off."
-        description="While Routine is small, the most useful feedback is what interrupted your flow, confused you, or made you wish something worked differently."
+        eyebrow={t("feedback.eyebrow")}
+        title={t("feedback.title")}
+        description={t("feedback.body")}
       />
 
       {error && (
@@ -86,13 +87,13 @@ export function FeedbackClient({ userId }: { userId: string }) {
 
       <Card>
         <SectionHeading
-          title="Send feedback"
-          description="Short and specific is perfect. You do not need to write a formal bug report."
+          title={t("feedback.send")}
+          description={t("feedback.sendBody")}
         />
 
         <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
           <label className="grid gap-2 text-sm font-medium">
-            What kind of feedback is this?
+            {t("feedback.kind")}
             <Select
               value={category}
               disabled={submitting}
@@ -102,14 +103,14 @@ export function FeedbackClient({ userId }: { userId: string }) {
             >
               {feedbackCategories.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {t(option.labelKey)}
                 </option>
               ))}
             </Select>
           </label>
 
           <label className="grid gap-2 text-sm font-medium">
-            What happened?
+            {t("feedback.happened")}
             <textarea
               className="field min-h-36 resize-y"
               value={message}
@@ -122,7 +123,7 @@ export function FeedbackClient({ userId }: { userId: string }) {
           </label>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted">{message.length}/2000</p>
+            <p className="text-xs text-muted">{t("feedback.characterCount", { count: number(message.length), max: number(2000) })}</p>
             <MomentSource id="send-feedback">
               <Button
                 type="submit"
@@ -130,7 +131,7 @@ export function FeedbackClient({ userId }: { userId: string }) {
                 disabled={submitting || message.trim().length < 3}
                 busy={submitting}
               >
-                Send feedback
+                {t("feedback.send")}
               </Button>
             </MomentSource>
           </div>
