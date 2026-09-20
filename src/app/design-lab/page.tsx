@@ -460,6 +460,7 @@ function TodayPreview({ theme }: { theme: Theme }) {
 }
 
 export default function DesignLabPage() {
+  // Theme edits in Design Lab stay local to this browser session.
   const [themes, setThemes] = useState(createEditableThemes);
   const [selected, setSelected] = useState<ThemeName>("day");
   const theme = themes[selected];
