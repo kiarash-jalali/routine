@@ -57,7 +57,6 @@ export function MedicationForm({
         <label className="grid gap-2 text-sm">
           {t("health.name")}
           <Input
-            autoFocus
             required
             maxLength={120}
             value={values.name}
