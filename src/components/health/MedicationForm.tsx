@@ -10,7 +10,7 @@ export function MedicationForm({
   busy,
   onSave,
 }: {
-  initial?: MedicationPlan;
+  initial?: MedicationPlan | undefined;
   busy: boolean;
   onSave: (values: MedicationInput) => Promise<void>;
 }) {
