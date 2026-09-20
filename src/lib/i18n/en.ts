@@ -325,12 +325,18 @@ export const en = {
   "reminder.offDone": "Notifications are off for your account.",
   "reminder.device": "Device notifications",
   "reminder.deviceBody":
-    "Receive private reminders for your saved plans. Notification previews never include medication names, doses or notes.",
+    "Receive reminders for your saved plans. Medication notifications show the medication name, but never dose or notes.",
   "reminder.deviceOff": "Turn off all notifications on this device",
   "reminder.deviceOffDone": "Notifications are off on this device.",
   "reminder.reliability":
     "Delivery depends on your connection and device settings. Open the app to see your schedule.",
   "reminder.test": "Notifications are ready. We’ll keep reminders gentle.",
+  "reminder.taskTitle": "Task reminder",
+  "reminder.routineTitle": "Routine reminder",
+  "reminder.medicationTitle": "Medication reminder",
+  "reminder.sportTitle": "Sport reminder",
+  "reminder.checkinTitle": "Check-in reminder",
+  "reminder.missedCheckinTitle": "Missed check-in",
   "reminder.generic": "A gentle reminder to check in with your day.",
   "reminder.missedCheckin":
     "You missed yesterday’s check-in, but that’s okay. Open rootine when you’re ready.",
@@ -350,7 +356,7 @@ export const en = {
   "health.timeNumber": "Reminder time {number}",
   "health.addTime": "Add time",
   "health.privacy":
-    "Only you can see these details in your account. Reminders never show medication details on your lock screen.",
+    "Only you can see these details in your account. Medication reminders may show the medication name, but never dose or notes."
   "health.tracking":
     "For recording your own schedule only. “Missed” means the scheduled time passed without a taken record; it is not an instruction to take a dose.",
   "health.upcoming": "Upcoming",
