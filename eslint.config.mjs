@@ -1,10 +1,15 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import jsxA11y from "eslint-plugin-jsx-a11y";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    ...jsxA11y.flatConfigs.recommended,
+    files: ["src/app/**/*.tsx", "src/components/**/*.tsx"],
+  },
   {
     files: ["src/app/**/*.tsx", "src/components/**/*.tsx"],
     ignores: ["src/app/design-lab/**/*.tsx"],
