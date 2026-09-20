@@ -306,10 +306,23 @@ export const en = {
     "Reminders could not be enabled. Your plans are saved. Check your connection and try again.",
   "reminder.unconfigured":
     "Notifications are temporarily unavailable. Please try again later.",
-  "reminder.settingsTitle": "Daily check-in reminder",
-  "reminder.off": "Turn off daily check-in reminder",
-  "reminder.offDone":
-    "Daily check-in reminders are off. Health and workout reminders keep their own settings.",
+  "reminder.settingsTitle": "Notifications",
+  "reminder.settingsBody":
+    "Choose which parts of rootine can remind you. These apply across your account.",
+  "reminder.firstTitle": "Stay on top of your day",
+  "reminder.firstBody":
+    "Allow notifications for tasks, routines, medication, sport and check-ins. You can change each type later in Settings.",
+  "reminder.allowAll": "Allow notifications",
+  "reminder.notNow": "Not now",
+  "reminder.master": "All notifications",
+  "reminder.masterBody": "Master switch for rootine reminders.",
+  "reminder.tasks": "Tasks",
+  "reminder.routines": "Routines",
+  "reminder.medication": "Medication",
+  "reminder.sport": "Sport",
+  "reminder.checkin": "Check-in",
+  "reminder.off": "Turn off notifications",
+  "reminder.offDone": "Notifications are off for your account.",
   "reminder.device": "Device notifications",
   "reminder.deviceBody":
     "Receive private reminders for your saved plans. Notification previews never include medication names, doses or notes.",
