@@ -7,13 +7,10 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    ...jsxA11y.flatConfigs.recommended,
-    files: ["src/app/**/*.tsx", "src/components/**/*.tsx"],
-  },
-  {
     files: ["src/app/**/*.tsx", "src/components/**/*.tsx"],
     ignores: ["src/app/design-lab/**/*.tsx"],
     rules: {
+      ...jsxA11y.flatConfigs.recommended.rules,
       "react/jsx-no-literals": [
         "error",
         {
