@@ -19,7 +19,25 @@ export type PushTarget = {
   auth: string;
 };
 
-function notificationBody(kind: PushKind, language: Language) {
+function notificationTitle(kind: PushKind, language: Language) {
+  if (kind === "task") return translate(language, "reminder.taskTitle");
+  if (kind === "routine") return translate(language, "reminder.routineTitle");
+  if (kind === "health") return translate(language, "reminder.medicationTitle");
+  if (kind === "workout") return translate(language, "reminder.sportTitle");
+  if (kind === "checkin_missed")
+    return translate(language, "reminder.missedCheckinTitle");
+  return translate(language, "reminder.checkinTitle");
+}
+
+function notificationBody(
+  kind: PushKind,
+  language: Language,
+  label?: string | null,
+) {
+  const itemLabel = label?.trim().slice(0, 160);
+  if (itemLabel && ["task", "routine", "health", "workout"].includes(kind)) {
+    return itemLabel;
+  }
   if (kind === "health") return translate(language, "reminder.genericHealth");
   if (kind === "workout")
     return translate(language, "reminder.genericWorkout");
@@ -40,6 +58,7 @@ export async function sendReminderPush(
   kind: PushKind,
   language: Language,
   eventKey: string,
+  label?: string | null,
 ) {
   if (!isValidPushEndpoint(target.endpoint)) return 400;
 
@@ -56,7 +75,8 @@ export async function sendReminderPush(
         keys: { p256dh: target.p256dh, auth: target.auth },
       },
       JSON.stringify({
-        body: notificationBody(kind, language),
+        title: notificationTitle(kind, language),
+        body: notificationBody(kind, language, label),
         url: notificationUrl(kind),
         tag: `rootine-${kind}-${eventKey}`.slice(0, 128),
         lang: language,
