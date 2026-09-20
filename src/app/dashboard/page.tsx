@@ -2,6 +2,7 @@ import { DashboardClient } from "./DashboardClient";
 import { completionMapFromItems } from "@/lib/checkinProgress";
 import { getDailyProgress } from "@/lib/db/checkins";
 import { getRhythmSummary } from "@/lib/db/rhythm";
+import { getNotificationPreference } from "@/lib/db/notifications";
 import { listTasks } from "@/lib/db/tasks";
 import { listActiveRoutines } from "@/lib/db/today";
 import { getServerLocalDay } from "@/lib/server/localDay";
@@ -13,17 +14,23 @@ export default async function DashboardPage() {
   const { supabase, userId } = await requireServerUser();
   const initialDayKey = await getServerLocalDay();
 
-  const [tasksResult, routinesResult, rhythmResult, progressResult] =
-    await Promise.allSettled([
-      listTasks(supabase),
-      listActiveRoutines(supabase),
-      initialDayKey
-        ? getRhythmSummary(initialDayKey, 7, supabase)
-        : Promise.resolve(null),
-      initialDayKey
-        ? getDailyProgress(userId, initialDayKey, supabase)
-        : Promise.resolve(null),
-    ]);
+  const [
+    tasksResult,
+    routinesResult,
+    rhythmResult,
+    progressResult,
+    notificationPreferenceResult,
+  ] = await Promise.allSettled([
+    listTasks(supabase),
+    listActiveRoutines(supabase),
+    initialDayKey
+      ? getRhythmSummary(initialDayKey, 7, supabase)
+      : Promise.resolve(null),
+    initialDayKey
+      ? getDailyProgress(userId, initialDayKey, supabase)
+      : Promise.resolve(null),
+    getNotificationPreference(userId, supabase),
+  ]);
 
   const initialTasks =
     tasksResult.status === "fulfilled" ? tasksResult.value : [];
@@ -35,6 +42,10 @@ export default async function DashboardPage() {
     progressResult.status === "fulfilled" && progressResult.value
       ? completionMapFromItems(progressResult.value.items)
       : {};
+  const initialNotificationPreference =
+    notificationPreferenceResult.status === "fulfilled"
+      ? notificationPreferenceResult.value
+      : undefined;
 
   return (
     <DashboardClient
@@ -44,6 +55,7 @@ export default async function DashboardPage() {
       initialRhythm={initialRhythm}
       initialCompletionByItem={initialCompletionByItem}
       initialDayKey={initialDayKey}
+      initialNotificationPreference={initialNotificationPreference}
       initialPartialError={[
         tasksResult,
         routinesResult,
