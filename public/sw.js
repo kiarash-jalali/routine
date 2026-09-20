@@ -1,4 +1,4 @@
-const SW_VERSION = "v3";
+const SW_VERSION = "v4";
 const CACHE_PREFIX = "rootine-";
 const SHELL_CACHE = `${CACHE_PREFIX}shell-${SW_VERSION}`;
 const ASSET_CACHE = `${CACHE_PREFIX}assets-${SW_VERSION}`;
@@ -261,7 +261,9 @@ self.addEventListener("push", (event) => {
   const tag =
     typeof message.tag === "string" ? message.tag.slice(0, 128) : undefined;
   event.waitUntil(
-    self.registration.showNotification("rootine", {
+    self.registration.showNotification(
+      typeof message.title === "string" ? message.title.slice(0, 120) : "rootine",
+      {
       body:
         typeof message.body === "string"
           ? message.body.slice(0, 300)
@@ -273,7 +275,8 @@ self.addEventListener("push", (event) => {
       ...(tag ? { tag } : {}),
       renotify: false,
       data: { url },
-    }),
+    },
+    ),
   );
 });
 
