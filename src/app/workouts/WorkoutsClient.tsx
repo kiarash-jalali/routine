@@ -176,7 +176,7 @@ export function WorkoutsClient({
             <SectionHeading title={t("workout.plans")} />
             <div className="mt-4 space-y-3">
               {data.plans.map((plan) => (
-                <Card key={plan.id}>
+                <Card key={plan.id} tone="soft">
                   <div className="flex flex-wrap justify-between gap-4">
                     <div>
                       <h3 className="font-semibold">
@@ -220,7 +220,7 @@ export function WorkoutsClient({
                   </div>
                 </Card>
               ))}
-              {!data.plans.length && <Card>{t("workout.empty")}</Card>}
+              {!data.plans.length && <Card tone="soft">{t("workout.empty")}</Card>}
             </div>
           </div>
           <Button className="mt-6" onClick={() => setNotificationOpen(true)}>
