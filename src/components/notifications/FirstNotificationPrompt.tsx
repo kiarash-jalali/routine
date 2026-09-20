@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sheet } from "@/components/Sheet";
 import { Button, ErrorNotice } from "@/components/ui";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
@@ -23,13 +23,19 @@ export function FirstNotificationPrompt({
   initialPreference: NotificationPreference | null | undefined;
 }) {
   const { t } = useLanguage();
-  const [open, setOpen] = useState(
-    (initialPreference === null || initialPreference?.prompt_seen === false) &&
-      notificationsSupported(),
-  );
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
+  useEffect(() => {
+    if (
+      (initialPreference === null || initialPreference?.prompt_seen === false) &&
+      notificationsSupported()
+    ) {
+      setOpen(true);
+    }
+  }, [initialPreference]);
 
   async function remember(enabled: boolean) {
     await saveNotificationPreference(userId, {
