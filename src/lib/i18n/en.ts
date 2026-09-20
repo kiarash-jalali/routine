@@ -356,7 +356,7 @@ export const en = {
   "health.timeNumber": "Reminder time {number}",
   "health.addTime": "Add time",
   "health.privacy":
-    "Only you can see these details in your account. Medication reminders may show the medication name, but never dose or notes."
+    "Only you can see these details in your account. Medication reminders may show the medication name, but never dose or notes.",
   "health.tracking":
     "For recording your own schedule only. “Missed” means the scheduled time passed without a taken record; it is not an instruction to take a dose.",
   "health.upcoming": "Upcoming",
