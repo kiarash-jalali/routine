@@ -1,6 +1,15 @@
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
 
+export function localDateFromKey(dateKey: string, hour = 0): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  if (!match) throw new Error("invalid_local_date_key");
+
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), hour);
+  if (Number.isNaN(date.getTime())) throw new Error("invalid_local_date_key");
+  return date;
+}
+
 export function getLocalDateKey(date = new Date()): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
