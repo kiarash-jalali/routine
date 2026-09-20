@@ -25,16 +25,12 @@ import {
   formatHistoryDate,
   summarizeCheckin,
 } from "@/lib/history";
-import {
-  CHECKIN_REWARD_POINTS,
-  findRepairableDays,
-  STREAK_REPAIR_COST_POINTS,
-} from "@/lib/points";
+import { findRepairableDays } from "@/lib/points";
 import { calculateStreakMetrics } from "@/lib/streak";
 import { useToday } from "@/lib/useToday";
 import type { TranslationKey } from "@/lib/i18n";
 import type { CheckinHistoryEntry } from "@/types/history";
-import type { StreakRepair } from "@/types/points";
+import type { PointRules, StreakRepair } from "@/types/points";
 
 const weekdayReferenceMonday = new Date(2026, 0, 5);
 
@@ -66,12 +62,14 @@ export function HistoryClient({
   initialCheckinDays,
   initialRepairs,
   initialPointBalance,
+  initialPointRules,
   initialLoadError,
 }: {
   initialHistory: CheckinHistoryEntry[];
   initialCheckinDays: string[];
   initialRepairs: StreakRepair[];
   initialPointBalance: number;
+  initialPointRules: PointRules | null;
   initialLoadError: boolean;
 }) {
   const { t, locale, number } = useLanguage();
@@ -83,6 +81,7 @@ export function HistoryClient({
   const [checkinDays] = useState<string[]>(initialCheckinDays);
   const [repairs, setRepairs] = useState<StreakRepair[]>(initialRepairs);
   const [pointBalance, setPointBalance] = useState(initialPointBalance);
+  const pointRules = initialPointRules;
   const [showAll, setShowAll] = useState(false);
   const [repairingDay, setRepairingDay] = useState<string | null>(null);
 
@@ -126,6 +125,11 @@ export function HistoryClient({
   const weekdayLabels = useMemo(() => getWeekdayLabels(locale), [locale]);
 
   async function repairDay(day: string) {
+    if (!pointRules) {
+      setErrorMessage(t("history.loadError"));
+      return;
+    }
+
     setRepairingDay(day);
     setErrorMessage(null);
 
@@ -136,7 +140,7 @@ export function HistoryClient({
         ...current,
         {
           day,
-          cost_points: STREAK_REPAIR_COST_POINTS,
+          cost_points: pointRules.streak_repair_cost_points,
           created_at: new Date().toISOString(),
         },
       ]);
@@ -147,7 +151,7 @@ export function HistoryClient({
 
       setErrorMessage(
         translationKey
-          ? t(translationKey, { count: number(STREAK_REPAIR_COST_POINTS) })
+          ? t(translationKey, { count: number(pointRules.streak_repair_cost_points) })
           : getErrorMessage(error, t("history.repairError")),
       );
     } finally {
@@ -352,7 +356,8 @@ export function HistoryClient({
                 </Button>
               )}
             </Card>
-            <Card tone="accent">
+            {pointRules && (
+              <Card tone="accent">
               <span className="icon-tile mb-5 bg-surface">
                 <Icon name="spark" />
               </span>
@@ -362,8 +367,8 @@ export function HistoryClient({
               </div>
               <p className="mt-4 text-sm leading-6 text-muted">
                 {t("history.pointsBody", {
-                  reward: number(CHECKIN_REWARD_POINTS),
-                  cost: number(STREAK_REPAIR_COST_POINTS),
+                  reward: number(pointRules.checkin_reward_points),
+                  cost: number(pointRules.streak_repair_cost_points),
                 })}
               </p>
               <p className="mt-3 text-sm leading-6 text-muted">
@@ -389,7 +394,7 @@ export function HistoryClient({
                         <Button
                           className="w-full"
                           disabled={
-                            pointBalance < STREAK_REPAIR_COST_POINTS ||
+                            pointBalance < pointRules.streak_repair_cost_points ||
                             repairingDay !== null
                           }
                           onClick={() => repairDay(day)}
@@ -397,22 +402,23 @@ export function HistoryClient({
                         >
                           {repairingDay === day
                             ? t("history.repairing")
-                            : t("history.repair", { cost: number(STREAK_REPAIR_COST_POINTS) })}
+                            : t("history.repair", { cost: number(pointRules.streak_repair_cost_points) })}
                         </Button>
                       </AnimatedListItem>
                     ))
                   )}
                 </AnimatedList>
                 {repairableDays.length > 0 &&
-                  pointBalance < STREAK_REPAIR_COST_POINTS && (
+                  pointBalance < pointRules.streak_repair_cost_points && (
                     <p className="text-sm text-muted">
                       {t("history.morePoints", {
-                        count: number(STREAK_REPAIR_COST_POINTS - pointBalance),
+                        count: number(pointRules.streak_repair_cost_points - pointBalance),
                       })}
                     </p>
                   )}
               </div>
-            </Card>
+              </Card>
+            )}
           </div>
         </div>
       )}
