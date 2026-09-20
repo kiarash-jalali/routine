@@ -17,8 +17,6 @@ export const maxDuration = 60;
 
 const CHECKIN_REMINDER_TIMES = ["18:00", "21:00", "22:00", "23:00", "23:30"];
 const SCHEDULE_CATCHUP_MINUTES = 15;
-const TASK_MIDNIGHT_GRACE_MS = 10 * 60 * 1000;
-const MEDICATION_REPEAT_WINDOW_MS = 60 * 60 * 1000;
 
 type PreferenceRow = Pick<
   Tables<"notification_preferences">,
@@ -110,7 +108,6 @@ async function sendNotifications(request: Request) {
 
   const preferences: PreferenceRow[] = [];
   const clocks = new Map<string, ReturnType<typeof localClock>>();
-  const timezones = new Map<string, string>();
 
   for (const preference of preferenceRows ?? []) {
     try {
@@ -118,7 +115,6 @@ async function sendNotifications(request: Request) {
         preference.user_id,
         localClock(now, preference.timezone),
       );
-      timezones.set(preference.user_id, preference.timezone);
       preferences.push(preference);
     } catch {
       counts.failed++;
@@ -228,11 +224,7 @@ async function sendNotifications(request: Request) {
       .eq("is_done", false)
       .not("due_at", "is", null)
       .lte("due_at", now.toISOString())
-      .gte(
-        "due_at",
-        new Date(now.getTime() - 36 * 60 * 60 * 1000).toISOString(),
-      )
-      .order("due_at")
+      .order("due_at", { ascending: false })
       .limit(500);
 
     if (taskError) {
@@ -240,19 +232,6 @@ async function sendNotifications(request: Request) {
     } else {
       await runInChunks(taskRows ?? [], 25, async (task) => {
         if (!task.due_at) return;
-
-        const timezone = timezones.get(task.user_id);
-        const clock = clocks.get(task.user_id);
-        if (!timezone || !clock) return;
-
-        const dueAt = new Date(task.due_at);
-        const dueClock = localClock(dueAt, timezone);
-        const ageMs = now.getTime() - dueAt.getTime();
-        const stillToday =
-          dueClock.day === clock.day ||
-          (ageMs >= 0 && ageMs <= TASK_MIDNIGHT_GRACE_MS);
-
-        if (!stillToday) return;
 
         dueTasks++;
         await deliver(
@@ -333,11 +312,7 @@ async function sendNotifications(request: Request) {
       .eq("medication_plans.is_active", true)
       .eq("medication_plans.reminders_enabled", true)
       .lte("scheduled_at", now.toISOString())
-      .gte(
-        "scheduled_at",
-        new Date(now.getTime() - MEDICATION_REPEAT_WINDOW_MS).toISOString(),
-      )
-      .order("scheduled_at")
+      .order("scheduled_at", { ascending: false })
       .limit(500);
 
     if (healthError) {
