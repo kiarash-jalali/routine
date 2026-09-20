@@ -1,8 +1,5 @@
 import { getLocalDateKey } from "@/lib/today";
 
-export const CHECKIN_REWARD_POINTS = 10;
-export const STREAK_REPAIR_COST_POINTS = 30;
-
 function dateFromKey(dateKey: string): Date {
   const [year, month, day] = dateKey.split("-").map(Number);
   return new Date(year, month - 1, day);
