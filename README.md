@@ -76,36 +76,53 @@ npm run archive:safe # Create a source archive from tracked Git files only
 
 | Route | Responsibility |
 | --- | --- |
+| `/` | Entry route; sends the user to the correct authenticated/public surface |
 | `/login` | Email/password login and signup |
 | `/forgot-password` | Request a password-reset email |
 | `/reset-password` | Choose a new password after recovery |
+| `/auth/callback` | Complete email confirmation and auth callback handling |
 | `/dashboard` | Task management and today's overview |
 | `/routines` | Create, edit, pause, resume, and delete daily/weekly routines |
 | `/checkin` | Daily completion ritual for today's items |
 | `/history` | Recent check-ins, rhythm, points, and missed-day recovery |
-| `/settings` | Profile, email, password, appearance, session, and account controls |
+| `/health` | Medication plans, due reminders, taken state, and history |
+| `/workouts` | Workout plans, sessions, completion, and history |
+| `/settings` | Profile, email, password, appearance, language, data, and account controls |
 | `/feedback` | Private-alpha bug reports, friction notes, and ideas |
+| `/guide` | Install, reminder, and product guidance |
+| `/onboarding` | First-use setup and starter routine flow |
+| `/design-lab` | Authenticated, noindex, desktop-only developer theme preview |
+
+Server routes live under `src/app/api`: account export/deletion, client-error
+collection, notification delivery/subscription management, and offline mutation
+sync. Auth recovery also has a dedicated route handler under `/auth/recovery`.
 
 ## Source structure
 
 ```text
 src/
-├── app/             Pages and page-level state
-├── components/      Small reusable UI building blocks
-├── lib/db/          Supabase queries and mutations
-├── lib/errors.ts    Safe conversion of unknown errors into messages
-├── lib/history.ts   Check-in history calculations
-├── lib/points.ts    Point and recovery domain rules
-├── lib/streak.ts    Forgiving streak calculations
-├── lib/today.ts     Shared local-date and "today" rules
-└── types/           Reusable application data types
+├── app/                 App Router pages, route handlers, global styles, and route state
+├── components/          Shared UI and interaction components
+│   └── life/            Health/workout shared navigation and life-management UI
+├── lib/
+│   ├── db/              Supabase queries and mutations
+│   ├── i18n/            English/Persian dictionaries and translation helpers
+│   ├── server/          Server-only auth, rate limiting, push, and agent boundaries
+│   ├── supabase/        Request-scoped Supabase server/proxy helpers
+│   └── *.ts             Reusable domain, schedule, theme, date, and offline rules
+└── types/               Reusable application and generated database data shapes
+
+public/                  PWA service worker and offline shell
+supabase/migrations/     Versioned PostgreSQL schema and function changes
+tests/                   Audit, domain, i18n, and PWA contract tests
+docs/                    Architecture and product implementation notes
 ```
 
-Pages should not duplicate database queries or domain rules. Database access
+Pages should not duplicate/ database queries or domain rules. Database access
 belongs in `src/lib/db`, reusable rules belong in `src/lib`, and shared data
 shapes belong in `src/types`. Reusable visual primitives live in
 `src/components/ui.tsx`; authenticated pages share `src/components/AppNav.tsx`;
-theme colours and global visual tokens live in `src/app/globals.css`.
+theme colours and global visual tokens live in `src/app/globals.css`; time-of-day overrides and RTL foundations live in `src/app/foundations.css`. See `docs/application-architecture.md` for the current server/client, data, PWA, and theme boundaries.
 
 ## Data model
 
@@ -127,26 +144,16 @@ function.
 
 ## Database migrations
 
-Database changes are versioned under `supabase/migrations`.
+Database changes are versioned under `supabase/migrations`. Apply them in order;
+do not cherry-pick old milestone migrations into an already-current database.
+`supabase/MIGRATIONS.md` records operational notes, and the live schema should
+match the committed migration chain.
 
-For the points/recovery milestone, run this migration once in the Supabase SQL
-Editor before testing the updated History page:
-
-```text
-supabase/migrations/202609151100_add_points_and_streak_recovery.sql
-```
-
-Profiles and first-time onboarding use:
-
-```text
-supabase/migrations/202609151330_add_profiles_and_onboarding.sql
-```
-
-The points migration also backfills existing finished check-ins with 10 points
-each, so old check-ins participate in the same economy without needing to be
-recreated.
+Refresh `src/types/database.ts` from the live/linked Supabase schema after any
+table or RPC signature change.
 
 ## Current milestone
+
 
 The core routine/task/check-in flow is implemented, routine editing is supported,
 and the shared UI foundation is in place. History shows recent check-ins and a
@@ -166,7 +173,7 @@ Points + missed-day recovery v1 adds these rules:
 
 Settings now provides profile editing, email and password changes, appearance,
 session controls, server-side account deletion, PWA installation guidance, and
-opt-in daily Web Push reminders. Routine is installable as a PWA on supported Android and iOS devices.
+opt-in daily Web Push reminders. Routine is installable as a PWA on supported Android and iOS devices. The installed app keeps a privacy-limited snapshot of today's routine/task completion, supports offline completion/check-in queuing, and synchronises queued mutations when connectivity returns.
 The private-alpha pass also includes stricter database privileges and RLS,
 protected server endpoints, production security headers, safer user-facing error
 messages, mobile keyboard/sheet fixes, and an in-app feedback flow.
