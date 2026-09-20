@@ -14,7 +14,6 @@ import "@fontsource-variable/vazirmatn/wght.css";
 import "@fontsource-variable/dm-sans/wght.css";
 import "@fontsource/dm-mono/latin-400.css";
 import "./globals.css";
-import "./stability-polish.css";
 import "./foundations.css";
 
 export const metadata: Metadata = {
@@ -31,10 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f5ee" },
-    { media: "(prefers-color-scheme: dark)", color: "#102825" },
-  ],
+  themeColor: "#f5f5ee",
   viewportFit: "cover",
 };
 
