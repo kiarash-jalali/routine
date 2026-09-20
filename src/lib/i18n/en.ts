@@ -319,6 +319,8 @@ export const en = {
     "Delivery depends on your connection and device settings. Open the app to see your schedule.",
   "reminder.test": "Notifications are ready. We’ll keep reminders gentle.",
   "reminder.generic": "A gentle reminder to check in with your day.",
+  "reminder.missedCheckin":
+    "You missed yesterday’s check-in, but that’s okay. Open rootine when you’re ready.",
   "reminder.genericHealth":
     "You have a scheduled reminder. Open rootine to view it.",
   "reminder.genericWorkout":
