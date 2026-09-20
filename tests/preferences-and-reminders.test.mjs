@@ -30,6 +30,7 @@ test("theme boundaries agree before and after hydration", () => {
       runInNewContext(themeScript, {
         document: { documentElement: root },
         localStorage: { getItem: () => preference },
+        window: { matchMedia: () => ({ matches: false }) },
         Date: class {
           getHours() {
             return hour;
