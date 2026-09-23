@@ -12,7 +12,6 @@ import { getErrorMessage } from "@/lib/errors";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
 import { useLanguage } from "@/components/preferences/LanguageProvider";
-import { LanguagePicker } from "@/components/preferences/LanguagePicker";
 
 export default function LoginPage() {
   const { t, language, setLanguage } = useLanguage();
@@ -26,6 +25,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
+  const [languageBusy, setLanguageBusy] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -110,15 +110,47 @@ export default function LoginPage() {
     setConfirmationSent(false);
   }
 
+  async function switchLanguage(nextLanguage: "en" | "fa") {
+    if (nextLanguage === language || languageBusy) return;
+    setLanguageBusy(true);
+    try {
+      await setLanguage(nextLanguage);
+    } finally {
+      setLanguageBusy(false);
+    }
+  }
+
   return (
     <main id="main-content" className="auth-page">
+      <div
+        className="auth-language"
+        role="group"
+        aria-label={t("language.title")}
+      >
+        <button
+          type="button"
+          lang="en"
+          aria-pressed={language === "en"}
+          disabled={languageBusy}
+          onClick={() => void switchLanguage("en")}
+        >
+          EN
+        </button>
+        <button
+          type="button"
+          lang="fa"
+          aria-pressed={language === "fa"}
+          disabled={languageBusy}
+          onClick={() => void switchLanguage("fa")}
+        >
+          FA
+        </button>
+      </div>
+
       <div className="auth-card">
-        <div className="mb-6">
-          <LanguagePicker />
-        </div>
-        <div className="mb-8 text-center">
-          <BrandMark className="mb-6 h-14 w-14 rounded-[18px]" />
-          <p className="mb-3 text-sm font-medium text-muted">rootine</p>
+        <div className="auth-heading text-center">
+          <BrandMark className="auth-brand-mark h-14 w-14 rounded-[18px]" />
+          <p className="auth-wordmark text-sm font-medium text-muted">rootine</p>
           <AnimatedSwap value={confirmationSent ? "confirmation" : mode}>
             <h1 className="display-title text-[40px] leading-tight">
               {confirmationSent
@@ -127,7 +159,7 @@ export default function LoginPage() {
                   ? t("login.welcome")
                   : t("login.start")}
             </h1>
-            <p className="mx-auto mt-3 max-w-xs text-[15px] leading-6 text-muted">
+            <p className="mx-auto mt-2.5 max-w-xs text-[15px] leading-6 text-muted">
               {confirmationSent
                 ? t("login.confirmBody")
                 : mode === "login"
@@ -136,7 +168,7 @@ export default function LoginPage() {
             </p>
           </AnimatedSwap>
         </div>
-        <div className="card bg-surface p-7 sm:p-8">
+        <div className="card auth-form-card bg-surface p-7 sm:p-8">
           <AnimatedSwap value={confirmationSent ? "confirmation" : "form"}>
             {confirmationSent ? (
               <div className="notice space-y-5" role="status">
@@ -272,7 +304,7 @@ export default function LoginPage() {
             )}
           </AnimatedSwap>
         </div>
-        <p className="mt-7 text-center text-sm text-muted">
+        <p className="mt-6 text-center text-sm text-muted">
           {t("nav.tagline")}
         </p>
       </div>
