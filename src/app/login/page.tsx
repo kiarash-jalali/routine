@@ -115,6 +115,8 @@ export default function LoginPage() {
     setLanguageBusy(true);
     try {
       await setLanguage(nextLanguage);
+    } catch {
+      setErrorMessage(t("language.error"));
     } finally {
       setLanguageBusy(false);
     }
