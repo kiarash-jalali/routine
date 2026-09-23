@@ -3,8 +3,6 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { AppNav } from "@/components/AppNav";
-import { ThemeToggle } from "@/components/ThemeToggle";
-
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 const appPaths = [
@@ -32,11 +30,6 @@ export function AppFrame({ children }: { children: ReactNode }) {
         {t("common.skipContent")}
       </a>
       {isApp && <AppNav />}
-      {!isApp && (
-        <div className="auth-theme">
-          <ThemeToggle />
-        </div>
-      )}
       <div className="route-view" key={pathname}>
         {children}
       </div>
