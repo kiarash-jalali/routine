@@ -100,6 +100,7 @@ export const en = {
   "theme.description":
     "Follow your local day, your device appearance, or choose a fixed theme.",
   "theme.auto": "Automatic time-of-day",
+  "theme.autoShort": "Auto",
   "theme.system": "Follow device",
   "theme.light": "Light",
   "theme.dark": "Dark",
