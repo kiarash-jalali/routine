@@ -529,6 +529,11 @@ export function SettingsClient({
                   </Button>
                 </SettingsDisclosure>
 
+              </div>
+            </Card>
+
+            <Card className="border-danger-border">
+              <div className="space-y-3">
                 <SettingsDisclosure
                   danger
                   title={t("settings.delete")}
