@@ -356,6 +356,7 @@ async function sendNotifications(request: Request) {
           "health",
           `health:${reminder.id}:${eventBucket}`,
           reminder.name,
+          `health:${reminder.id}`,
         );
 
         if (accepted && !reminder.notified_at) {
