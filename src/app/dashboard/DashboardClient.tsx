@@ -1121,14 +1121,14 @@ export function DashboardClient({
             />
           </label>
           <TaskScheduleFields
-              value={dueLocal}
-              hasTime={dueHasTime}
-              onChange={(value, hasTime) => {
-                setDueLocal(value);
-                setDueHasTime(hasTime);
-              }}
-              disabled={creating}
-            />
+            value={dueLocal}
+            hasTime={dueHasTime}
+            onChange={(value, hasTime) => {
+              setDueLocal(value);
+              setDueHasTime(hasTime);
+            }}
+            disabled={creating}
+          />
           <Collapse show={!!formError}>
             <ErrorNotice>{formError}</ErrorNotice>
           </Collapse>
