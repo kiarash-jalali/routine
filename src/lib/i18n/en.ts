@@ -245,7 +245,7 @@ export const en = {
   "settings.deviceBody": "Install rootine and choose when it should get your attention.",
   "settings.account": "Account & security",
   "settings.accountBody": "Sign-in details and this device session.",
-  "settings.data": "Your data",
+  "settings.data": "Data & privacy",
   "settings.dataBody": "Export a copy or permanently remove your account.",
   "settings.profile": "Profile",
   "settings.profileBody": "The name rootine uses when it speaks to you.",
