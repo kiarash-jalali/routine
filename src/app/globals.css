@@ -836,7 +836,7 @@
     align-items: center;
     gap: 14px;
     width: 100%;
-    text-align: left;
+    text-align: start;
     padding: 17px 15px;
     border: 1px solid var(--border);
     border-radius: 16px;
