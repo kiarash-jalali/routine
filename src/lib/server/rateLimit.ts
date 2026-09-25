@@ -26,6 +26,10 @@ export async function enforceRateLimit(
   return data === true;
 }
 
+// x-forwarded-for is trustworthy only when the request terminates at a known
+// proxy such as Vercel's edge. Never use this value as the sole authorization
+// boundary; pair IP rate limiting with authentication, a shared secret, or a
+// second non-IP abuse cap.
 export function requestIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0]?.trim() || "unknown";
