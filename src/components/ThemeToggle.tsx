@@ -10,7 +10,7 @@ import {
 } from "@/lib/theme";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 
-const modes: ThemeMode[] = ["auto", "light", "dark"];
+const cycleModes = ["auto", "light", "dark"] as const satisfies readonly ThemeMode[];
 
 export function ThemeToggle() {
   const { t } = useLanguage();
@@ -19,28 +19,40 @@ export function ThemeToggle() {
     themeSnapshot,
     () => "auto" as const,
   );
+  const visibleMode = cycleModes.includes(mode as (typeof cycleModes)[number])
+    ? mode
+    : "auto";
+  const nextIndex =
+    (cycleModes.indexOf(visibleMode as (typeof cycleModes)[number]) + 1) %
+    cycleModes.length;
+  const nextMode = cycleModes[nextIndex] ?? "auto";
+  const modeLabel =
+    visibleMode === "auto"
+      ? t("theme.autoShort")
+      : t(`theme.${visibleMode}`);
 
   return (
-    <label className="theme-toggle">
+    <button
+      type="button"
+      className="theme-toggle"
+      aria-label={t("theme.currentMode", { mode: modeLabel })}
+      title={t("theme.toggle")}
+      onClick={() => setThemeMode(nextMode)}
+    >
       <span className="theme-icon" aria-hidden="true">
         <Icon
-          name={mode === "auto" ? "clock" : mode === "dark" ? "moon" : "sun"}
-          size={19}
+          name={
+            visibleMode === "auto"
+              ? "clock"
+              : visibleMode === "dark"
+                ? "moon"
+                : "sun"
+          }
+          size={18}
         />
       </span>
       <span className="theme-label">{t("theme.title")}</span>
-      <select
-        className="theme-select"
-        value={mode}
-        aria-label={t("theme.title")}
-        onChange={(event) => setThemeMode(event.target.value as ThemeMode)}
-      >
-        {modes.map((value) => (
-          <option value={value} key={value}>
-            {t(`theme.${value}`)}
-          </option>
-        ))}
-      </select>
-    </label>
+      <span className="theme-mode">{modeLabel}</span>
+    </button>
   );
 }
