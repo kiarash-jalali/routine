@@ -322,258 +322,259 @@ export function SettingsClient({
       )}
 
       <div className="grid items-start gap-8 xl:grid-cols-2">
-        <section className="space-y-3" aria-labelledby="settings-personal">
-          <div className="px-1">
-            <h2 id="settings-personal" className="display-title text-2xl">
-              {t("settings.personal")}
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              {t("settings.personalBody")}
-            </p>
-          </div>
-          <Card>
-            <SectionHeading
-              title={t("settings.profile")}
-              description={t("settings.profileBody")}
-            />
-            <form className="mt-6 space-y-5" onSubmit={saveProfile}>
-              <label className="grid gap-2 text-sm font-medium">
-                {t("settings.displayName")}
-                <Input
-                  value={displayName}
-                  maxLength={80}
-                  autoComplete="name"
-                  disabled={Boolean(busyAction)}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                />
-              </label>
-              <MomentSource id="settings-profile">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={Boolean(busyAction) || !displayName.trim()}
-                  busy={busyAction === "profile"}
-                >
-                  {t("settings.saveProfile")}
-                </Button>
-              </MomentSource>
-            </form>
-
-            <div className="my-6 border-t border-border" />
-            <div className="grid gap-6 sm:grid-cols-2">
-              <ThemePicker />
-              <div className="space-y-2">
-                <LanguagePicker />
-                <p className="text-sm leading-6 text-muted">
-                  {t("language.description")}
-                </p>
-              </div>
+        <div className="space-y-8">
+          <section className="space-y-3" aria-labelledby="settings-personal">
+            <div className="px-1">
+              <h2 id="settings-personal" className="display-title text-2xl">
+                {t("settings.personal")}
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                {t("settings.personalBody")}
+              </p>
             </div>
-          </Card>
-        </section>
+            <Card>
+              <SectionHeading
+                title={t("settings.profile")}
+                description={t("settings.profileBody")}
+              />
+              <form className="mt-6 space-y-5" onSubmit={saveProfile}>
+                <label className="grid gap-2 text-sm font-medium">
+                  {t("settings.displayName")}
+                  <Input
+                    value={displayName}
+                    maxLength={80}
+                    autoComplete="name"
+                    disabled={Boolean(busyAction)}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                  />
+                </label>
+                <MomentSource id="settings-profile">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={Boolean(busyAction) || !displayName.trim()}
+                    busy={busyAction === "profile"}
+                  >
+                    {t("settings.saveProfile")}
+                  </Button>
+                </MomentSource>
+              </form>
 
-        <section className="space-y-3" aria-labelledby="settings-device">
-          <div className="px-1">
-            <h2 id="settings-device" className="display-title text-2xl">
-              {t("settings.device")}
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              {t("settings.deviceBody")}
-            </p>
-          </div>
-          <div className="space-y-6">
-            <InstallAppCard />
-            {userId && (
-              <div id="reminders" className="scroll-mt-6">
-                <ReminderSettings userId={userId} />
+              <div className="my-6 border-t border-border" />
+              <div className="grid gap-6 sm:grid-cols-2">
+                <ThemePicker />
+                <div className="space-y-2">
+                  <LanguagePicker />
+                  <p className="text-sm leading-6 text-muted">
+                    {t("language.description")}
+                  </p>
+                </div>
               </div>
-            )}
-            <Card tone="soft">
-              <SectionHeading title={t("settings.feedbackTitle")} description={t("settings.feedbackBody")} />
-              <Link href="/feedback" className="btn btn-secondary mt-5 inline-flex">
-                <Icon name="mail" size={17} />
-                {t("settings.feedbackAction")}
-              </Link>
             </Card>
-          </div>
-        </section>
+          </section>
+          <section className="space-y-3" aria-labelledby="settings-account">
+            <div className="px-1">
+              <h2 id="settings-account" className="display-title text-2xl">
+                {t("settings.account")}
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                {t("settings.accountBody")}
+              </p>
+            </div>
+            <Card>
+              <div className="space-y-3">
+                <SettingsDisclosure
+                  title={t("login.email")}
+                  description={t("settings.emailBody")}
+                >
+                  <form className="space-y-5" onSubmit={updateEmail}>
+                    <label className="grid gap-2 text-sm font-medium">
+                      {t("settings.emailAddress")}
+                      <Input
+                        type="email"
+                        value={newEmail}
+                        autoComplete="email"
+                        disabled={Boolean(busyAction)}
+                        onChange={(event) => setNewEmail(event.target.value)}
+                      />
+                    </label>
+                    <MomentSource id="settings-email">
+                      <Button
+                        type="submit"
+                        disabled={
+                          Boolean(busyAction) ||
+                          !newEmail.trim() ||
+                          newEmail.trim() === email
+                        }
+                        busy={busyAction === "email"}
+                      >
+                        {t("settings.updateEmail")}
+                      </Button>
+                    </MomentSource>
+                  </form>
+                </SettingsDisclosure>
 
-        <section className="space-y-3" aria-labelledby="settings-account">
-          <div className="px-1">
-            <h2 id="settings-account" className="display-title text-2xl">
-              {t("settings.account")}
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              {t("settings.accountBody")}
-            </p>
-          </div>
-          <Card>
-            <div className="space-y-3">
-              <SettingsDisclosure
-                title={t("login.email")}
-                description={t("settings.emailBody")}
-              >
-                <form className="space-y-5" onSubmit={updateEmail}>
-                  <label className="grid gap-2 text-sm font-medium">
-                    {t("settings.emailAddress")}
+                <SettingsDisclosure
+                  title={t("login.password")}
+                  description={t("settings.passwordBody", {
+                    count: MIN_PASSWORD_LENGTH,
+                  })}
+                >
+                  <form className="space-y-5" onSubmit={updatePassword}>
+                    <label className="grid gap-2 text-sm font-medium">
+                      {t("settings.newPassword")}
+                      <Input
+                        type="password"
+                        minLength={MIN_PASSWORD_LENGTH}
+                        value={newPassword}
+                        autoComplete="new-password"
+                        disabled={Boolean(busyAction)}
+                        onChange={(event) => setNewPassword(event.target.value)}
+                      />
+                    </label>
+                    <PasswordGuidance password={newPassword} />
+                    <label className="grid gap-2 text-sm font-medium">
+                      {t("settings.confirmPassword")}
+                      <Input
+                        type="password"
+                        minLength={MIN_PASSWORD_LENGTH}
+                        value={confirmPassword}
+                        autoComplete="new-password"
+                        disabled={Boolean(busyAction)}
+                        onChange={(event) => setConfirmPassword(event.target.value)}
+                      />
+                    </label>
+                    <MomentSource id="settings-password">
+                      <Button
+                        type="submit"
+                        disabled={
+                          Boolean(busyAction) || !newPassword || !confirmPassword
+                        }
+                        busy={busyAction === "password"}
+                      >
+                        {t("settings.changePassword")}
+                      </Button>
+                    </MomentSource>
+                  </form>
+                </SettingsDisclosure>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
+                <div>
+                  <h3 className="font-semibold">{t("settings.session")}</h3>
+                  <p className="mt-1 text-sm leading-6 text-muted">
+                    {t("settings.sessionBody")}
+                  </p>
+                </div>
+                <Button
+                  onClick={logout}
+                  disabled={Boolean(busyAction)}
+                  busy={busyAction === "logout"}
+                >
+                  <Icon name="logout" size={17} />
+                  {t("settings.logout")}
+                </Button>
+              </div>
+            </Card>
+          </section>
+        </div>
+
+        <div className="space-y-8">
+          <section className="space-y-3" aria-labelledby="settings-device">
+            <div className="px-1">
+              <h2 id="settings-device" className="display-title text-2xl">
+                {t("settings.device")}
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                {t("settings.deviceBody")}
+              </p>
+            </div>
+            <div className="space-y-6">
+              <InstallAppCard />
+              {userId && (
+                <div id="reminders" className="scroll-mt-6">
+                  <ReminderSettings userId={userId} />
+                </div>
+              )}
+              <Card tone="soft">
+                <SectionHeading title={t("settings.feedbackTitle")} description={t("settings.feedbackBody")} />
+                <Link href="/feedback" className="btn btn-secondary mt-5 inline-flex">
+                  <Icon name="mail" size={17} />
+                  {t("settings.feedbackAction")}
+                </Link>
+              </Card>
+            </div>
+          </section>
+          <section className="space-y-3" aria-labelledby="settings-data">
+            <div className="px-1">
+              <h2 id="settings-data" className="display-title text-2xl">
+                {t("settings.data")}
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                {t("settings.dataBody")}
+              </p>
+            </div>
+            <Card>
+              <div className="space-y-3">
+                <SettingsDisclosure
+                  title={t("settings.export")}
+                  description={t("settings.exportBody")}
+                >
+                  <Button
+                    onClick={exportAccountData}
+                    disabled={Boolean(busyAction)}
+                    busy={busyAction === "export"}
+                  >
+                    {t("settings.exportMine")}
+                  </Button>
+                </SettingsDisclosure>
+
+                <SettingsDisclosure
+                  danger
+                  title={t("settings.delete")}
+                  description={t("settings.deleteBody")}
+                >
+                  <div className="space-y-4">
+                    <p className="text-sm leading-6 text-muted">
+                      {t("settings.typeDelete", { word: deleteWord })}
+                    </p>
                     <Input
-                      type="email"
-                      value={newEmail}
-                      autoComplete="email"
+                      value={deleteConfirmation}
+                      placeholder={deleteWord}
+                      autoComplete="off"
                       disabled={Boolean(busyAction)}
-                      onChange={(event) => setNewEmail(event.target.value)}
+                      onChange={(event) => setDeleteConfirmation(event.target.value)}
                     />
-                  </label>
-                  <MomentSource id="settings-email">
+                    <label className="grid gap-2 text-sm font-medium">
+                      {t("settings.currentPassword")}
+                      <Input
+                        type="password"
+                        value={deletePassword}
+                        autoComplete="current-password"
+                        disabled={Boolean(busyAction)}
+                        onChange={(event) => setDeletePassword(event.target.value)}
+                      />
+                    </label>
                     <Button
-                      type="submit"
+                      variant="danger"
+                      onClick={deleteAccount}
                       disabled={
                         Boolean(busyAction) ||
-                        !newEmail.trim() ||
-                        newEmail.trim() === email
+                        deleteConfirmation.trim() !== deleteWord ||
+                        !deletePassword
                       }
-                      busy={busyAction === "email"}
+                      busy={busyAction === "delete"}
                     >
-                      {t("settings.updateEmail")}
+                      <Icon name="trash" size={17} />
+                      {t("settings.deleteMine")}
                     </Button>
-                  </MomentSource>
-                </form>
-              </SettingsDisclosure>
-
-              <SettingsDisclosure
-                title={t("login.password")}
-                description={t("settings.passwordBody", {
-                  count: MIN_PASSWORD_LENGTH,
-                })}
-              >
-                <form className="space-y-5" onSubmit={updatePassword}>
-                  <label className="grid gap-2 text-sm font-medium">
-                    {t("settings.newPassword")}
-                    <Input
-                      type="password"
-                      minLength={MIN_PASSWORD_LENGTH}
-                      value={newPassword}
-                      autoComplete="new-password"
-                      disabled={Boolean(busyAction)}
-                      onChange={(event) => setNewPassword(event.target.value)}
-                    />
-                  </label>
-                  <PasswordGuidance password={newPassword} />
-                  <label className="grid gap-2 text-sm font-medium">
-                    {t("settings.confirmPassword")}
-                    <Input
-                      type="password"
-                      minLength={MIN_PASSWORD_LENGTH}
-                      value={confirmPassword}
-                      autoComplete="new-password"
-                      disabled={Boolean(busyAction)}
-                      onChange={(event) => setConfirmPassword(event.target.value)}
-                    />
-                  </label>
-                  <MomentSource id="settings-password">
-                    <Button
-                      type="submit"
-                      disabled={
-                        Boolean(busyAction) || !newPassword || !confirmPassword
-                      }
-                      busy={busyAction === "password"}
-                    >
-                      {t("settings.changePassword")}
-                    </Button>
-                  </MomentSource>
-                </form>
-              </SettingsDisclosure>
-            </div>
-
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
-              <div>
-                <h3 className="font-semibold">{t("settings.session")}</h3>
-                <p className="mt-1 text-sm leading-6 text-muted">
-                  {t("settings.sessionBody")}
-                </p>
+                  </div>
+                </SettingsDisclosure>
               </div>
-              <Button
-                onClick={logout}
-                disabled={Boolean(busyAction)}
-                busy={busyAction === "logout"}
-              >
-                <Icon name="logout" size={17} />
-                {t("settings.logout")}
-              </Button>
-            </div>
-          </Card>
-        </section>
-
-        <section className="space-y-3" aria-labelledby="settings-data">
-          <div className="px-1">
-            <h2 id="settings-data" className="display-title text-2xl">
-              {t("settings.data")}
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              {t("settings.dataBody")}
-            </p>
-          </div>
-          <Card>
-            <div className="space-y-3">
-              <SettingsDisclosure
-                title={t("settings.export")}
-                description={t("settings.exportBody")}
-              >
-                <Button
-                  onClick={exportAccountData}
-                  disabled={Boolean(busyAction)}
-                  busy={busyAction === "export"}
-                >
-                  {t("settings.exportMine")}
-                </Button>
-              </SettingsDisclosure>
-
-              <SettingsDisclosure
-                danger
-                title={t("settings.delete")}
-                description={t("settings.deleteBody")}
-              >
-                <div className="space-y-4">
-                  <p className="text-sm leading-6 text-muted">
-                    {t("settings.typeDelete", { word: deleteWord })}
-                  </p>
-                  <Input
-                    value={deleteConfirmation}
-                    placeholder={deleteWord}
-                    autoComplete="off"
-                    disabled={Boolean(busyAction)}
-                    onChange={(event) => setDeleteConfirmation(event.target.value)}
-                  />
-                  <label className="grid gap-2 text-sm font-medium">
-                    {t("settings.currentPassword")}
-                    <Input
-                      type="password"
-                      value={deletePassword}
-                      autoComplete="current-password"
-                      disabled={Boolean(busyAction)}
-                      onChange={(event) => setDeletePassword(event.target.value)}
-                    />
-                  </label>
-                  <Button
-                    variant="danger"
-                    onClick={deleteAccount}
-                    disabled={
-                      Boolean(busyAction) ||
-                      deleteConfirmation.trim() !== deleteWord ||
-                      !deletePassword
-                    }
-                    busy={busyAction === "delete"}
-                  >
-                    <Icon name="trash" size={17} />
-                    {t("settings.deleteMine")}
-                  </Button>
-                </div>
-              </SettingsDisclosure>
-            </div>
-          </Card>
-        </section>
+            </Card>
+          </section>
+        </div>
       </div>
-
       <MomentPopup notice={moment} onDismiss={() => setMoment(null)} />
     </PageShell>
   );
