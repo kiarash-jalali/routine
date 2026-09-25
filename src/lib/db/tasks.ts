@@ -3,10 +3,10 @@ import type { Database } from "@/types/database";
 import type { Task } from "@/types/task";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
-type CreateTaskInput = Pick<Task, "user_id" | "title" | "due_at">;
+type CreateTaskInput = Pick<Task, "user_id" | "title" | "due_at" | "due_has_time">;
 
 const TASK_COLUMNS =
-  "id,user_id,title,notes,due_at,is_done,created_at,updated_at";
+  "id,user_id,title,notes,due_at,due_has_time,is_done,created_at,updated_at";
 
 export async function listTasks(
   client?: SupabaseClient<Database>,
