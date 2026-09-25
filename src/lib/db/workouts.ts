@@ -31,6 +31,22 @@ export async function loadWorkouts(
     sessions: sessions.data ?? [],
   };
 }
+export async function listWorkoutSessionsForDay(
+  userId: string,
+  day: string,
+  client?: SupabaseClient<Database>,
+) {
+  const { data, error } = await (client ?? supabaseBrowser())
+    .from("workout_sessions")
+    .select(sessionColumns)
+    .eq("user_id", userId)
+    .eq("scheduled_day", day)
+    .order("scheduled_at");
+
+  if (error) throw new Error("workout_today_load_failed");
+  return data ?? [];
+}
+
 export async function saveWorkout(
   userId: string,
   values: WorkoutInput,
