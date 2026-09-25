@@ -7,11 +7,16 @@ export default function SettingsLoading() {
           <div className="skeleton h-10 w-44" />
           <div className="skeleton h-5 w-72 max-w-full" />
         </div>
-        <div className="grid gap-8 xl:grid-cols-2">
-          <div className="card h-72" />
-          <div className="card h-64" />
-          <div className="card h-64" />
-          <div className="card h-56" />
+        <div className="grid items-start gap-8 xl:grid-cols-2">
+          <div className="space-y-8">
+            <div className="card h-80" />
+            <div className="card h-72" />
+          </div>
+          <div className="space-y-8">
+            <div className="card h-96" />
+            <div className="card h-36" />
+            <div className="card h-44" />
+          </div>
         </div>
       </div>
     </main>
