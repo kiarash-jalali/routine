@@ -136,7 +136,7 @@ export default function LoginPage() {
           disabled={languageBusy}
           onClick={() => void switchLanguage("en")}
         >
-          EN
+          {t("language.shortEnglish")}
         </button>
         <button
           type="button"
@@ -145,7 +145,7 @@ export default function LoginPage() {
           disabled={languageBusy}
           onClick={() => void switchLanguage("fa")}
         >
-          FA
+          {t("language.shortPersian")}
         </button>
       </div>
 
