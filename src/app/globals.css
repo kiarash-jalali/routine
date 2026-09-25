@@ -539,6 +539,19 @@
     border-color: var(--danger);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 18%, transparent);
   }
+  .field-error {
+    display: block;
+    color: var(--danger);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  fieldset[aria-invalid="true"] .day-chip {
+    border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+  }
+  .form-actions-sticky {
+    position: relative;
+    z-index: 2;
+  }
   .icon-button {
     display: inline-flex;
     align-items: center;
@@ -1063,6 +1076,18 @@
     }
   }
   @media (max-width: 767px) {
+  .form-actions-sticky {
+    position: sticky;
+    bottom: 0;
+    margin-inline: -6px;
+    padding: 12px 6px 4px;
+    background: linear-gradient(
+      to top,
+      var(--surface-elevated) 72%,
+      color-mix(in srgb, var(--surface-elevated) 88%, transparent)
+    );
+    backdrop-filter: blur(18px);
+  }
     .theme-toggle {
       width: 44px;
       height: 44px;
