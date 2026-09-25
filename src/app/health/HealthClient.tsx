@@ -14,7 +14,6 @@ import { Sheet } from "@/components/Sheet";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { ReminderSetup } from "@/components/notifications/ReminderSetup";
 import { MedicationForm } from "@/components/health/MedicationForm";
-import { LifeLinks } from "@/components/life/LifeLinks";
 import { useOwnedData } from "@/components/life/useOwnedData";
 import {
   loadHealth,
@@ -114,7 +113,6 @@ export function HealthClient({
           </Button>
         }
       />
-      <LifeLinks />
       {error && <ErrorNotice>{t("common.error")}</ErrorNotice>}
       <>
           <p className="my-5 text-sm leading-6 text-muted">
