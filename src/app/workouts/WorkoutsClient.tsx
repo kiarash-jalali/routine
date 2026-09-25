@@ -11,6 +11,7 @@ import {
   PageShell,
   Pill,
   SectionHeading,
+  SegmentedControl,
 } from "@/components/ui";
 import { Sheet } from "@/components/Sheet";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
@@ -77,19 +78,16 @@ export function WorkoutsClient({
       />
       {error && <ErrorNotice>{t("common.error")}</ErrorNotice>}
       <>
-          <div className="mb-5 flex gap-3">
-            <Button
-              aria-pressed={tab === "today"}
-              onClick={() => setTab("today")}
-            >
-              {t("common.today")}
-            </Button>
-            <Button
-              aria-pressed={tab === "history"}
-              onClick={() => setTab("history")}
-            >
-              {t("common.history")}
-            </Button>
+          <div className="mb-5 max-w-sm">
+            <SegmentedControl
+              value={tab}
+              onChange={setTab}
+              label={t("workout.title")}
+              options={[
+                { value: "today", label: t("common.today") },
+                { value: "history", label: t("common.history") },
+              ]}
+            />
           </div>
           <AnimatedList className="space-y-3">
             {rows.map((session) => (
