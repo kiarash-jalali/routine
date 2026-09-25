@@ -736,6 +736,125 @@ export function DashboardClient({
               )}
             </div>
           </Card>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <SectionHeading
+                title={t("dashboard.healthToday")}
+                action={
+                  <Link
+                    className="inline-flex min-h-8 items-center gap-1 text-sm text-primary"
+                    href="/health"
+                  >
+                    {t("common.manage")}
+                    <Icon name="chevron" size={15} />
+                  </Link>
+                }
+              />
+              <div className="mt-5">
+                {todayMedication.length === 0 ? (
+                  <EmptyState>{t("dashboard.noMedicationToday")}</EmptyState>
+                ) : (
+                  <ul>
+                    {todayMedication.map((reminder) => {
+                      const pendingKey = `medication:${reminder.id}`;
+                      const taken = Boolean(reminder.taken_at);
+                      return (
+                        <li
+                          key={reminder.id}
+                          className={`list-row ${taken ? "is-done" : ""}`}
+                        >
+                          <button
+                            className="check-control -ms-2"
+                            aria-pressed={taken}
+                            aria-label={
+                              taken ? t("health.undo") : t("health.taken")
+                            }
+                            disabled={pendingIds.includes(pendingKey)}
+                            onClick={() => void toggleMedication(reminder)}
+                          >
+                            <CheckCircle checked={taken} />
+                          </button>
+                          <div className="min-w-0 flex-1">
+                            <p className="row-title">
+                              <bdi>{reminder.name}</bdi>
+                            </p>
+                            <p className="row-detail">
+                              {reminder.dose ? (
+                                <>
+                                  <bdi>{reminder.dose}</bdi>
+                                  {" · "}
+                                </>
+                              ) : null}
+                              {time(reminder.scheduled_time)}
+                            </p>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </Card>
+
+            <Card>
+              <SectionHeading
+                title={t("dashboard.sportToday")}
+                action={
+                  <Link
+                    className="inline-flex min-h-8 items-center gap-1 text-sm text-primary"
+                    href="/workouts"
+                  >
+                    {t("common.manage")}
+                    <Icon name="chevron" size={15} />
+                  </Link>
+                }
+              />
+              <div className="mt-5">
+                {todayWorkouts.length === 0 ? (
+                  <EmptyState>{t("dashboard.noSportToday")}</EmptyState>
+                ) : (
+                  <ul>
+                    {todayWorkouts.map((session) => {
+                      const pendingKey = `workout:${session.id}`;
+                      const completed = Boolean(session.completed_at);
+                      return (
+                        <li
+                          key={session.id}
+                          className={`list-row ${completed ? "is-done" : ""}`}
+                        >
+                          <button
+                            className="check-control -ms-2"
+                            aria-pressed={completed}
+                            aria-label={
+                              completed
+                                ? t("workout.undo")
+                                : t("workout.complete")
+                            }
+                            disabled={pendingIds.includes(pendingKey)}
+                            onClick={() => void toggleWorkout(session)}
+                          >
+                            <CheckCircle checked={completed} />
+                          </button>
+                          <div className="min-w-0 flex-1">
+                            <p className="row-title">
+                              <bdi>{session.name}</bdi>
+                            </p>
+                            <p className="row-detail">
+                              <bdi>{session.activity_type}</bdi>
+                              {" · "}
+                              {time(session.scheduled_time)}
+                            </p>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </Card>
+          </div>
+
           <Card>
             <SectionHeading
               title={t("product.tasks")}
@@ -837,6 +956,40 @@ export function DashboardClient({
           </Card>
         </div>
         <div className="dashboard-side space-y-6">
+          <Card>
+            <SectionHeading title={t("dashboard.remindersToday")} />
+            <div className="mt-4">
+              {todayReminders.length === 0 ? (
+                <EmptyState>{t("dashboard.noRemindersToday")}</EmptyState>
+              ) : (
+                <div className="space-y-1">
+                  {todayReminders.map((reminder) => (
+                    <Link
+                      key={reminder.key}
+                      href={reminder.href}
+                      className="flex min-h-14 items-center gap-3 rounded-xl px-2 py-2 hover:bg-surface-soft"
+                    >
+                      <span className="icon-tile h-9 w-9 shrink-0 rounded-xl">
+                        <Icon name={reminder.icon} size={17} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">
+                          {reminder.label}
+                        </span>
+                        <span className="block text-xs text-muted">
+                          {reminder.category}
+                        </span>
+                      </span>
+                      <span className="data-text text-xs text-muted">
+                        {reminder.displayTime}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Card>
+
           <Card>
             <SectionHeading title={t("product.week")} />
             <p className="mt-1 text-sm text-muted">
