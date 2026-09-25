@@ -361,7 +361,7 @@ export function SettingsClient({
               </form>
 
               <div className="my-6 border-t border-border" />
-              <div className="grid gap-6 sm:grid-cols-2">
+              <div className="grid gap-6">
                 <ThemePicker />
                 <div className="space-y-2">
                   <LanguagePicker />
