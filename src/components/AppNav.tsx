@@ -53,15 +53,17 @@ export function AppNav() {
           <Icon name="help" size={19} />
           <span>{t("nav.guide")}</span>
         </Link>
-        <Link
-          href="/design-lab"
-          className="logout-button hidden lg:flex"
-          aria-current={pathname === "/design-lab" ? "page" : undefined}
-          aria-label={t("nav.designLab")}
-        >
-          <Icon name="spark" size={19} />
-          <span>{t("nav.designLab")}</span>
-        </Link>
+        {process.env.NODE_ENV !== "production" && (
+          <Link
+            href="/design-lab"
+            className="logout-button hidden lg:flex"
+            aria-current={pathname === "/design-lab" ? "page" : undefined}
+            aria-label={t("nav.designLab")}
+          >
+            <Icon name="spark" size={19} />
+            <span>{t("nav.designLab")}</span>
+          </Link>
+        )}
         <div className="hidden lg:block">
           <ThemeToggle />
         </div>
