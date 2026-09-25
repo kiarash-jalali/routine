@@ -93,6 +93,8 @@ export const fa: Record<TranslationKey, string> = {
   "language.title": "زبان",
   "language.english": "English",
   "language.persian": "فارسی",
+  "language.shortEnglish": "EN",
+  "language.shortPersian": "FA",
   "language.description": "زبان حساب خود را انتخاب کنید.",
   "language.error": "زبان ذخیره نشد. دوباره تلاش کنید.",
   "theme.title": "ظاهر",
