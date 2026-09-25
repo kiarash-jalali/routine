@@ -237,14 +237,9 @@ export function RoutinesClient({
         <AnimatedList>
           {visible.length === 0 ? (
             <AnimatedListItem key="empty">
-              <EmptyState>
-                {filter === "paused"
-                  ? t("routine.emptyPaused")
-                  : filter === "active"
-                    ? t("routine.emptyActive")
-                    : t("routine.empty")}
-                {routines.length === 0 && (
-                  <div className="mt-4">
+              <EmptyState
+                action={
+                  routines.length === 0 ? (
                     <Button
                       className="moment-shine"
                       onClick={() => openEditor(null)}
@@ -253,8 +248,14 @@ export function RoutinesClient({
                       <Icon name="plus" size={16} />
                       {t("routine.first")}
                     </Button>
-                  </div>
-                )}
+                  ) : undefined
+                }
+              >
+                {filter === "paused"
+                  ? t("routine.emptyPaused")
+                  : filter === "active"
+                    ? t("routine.emptyActive")
+                    : t("routine.empty")}
               </EmptyState>
             </AnimatedListItem>
           ) : (
