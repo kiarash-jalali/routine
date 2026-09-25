@@ -94,6 +94,21 @@ test("task notifications are one-shot while medication keeps five-minute buckets
   assert.match(route, /`health:\${reminder\.id}:\${eventBucket}`/);
 });
 
+test("repeating medication reminders reuse one visible notification slot", () => {
+  const route = readFileSync(
+    new URL("../src/app/api/notifications/send/route.ts", import.meta.url),
+    "utf8",
+  );
+  const worker = readFileSync(
+    new URL("../public/sw.js", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(route, /`health:\${reminder\.id}:\${eventBucket}`/);
+  assert.match(route, /`health:\${reminder\.id}`/);
+  assert.match(worker, /renotify: message\.renotify === true/);
+});
+
 test("push transport rejects SSRF destinations", () => {
   for (const url of [
     "https://fcm.googleapis.com/fcm/send/test",
