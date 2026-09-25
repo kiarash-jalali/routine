@@ -1,4 +1,4 @@
-const SW_VERSION = "v4";
+const SW_VERSION = "v5";
 const CACHE_PREFIX = "rootine-";
 const SHELL_CACHE = `${CACHE_PREFIX}shell-${SW_VERSION}`;
 const ASSET_CACHE = `${CACHE_PREFIX}assets-${SW_VERSION}`;
@@ -275,7 +275,7 @@ self.addEventListener("push", (event) => {
       icon: "/pwa/icon-192",
       badge: "/pwa/icon-192",
       ...(tag ? { tag } : {}),
-      renotify: false,
+      renotify: message.renotify === true,
       data: { url },
     }),
   );
