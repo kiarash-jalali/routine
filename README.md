@@ -72,6 +72,10 @@ npm run verify    # Tests + lint + type generation/typecheck + production build
 npm run archive:safe # Create a source archive from tracked Git files only
 ```
 
+Dependency updates are monitored weekly by Dependabot for both npm packages and
+GitHub Actions. Before accepting a dependency update, run `npm run verify`; for
+manual security review, also run `npm audit --production`.
+
 ## Routes
 
 | Route | Responsibility |
@@ -91,7 +95,7 @@ npm run archive:safe # Create a source archive from tracked Git files only
 | `/feedback` | Private-alpha bug reports, friction notes, and ideas |
 | `/guide` | Install, reminder, and product guidance |
 | `/onboarding` | First-use setup and starter routine flow |
-| `/design-lab` | Authenticated, noindex, desktop-only developer theme preview |
+| `/design-lab` | Development-only, authenticated desktop theme preview; production returns 404 |
 
 Server routes live under `src/app/api`: account export/deletion, client-error
 collection, notification delivery/subscription management, and offline mutation
@@ -133,7 +137,7 @@ theme colours and global visual tokens live in `src/app/globals.css`; time-of-da
 - `profiles`: display name and onboarding state;
 - `point_transactions`: append-only rewards and recovery spending;
 - `streak_repairs`: missed calendar days whose rhythm continuity was repaired;
-- `notification_preferences`: opt-in reminder time and device timezone;
+- `notification_preferences`: master notification opt-in, per-category switches, and device timezone;
 - `push_subscriptions`: server-managed Web Push device subscriptions;
 - `feedback`: private-alpha feedback owned by the submitting user.
 
