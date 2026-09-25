@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, Textarea } from "@/components/ui";
 import { ScheduleFields } from "@/components/life/ScheduleFields";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { getDeviceTimeZone } from "@/lib/schedule";
@@ -128,8 +128,7 @@ export function MedicationForm({
         />
         <label className="grid gap-2 text-sm">
           {t("common.notes")}
-          <textarea
-            className="field"
+          <Textarea
             rows={3}
             maxLength={2000}
             value={values.notes}
