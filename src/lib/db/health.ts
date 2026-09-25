@@ -31,6 +31,22 @@ export async function loadHealth(
     reminders: reminders.data ?? [],
   };
 }
+export async function listMedicationRemindersForDay(
+  userId: string,
+  day: string,
+  client?: SupabaseClient<Database>,
+) {
+  const { data, error } = await (client ?? supabaseBrowser())
+    .from("medication_reminders")
+    .select(reminderColumns)
+    .eq("user_id", userId)
+    .eq("scheduled_day", day)
+    .order("scheduled_at");
+
+  if (error) throw new Error("health_today_load_failed");
+  return data ?? [];
+}
+
 export async function saveMedication(
   userId: string,
   values: MedicationInput,
