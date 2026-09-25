@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, Textarea } from "@/components/ui";
 import { ScheduleFields } from "@/components/life/ScheduleFields";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { getDeviceTimeZone, localClock } from "@/lib/schedule";
@@ -138,8 +138,7 @@ export function WorkoutForm({
         )}
         <label className="grid gap-2 text-sm">
           {t("workout.exercises")}
-          <textarea
-            className="field"
+          <Textarea
             rows={4}
             maxLength={4000}
             value={values.exercises}
