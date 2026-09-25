@@ -15,6 +15,7 @@ import {
   PageShell,
   SectionHeading,
   Select,
+  Textarea,
 } from "@/components/ui";
 import {
   submitFeedback,
@@ -111,8 +112,8 @@ export function FeedbackClient({ userId }: { userId: string }) {
 
           <label className="grid gap-2 text-sm font-medium">
             {t("feedback.happened")}
-            <textarea
-              className="field min-h-36 resize-y"
+            <Textarea
+              className="min-h-36 resize-y"
               value={message}
               minLength={3}
               maxLength={2000}
