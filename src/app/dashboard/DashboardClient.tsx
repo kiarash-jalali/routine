@@ -498,6 +498,7 @@ export function DashboardClient({
             minute: "2-digit",
           }).format(due),
           href: "/dashboard",
+          completed: task.is_done,
         };
       });
 
@@ -513,6 +514,9 @@ export function DashboardClient({
           ? time(routine.preferred_time)
           : t("common.anytime"),
         href: "/routines",
+        completed: Boolean(
+          completionByItem[checkinItemKey("routine", routine.id)],
+        ),
       }));
 
     const medicationItems = todayMedication.map((reminder) => ({
@@ -523,6 +527,7 @@ export function DashboardClient({
       timeKey: reminder.scheduled_time.slice(0, 5),
       displayTime: time(reminder.scheduled_time),
       href: "/health",
+      completed: Boolean(reminder.taken_at),
     }));
 
     const workoutItems = todayWorkouts.map((session) => ({
@@ -533,6 +538,7 @@ export function DashboardClient({
       timeKey: session.scheduled_time.slice(0, 5),
       displayTime: time(session.scheduled_time),
       href: "/workouts",
+      completed: Boolean(session.completed_at),
     }));
 
     return [
@@ -542,6 +548,7 @@ export function DashboardClient({
       ...workoutItems,
     ].sort((a, b) => a.timeKey.localeCompare(b.timeKey));
   }, [
+    completionByItem,
     locale,
     routines,
     t,
@@ -550,6 +557,8 @@ export function DashboardClient({
     todayTasks,
     todayWorkouts,
   ]);
+  const nextReminder = todayReminders.find((reminder) => !reminder.completed);
+  const openTodayTasks = todayTasks.filter((task) => !task.is_done).length;
   const visibleTasks =
     filter === "today"
       ? todayTasks
@@ -690,12 +699,43 @@ export function DashboardClient({
           <ErrorNotice>{error}</ErrorNotice>
         </div>
       </Collapse>
+      <Card tone={nextReminder ? "accent" : "soft"} className="mb-7">
+        <SectionHeading title={t("dashboard.upNext")} />
+        {nextReminder ? (
+          <Link
+            href={nextReminder.href}
+            className="mt-4 flex min-h-16 items-center gap-4 rounded-2xl border border-border bg-surface/70 px-4 py-3 transition hover:border-border-strong hover:bg-surface"
+          >
+            <span className="icon-tile shrink-0">
+              <Icon name={nextReminder.icon} size={19} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-semibold">
+                {nextReminder.label}
+              </span>
+              <span className="mt-1 block text-sm text-muted">
+                {nextReminder.category}
+              </span>
+            </span>
+            <span className="data-text shrink-0 text-sm text-muted">
+              {nextReminder.displayTime}
+            </span>
+            <Icon name="chevron" size={17} />
+          </Link>
+        ) : (
+          <p className="mt-3 text-sm leading-6 text-muted">
+            {todayReminders.length
+              ? t("dashboard.timedDone")
+              : t("dashboard.noRemindersToday")}
+          </p>
+        )}
+      </Card>
       <div className="stats-strip mb-7 grid grid-cols-3 divide-x divide-border rounded-2xl px-2 py-5 sm:px-5">
         <div className="px-3 sm:px-5">
           <Stat value={number(routines.length)} label={t("dashboard.routinesTodayCount")} />
         </div>
         <div className="px-3 sm:px-5">
-          <Stat value={number(todayTasks.length)} label={t("dashboard.openTasksCount")} />
+          <Stat value={number(openTodayTasks)} label={t("dashboard.openTasksCount")} />
         </div>
         <div className="px-3 sm:px-5">
           <Stat
