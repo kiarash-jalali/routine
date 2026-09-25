@@ -250,6 +250,20 @@ export function CheckinClient({
     }
   }
 
+  function completeRemaining() {
+    if (saving || (hasFinishedToday && !editingFinishedCheckin)) return;
+    setCompletionByItem((current) => {
+      const next = { ...current };
+      for (const routine of routines) {
+        next[checkinItemKey("routine", routine.id)] = true;
+      }
+      for (const task of tasks) {
+        next[checkinItemKey("task", task.id)] = true;
+      }
+      return next;
+    });
+  }
+
   const completedCount = [
     ...routines.map((routine) => isItemCompleted("routine", routine.id)),
     ...tasks.map((task) => isItemCompleted("task", task.id)),
@@ -344,7 +358,15 @@ export function CheckinClient({
           />
           <div className="mt-5 space-y-2.5">
             {routines.length === 0 ? (
-              <EmptyState>{t("product.noRoutines")}</EmptyState>
+              <EmptyState
+                action={
+                  <Link href="/routines" className="btn btn-secondary">
+                    {t("routine.addSmall")}
+                  </Link>
+                }
+              >
+                {t("product.noRoutines")}
+              </EmptyState>
             ) : (
               routines.map((routine) => (
                 <MomentSource
@@ -385,7 +407,18 @@ export function CheckinClient({
           />
           <div className="mt-5 space-y-2.5">
             {tasks.length === 0 ? (
-              <EmptyState>{t("product.noTasks")}</EmptyState>
+              <EmptyState
+                action={
+                  <Link
+                    href="/dashboard?newTask=1"
+                    className="btn btn-secondary"
+                  >
+                    {t("product.addTask")}
+                  </Link>
+                }
+              >
+                {t("product.noTasks")}
+              </EmptyState>
             ) : (
               tasks.map((task) => (
                 <MomentSource
@@ -446,7 +479,18 @@ export function CheckinClient({
                   <Icon name="arrow" size={16} />
                 </Link>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
+                  {!editingFinishedCheckin &&
+                    totalCount > 0 &&
+                    completedCount < totalCount && (
+                      <Button
+                        onClick={completeRemaining}
+                        disabled={saving}
+                      >
+                        <Icon name="check" size={16} />
+                        {t("checkin.completeRemaining")}
+                      </Button>
+                    )}
                   {editingFinishedCheckin && (
                     <Button
                       variant="ghost"
