@@ -71,6 +71,7 @@ export const en = {
   "common.today": "Today",
   "common.history": "History",
   "common.done": "Done",
+  "common.dismiss": "Dismiss",
   "common.days": "Days of the week",
   "common.daily": "Every day",
   "common.chooseDays": "Choose days",
