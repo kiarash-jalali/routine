@@ -7,6 +7,10 @@ export default function DashboardLoading() {
           <div className="skeleton h-10 w-48" />
           <div className="skeleton h-5 w-72 max-w-full" />
         </div>
+        <div className="card mb-7 h-28">
+          <div className="skeleton h-5 w-24" />
+          <div className="skeleton mt-5 h-12 w-full" />
+        </div>
         <div className="stats-strip mb-7 grid grid-cols-3 gap-4 rounded-2xl px-5 py-5">
           <div className="skeleton h-12" />
           <div className="skeleton h-12" />
