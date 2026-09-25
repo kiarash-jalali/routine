@@ -92,6 +92,8 @@ export const en = {
   "language.title": "Language",
   "language.english": "English",
   "language.persian": "فارسی",
+  "language.shortEnglish": "EN",
+  "language.shortPersian": "FA",
   "language.description": "Choose the language for your account.",
   "language.error": "Your language could not be saved. Try again.",
   "theme.title": "Appearance",
