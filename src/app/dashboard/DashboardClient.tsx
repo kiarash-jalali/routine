@@ -144,6 +144,7 @@ export function DashboardClient({
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
+  const [titleTouched, setTitleTouched] = useState(false);
   const [dueLocal, setDueLocal] = useState("");
   const [dueHasTime, setDueHasTime] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -246,6 +247,7 @@ export function DashboardClient({
 
   async function createTask(event: React.FormEvent) {
     event.preventDefault();
+    setTitleTouched(true);
     if (!userId || !title.trim() || creating) return;
     setCreating(true);
     setFormError(null);
@@ -258,6 +260,7 @@ export function DashboardClient({
       });
       setTasks((current) => sortTasks([...current, created]));
       setTitle("");
+      setTitleTouched(false);
       setDueLocal("");
       setDueHasTime(false);
       setShowTaskForm(false);
@@ -274,6 +277,7 @@ export function DashboardClient({
     if (creating) return;
     setShowTaskForm(false);
     setTitle("");
+    setTitleTouched(false);
     setDueLocal("");
     setDueHasTime(false);
     setFormError(null);
@@ -1155,10 +1159,20 @@ export function DashboardClient({
             <Input
               placeholder={t("product.taskPlaceholder")}
               value={title}
+              invalid={titleTouched && !title.trim()}
+              describedBy={
+                titleTouched && !title.trim() ? "task-title-error" : undefined
+              }
+              onBlur={() => setTitleTouched(true)}
               onChange={(event) => setTitle(event.target.value)}
               required
               disabled={creating}
             />
+            {titleTouched && !title.trim() && (
+              <span id="task-title-error" className="field-error">
+                {t("form.required")}
+              </span>
+            )}
           </label>
           <TaskScheduleFields
             value={dueLocal}
@@ -1172,7 +1186,7 @@ export function DashboardClient({
           <Collapse show={!!formError}>
             <ErrorNotice>{formError}</ErrorNotice>
           </Collapse>
-          <div className="flex gap-3">
+          <div className="form-actions-sticky flex gap-3">
             <Button onClick={closeTaskForm} disabled={creating}>
               {t("common.cancel")}
             </Button>
