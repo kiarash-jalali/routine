@@ -173,16 +173,16 @@ export function HistoryClient({
       )}
       {history.length === 0 ? (
         <Card>
-          <EmptyState>
-            {t("history.emptyTitle")}
-            <br />
-            {t("history.emptyBody")}
-            <div className="mt-4">
+          <EmptyState
+            title={t("history.emptyTitle")}
+            action={
               <Link href="/checkin" className="btn btn-primary">
                 {t("dashboard.checkinToday")}
                 <Icon name="arrow" size={16} />
               </Link>
-            </div>
+            }
+          >
+            {t("history.emptyBody")}
           </EmptyState>
         </Card>
       ) : (
