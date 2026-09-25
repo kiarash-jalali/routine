@@ -12,7 +12,10 @@ export function translate(
   key: TranslationKey,
   values?: Record<string, string | number>,
 ): string {
-  const text: string = (language === "fa" ? fa[key] : en[key]) ?? en[key];
+  const text =
+    (language === "fa" ? fa[key] : en[key]) ??
+    en[key] ??
+    String(key);
   return text.replace(/\{(\w+)\}/g, (match, name: string) =>
     String(values?.[name] ?? match),
   );
