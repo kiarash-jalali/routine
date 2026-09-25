@@ -33,8 +33,14 @@ import {
 } from "@/lib/db/checkins";
 import { getRhythmSummary, type RhythmSummary } from "@/lib/db/rhythm";
 import { addTask, removeTask } from "@/lib/db/tasks";
-import { setMedicationTaken } from "@/lib/db/health";
-import { completeWorkout } from "@/lib/db/workouts";
+import {
+  listMedicationRemindersForDay,
+  setMedicationTaken,
+} from "@/lib/db/health";
+import {
+  completeWorkout,
+  listWorkoutSessionsForDay,
+} from "@/lib/db/workouts";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import { consumeFirstRoutineSuccess } from "@/lib/firstRun";
@@ -184,13 +190,26 @@ export function DashboardClient({
       const results = await Promise.allSettled([
         getRhythmSummary(todayKey, 7),
         getDailyProgress(userId, todayKey),
+        listMedicationRemindersForDay(userId, todayKey),
+        listWorkoutSessionsForDay(userId, todayKey),
       ]);
       if (cancelled) return;
 
-      const [rhythmResult, progressResult] = results;
+      const [
+        rhythmResult,
+        progressResult,
+        medicationResult,
+        workoutResult,
+      ] = results;
       if (rhythmResult.status === "fulfilled") setRhythm(rhythmResult.value);
       if (progressResult.status === "fulfilled") {
         setCompletionByItem(completionMapFromItems(progressResult.value.items));
+      }
+      if (medicationResult.status === "fulfilled") {
+        setMedicationReminders(medicationResult.value);
+      }
+      if (workoutResult.status === "fulfilled") {
+        setWorkoutSessions(workoutResult.value);
       }
       if (results.some((result) => result.status === "rejected")) {
         setOfflineSnapshotDay(null);
