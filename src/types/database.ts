@@ -501,6 +501,7 @@ export type Database = {
         Row: {
           created_at: string
           due_at: string | null
+          due_has_time: boolean
           id: string
           is_done: boolean
           notes: string | null
@@ -511,6 +512,7 @@ export type Database = {
         Insert: {
           created_at?: string
           due_at?: string | null
+          due_has_time?: boolean
           id?: string
           is_done?: boolean
           notes?: string | null
@@ -521,6 +523,7 @@ export type Database = {
         Update: {
           created_at?: string
           due_at?: string | null
+          due_has_time?: boolean
           id?: string
           is_done?: boolean
           notes?: string | null
