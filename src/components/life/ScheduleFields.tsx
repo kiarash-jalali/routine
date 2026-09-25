@@ -1,6 +1,7 @@
 "use client";
 import { Input } from "@/components/ui";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
+
 export function ScheduleFields({
   days,
   onDays,
@@ -10,20 +11,29 @@ export function ScheduleFields({
   end,
   onStart,
   onEnd,
+  daysInvalid = false,
+  daysErrorId,
+  daysError,
 }: {
   days: number[];
   onDays: (value: number[]) => void;
   timezone: string;
   onTimezone: (value: string) => void;
-  start?: string;
-  end?: string;
-  onStart?: (value: string) => void;
-  onEnd?: (value: string) => void;
+  start?: string | undefined;
+  end?: string | undefined;
+  onStart?: ((value: string) => void) | undefined;
+  onEnd?: ((value: string) => void) | undefined;
+  daysInvalid?: boolean | undefined;
+  daysErrorId?: string | undefined;
+  daysError?: string | undefined;
 }) {
   const { t, weekday, language } = useLanguage();
   return (
     <>
-      <fieldset>
+      <fieldset
+        aria-invalid={daysInvalid || undefined}
+        aria-describedby={daysInvalid ? daysErrorId : undefined}
+      >
         <legend className="mb-2 text-sm">{t("common.days")}</legend>
         <div className="grid grid-cols-7 gap-1">
           {[1, 2, 3, 4, 5, 6, 7].map((day) => (
@@ -46,6 +56,11 @@ export function ScheduleFields({
             </button>
           ))}
         </div>
+        {daysInvalid && daysError && (
+          <p id={daysErrorId} className="field-error mt-2">
+            {daysError}
+          </p>
+        )}
       </fieldset>
       <label className="grid gap-2 text-sm">
         {t("common.timezone")}
