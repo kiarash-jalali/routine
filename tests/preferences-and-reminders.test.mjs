@@ -83,6 +83,27 @@ test("notification schedule helpers keep five-minute cadence and local days", ()
   assert.equal(routineOccursOnDay("weekly", [1, 3], "2026-09-22"), false);
 });
 
+test("date-only tasks remain non-notifying while explicit times are persisted", () => {
+  const fields = readFileSync(
+    new URL("../src/components/tasks/TaskScheduleFields.tsx", import.meta.url),
+    "utf8",
+  );
+  const dashboard = readFileSync(
+    new URL("../src/app/dashboard/DashboardClient.tsx", import.meta.url),
+    "utf8",
+  );
+  const tasks = readFileSync(
+    new URL("../src/lib/db/tasks.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(fields, /hasTime: boolean/);
+  assert.match(fields, /Boolean\(nextTime\)/);
+  assert.match(dashboard, /due_has_time: dueHasTime/);
+  assert.match(dashboard, /task\.due_at && task\.due_has_time/);
+  assert.match(tasks, /due_has_time/);
+});
+
 test("task notifications are one-shot while medication keeps five-minute buckets", () => {
   const route = readFileSync(
     new URL("../src/app/api/notifications/send/route.ts", import.meta.url),
