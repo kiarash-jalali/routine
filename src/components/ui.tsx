@@ -7,6 +7,7 @@ import type {
   InputHTMLAttributes,
   ReactNode,
   SelectHTMLAttributes,
+  TextareaHTMLAttributes,
 } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { AnimatedNumber } from "@/components/Motion";
@@ -100,23 +101,40 @@ export function SectionHeading({
 }
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+type ButtonSize = "sm" | "md" | "lg";
+
+const buttonSizes: Record<ButtonSize, string> = {
+  sm: "btn-sm",
+  md: "btn-md",
+  lg: "btn-lg",
+};
+
 export function Button({
   variant = "secondary",
+  size = "md",
   className,
-  busy,
+  busy = false,
+  disabled = false,
   children,
   type = "button",
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, "size"> & {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   busy?: boolean;
 }) {
   const reduced = useReducedMotion();
   return (
     <button
       type={type}
-      className={joinClasses("btn", `btn-${variant}`, className)}
+      className={joinClasses(
+        "btn",
+        `btn-${variant}`,
+        buttonSizes[size],
+        className,
+      )}
       aria-busy={busy || undefined}
+      disabled={disabled || busy}
       {...props}
     >
       <AnimatePresence initial={false}>
@@ -138,32 +156,119 @@ export function Button({
   );
 }
 
+type FieldSize = "sm" | "md";
+
+const fieldSizes: Record<FieldSize, string> = {
+  sm: "field-sm",
+  md: "field-md",
+};
+
+type SharedFieldProps = {
+  size?: FieldSize;
+  invalid?: boolean;
+  describedBy?: string;
+};
+
 export function Input({
   className,
+  size = "md",
+  invalid,
+  describedBy,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
   ...props
-}: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={joinClasses("field", className)} {...props} />;
+}: Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & SharedFieldProps) {
+  return (
+    <input
+      className={joinClasses("field", fieldSizes[size], className)}
+      aria-invalid={invalid ?? ariaInvalid}
+      aria-describedby={describedBy ?? ariaDescribedBy}
+      {...props}
+    />
+  );
 }
+
 export function Select({
   className,
+  size = "md",
+  invalid,
+  describedBy,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
   ...props
-}: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={joinClasses("field", className)} {...props} />;
+}: Omit<SelectHTMLAttributes<HTMLSelectElement>, "size"> & SharedFieldProps) {
+  return (
+    <select
+      className={joinClasses("field", fieldSizes[size], className)}
+      aria-invalid={invalid ?? ariaInvalid}
+      aria-describedby={describedBy ?? ariaDescribedBy}
+      {...props}
+    />
+  );
 }
-export function ErrorNotice({ children }: { children: ReactNode }) {
+
+export function Textarea({
+  className,
+  size = "md",
+  invalid,
+  describedBy,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & SharedFieldProps) {
+  return (
+    <textarea
+      className={joinClasses("field", fieldSizes[size], className)}
+      aria-invalid={invalid ?? ariaInvalid}
+      aria-describedby={describedBy ?? ariaDescribedBy}
+      {...props}
+    />
+  );
+}
+
+export function ErrorNotice({
+  children,
+  className,
+  role = "alert",
+  ...props
+}: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      role="alert"
-      className="notice rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm leading-6 text-danger"
+      role={role}
+      className={joinClasses(
+        "notice rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm leading-6 text-danger",
+        className,
+      )}
+      {...props}
     >
       {children}
     </div>
   );
 }
-export function EmptyState({ children }: { children: ReactNode }) {
+
+export function EmptyState({
+  children,
+  title,
+  action,
+  className,
+  ...props
+}: HTMLAttributes<HTMLDivElement> & {
+  title?: string;
+  action?: ReactNode;
+}) {
   return (
-    <div className="rounded-2xl bg-surface-soft px-5 py-7 text-center text-sm leading-6 text-muted">
-      {children}
+    <div
+      className={joinClasses(
+        "rounded-2xl bg-surface-soft px-5 py-7 text-center text-sm leading-6 text-muted",
+        className,
+      )}
+      {...props}
+    >
+      {title && (
+        <p className="mb-1 font-semibold text-foreground">{title}</p>
+      )}
+      <div>{children}</div>
+      {action && <div className="mt-4 flex justify-center">{action}</div>}
     </div>
   );
 }
@@ -289,6 +394,7 @@ export function SegmentedControl<T extends string>({
       className="segmented"
       role="group"
       aria-label={label}
+      aria-disabled={disabled || undefined}
       style={
         {
           "--segment-count": options.length,
