@@ -13,7 +13,6 @@ import {
 } from "@/components/ui";
 import { Sheet } from "@/components/Sheet";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
-import { ReminderSetup } from "@/components/notifications/ReminderSetup";
 import { WorkoutForm } from "@/components/workouts/WorkoutForm";
 import { useOwnedData } from "@/components/life/useOwnedData";
 import {
@@ -47,7 +46,6 @@ export function WorkoutsClient({
     null,
   );
   const [tab, setTab] = useState<"today" | "history">("today");
-  const [notificationOpen, setNotificationOpen] = useState(false);
   const [completion, setCompletion] = useState<WorkoutSession | null>(null);
   const [duration, setDuration] = useState(30);
   const rows =
@@ -221,9 +219,6 @@ export function WorkoutsClient({
               {!data.plans.length && <Card tone="soft">{t("workout.empty")}</Card>}
             </div>
           </div>
-          <Button className="mt-6" onClick={() => setNotificationOpen(true)}>
-            {t("reminder.device")}
-          </Button>
         </>
       <Sheet
         open={editor !== null}
@@ -263,11 +258,6 @@ export function WorkoutsClient({
                   typeof editor === "object" ? editor.id : undefined,
                 );
                 setEditor(null);
-                if (
-                  values.reminders_enabled &&
-                  (typeof editor === "string" || !editor.reminders_enabled)
-                )
-                  setNotificationOpen(true);
               });
             }}
           />
@@ -307,22 +297,6 @@ export function WorkoutsClient({
             {t("workout.complete")}
           </Button>
         </form>
-      </Sheet>
-      <Sheet
-        open={notificationOpen}
-        onClose={() => setNotificationOpen(false)}
-        title={t("reminder.device")}
-      >
-        <div className="mt-5">
-          <ReminderSetup
-            userId={userId}
-            deviceOnly
-            onDone={() => setNotificationOpen(false)}
-          />
-          <Button className="mt-4" onClick={() => setNotificationOpen(false)}>
-            {t("common.done")}
-          </Button>
-        </div>
       </Sheet>
     </PageShell>
   );
