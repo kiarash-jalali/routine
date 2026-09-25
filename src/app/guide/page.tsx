@@ -47,8 +47,8 @@ const sections = [
     title: "intro.life",
     body: "intro.lifeBody",
     items: [
-      { title: "intro.health", body: "intro.healthBody", icon: "checkin" },
-      { title: "intro.workout", body: "intro.workoutBody", icon: "sun" },
+      { title: "intro.health", body: "intro.healthBody", icon: "health" },
+      { title: "intro.workout", body: "intro.workoutBody", icon: "sport" },
     ],
   },
   {
