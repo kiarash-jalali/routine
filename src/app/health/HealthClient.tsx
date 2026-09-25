@@ -4,6 +4,7 @@ import { AnimatedList, AnimatedListItem } from "@/components/Motion";
 import {
   Button,
   Card,
+  EmptyState,
   ErrorNotice,
   PageHeader,
   PageShell,
@@ -84,6 +85,7 @@ export function HealthClient({
           </div>
           <Button
             disabled={busy}
+            aria-label={`${t(reminder.taken_at ? "health.undo" : "health.take")}: ${reminder.name}`}
             onClick={() =>
               void act(() =>
                 setMedicationTaken(userId, reminder.id, !reminder.taken_at),
@@ -134,13 +136,19 @@ export function HealthClient({
             {(tab === "today" ? today : history).map(reminderRow)}
           </AnimatedList>
           {!(tab === "today" ? today : history).length && (
-            <Card>
-              <p className="text-muted">
-                {t(
-                  tab === "today" ? "health.todayEmpty" : "health.historyEmpty",
-                )}
-              </p>
-            </Card>
+            <EmptyState
+              action={
+                tab === "today" ? (
+                  <Button variant="primary" onClick={() => setEditor("new")}>
+                    {t("health.add")}
+                  </Button>
+                ) : undefined
+              }
+            >
+              {t(
+                tab === "today" ? "health.todayEmpty" : "health.historyEmpty",
+              )}
+            </EmptyState>
           )}
           {tab === "history" && data.reminders.length >= limit && (
             <Button className="mt-4" onClick={more}>
@@ -184,11 +192,18 @@ export function HealthClient({
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
-                      <Button disabled={busy} onClick={() => setEditor(plan)}>
+                      <Button
+                        disabled={busy}
+                        aria-label={`${t("common.edit")}: ${plan.name}`}
+                        onClick={() => setEditor(plan)}
+                      >
                         {t("common.edit")}
                       </Button>
                       <Button
                         disabled={busy}
+                        aria-label={`${t(
+                          plan.is_active ? "common.pause" : "common.resume",
+                        )}: ${plan.name}`}
                         onClick={() =>
                           void act(() =>
                             setMedicationActive(
@@ -205,7 +220,17 @@ export function HealthClient({
                   </div>
                 </Card>
               ))}
-              {!data.plans.length && <Card tone="soft">{t("health.empty")}</Card>}
+              {!data.plans.length && (
+                <EmptyState
+                  action={
+                    <Button variant="primary" onClick={() => setEditor("new")}>
+                      {t("health.add")}
+                    </Button>
+                  }
+                >
+                  {t("health.empty")}
+                </EmptyState>
+              )}
             </div>
           </div>
         </>
@@ -223,6 +248,7 @@ export function HealthClient({
             key={editor === "new" ? "new" : editor.id}
             initial={editor === "new" ? undefined : editor}
             busy={busy}
+            onCancel={() => setEditor(null)}
             onSave={async (values) => {
               await act(async () => {
                 await saveMedication(
