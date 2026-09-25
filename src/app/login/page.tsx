@@ -247,6 +247,11 @@ export default function LoginPage() {
                           }
                           type={showPassword ? "text" : "password"}
                           value={password}
+                          describedBy={
+                            mode === "signup"
+                              ? "signup-password-guidance"
+                              : undefined
+                          }
                           onChange={(event) => setPassword(event.target.value)}
                           required
                           minLength={
@@ -271,7 +276,12 @@ export default function LoginPage() {
                           <Icon name="eye" size={18} />
                         </button>
                       </div>
-                      {mode === "signup" && <PasswordGuidance password={password} />}
+                      {mode === "signup" && (
+                        <PasswordGuidance
+                          id="signup-password-guidance"
+                          password={password}
+                        />
+                      )}
                       {mode === "login" && (
                         <div className="mt-2 flex justify-end">
                           <Link
