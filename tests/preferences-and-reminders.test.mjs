@@ -89,9 +89,20 @@ test("task notifications are one-shot while medication keeps five-minute buckets
     "utf8",
   );
 
+  assert.match(route, /\.eq\("due_has_time", true\)/);
   assert.match(route, /`task:\${task\.id}`/);
   assert.doesNotMatch(route, /`task:\${task\.id}:\${eventBucket}`/);
   assert.match(route, /`health:\${reminder\.id}:\${eventBucket}`/);
+});
+
+test("medication repeats are limited to the user's current local day", () => {
+  const route = readFileSync(
+    new URL("../src/app/api/notifications/send/route.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(route, /\.in\("scheduled_day", currentDays\)/);
+  assert.match(route, /reminder\.scheduled_day !== clock\.day/);
 });
 
 test("repeating medication reminders reuse one visible notification slot", () => {
