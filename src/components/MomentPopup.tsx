@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Icon, type IconName } from "@/components/Icon";
+import { useLanguage } from "@/components/preferences/LanguageProvider";
 
 export type MomentTone = "success" | "warm" | "info";
 
@@ -59,6 +60,7 @@ export function MomentPopup({
   onDismiss: () => void;
 }) {
   const reduced = useReducedMotion();
+  const { t } = useLanguage();
   const isMobile = useMobileMomentLayout();
   const [mounted, setMounted] = useState(false);
   const dismissRef = useRef(onDismiss);
@@ -107,7 +109,7 @@ export function MomentPopup({
             type="button"
             className={`moment-popup moment-${notice.tone ?? "success"}`}
             onClick={onDismiss}
-            aria-label={`${notice.title}${notice.detail ? ` ${notice.detail}` : ""}. Tap to dismiss.`}
+            aria-label={`${notice.title}${notice.detail ? ` ${notice.detail}` : ""}. ${t("common.dismiss")}`}
           >
             <span className="moment-popup-icon" aria-hidden="true">
               <Icon name={notice.icon ?? "spark"} size={19} />
