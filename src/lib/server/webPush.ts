@@ -59,6 +59,7 @@ export async function sendReminderPush(
   language: Language,
   eventKey: string,
   label?: string | null,
+  notificationTagKey?: string | null,
 ) {
   if (!isValidPushEndpoint(target.endpoint)) return 400;
 
@@ -78,7 +79,11 @@ export async function sendReminderPush(
         title: notificationTitle(kind, language),
         body: notificationBody(kind, language, label),
         url: notificationUrl(kind),
-        tag: `rootine-${kind}-${eventKey}`.slice(0, 128),
+        tag: `rootine-${kind}-${notificationTagKey ?? eventKey}`.slice(
+          0,
+          128,
+        ),
+        renotify: kind === "health",
         lang: language,
         dir: language === "fa" ? "rtl" : "ltr",
       }),
