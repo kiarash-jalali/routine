@@ -140,12 +140,16 @@ async function sendNotifications(request: Request) {
   let skippedCheckedIn = 0;
 
   if (userIds.length > 0) {
+    const currentDays = [
+      ...new Set(
+        preferences
+          .map((preference) => clocks.get(preference.user_id)?.day)
+          .filter((day): day is string => Boolean(day)),
+      ),
+    ];
     const relevantDays = [
       ...new Set(
-        preferences.flatMap((preference) => {
-          const day = clocks.get(preference.user_id)?.day;
-          return day ? [day, previousDateKey(day)] : [];
-        }),
+        currentDays.flatMap((day) => [day, previousDateKey(day)]),
       ),
     ];
 
@@ -233,6 +237,7 @@ async function sendNotifications(request: Request) {
       .select("id,user_id,title,due_at")
       .in("user_id", userIds)
       .eq("is_done", false)
+      .eq("due_has_time", true)
       .not("due_at", "is", null)
       .lte("due_at", now.toISOString())
       .gte(
@@ -335,11 +340,12 @@ async function sendNotifications(request: Request) {
     const { data: healthRows, error: healthError } = await admin
       .from("medication_reminders")
       .select(
-        "id,user_id,name,notified_at,medication_plans!inner(is_active)",
+        "id,user_id,name,scheduled_day,notified_at,medication_plans!inner(is_active)",
       )
       .in("user_id", userIds)
       .is("taken_at", null)
       .eq("medication_plans.is_active", true)
+      .in("scheduled_day", currentDays)
       .lte("scheduled_at", now.toISOString())
       .order("scheduled_at", { ascending: false })
       .limit(500);
@@ -348,7 +354,14 @@ async function sendNotifications(request: Request) {
       counts.failed++;
     } else {
       await runInChunks(healthRows ?? [], 25, async (reminder) => {
-        if (!preferenceByUser.get(reminder.user_id)?.health_enabled) return;
+        const clock = clocks.get(reminder.user_id);
+        if (
+          !clock ||
+          reminder.scheduled_day !== clock.day ||
+          !preferenceByUser.get(reminder.user_id)?.health_enabled
+        ) {
+          return;
+        }
 
         const accepted = await deliver(
           reminder.user_id,
