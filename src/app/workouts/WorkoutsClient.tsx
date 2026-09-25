@@ -50,6 +50,8 @@ export function WorkoutsClient({
   const [tab, setTab] = useState<"today" | "history">("today");
   const [completion, setCompletion] = useState<WorkoutSession | null>(null);
   const [duration, setDuration] = useState(30);
+  const completionDurationInvalid =
+    !Number.isFinite(duration) || duration < 1 || duration > 1440;
   const rows =
     data?.sessions.filter((s) =>
       tab === "today"
@@ -325,10 +327,29 @@ export function WorkoutsClient({
               step={1}
               required
               value={duration || ""}
+              invalid={completionDurationInvalid}
+              describedBy={
+                completionDurationInvalid
+                  ? "workout-completion-duration-error"
+                  : undefined
+              }
               onChange={(e) => setDuration(Number(e.target.value))}
             />
+            {completionDurationInvalid && (
+              <span
+                id="workout-completion-duration-error"
+                className="field-error"
+              >
+                {t("workout.durationRange")}
+              </span>
+            )}
           </label>
-          <Button type="submit" disabled={busy} busy={busy} variant="primary">
+          <Button
+            type="submit"
+            disabled={busy || completionDurationInvalid}
+            busy={busy}
+            variant="primary"
+          >
             {t("workout.complete")}
           </Button>
         </form>
