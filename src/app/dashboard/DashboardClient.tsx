@@ -72,10 +72,28 @@ function formatDueTime(
   const base = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
   const diff = Math.round((day - base) / 86_400_000);
   const relative = diff === 0 ? labels.today : diff === 1 ? labels.tomorrow : diff === -1 ? labels.yesterday : null;
-  const clock = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(due);
+  if (!task.due_has_time) {
+    return (
+      relative ??
+      new Intl.DateTimeFormat(locale, {
+        month: "short",
+        day: "numeric",
+      }).format(due)
+    );
+  }
+
+  const clock = new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(due);
   return relative
     ? `${relative} · ${clock}`
-    : new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(due);
+    : new Intl.DateTimeFormat(locale, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(due);
 }
 
 function sortTasks(tasks: Task[]) {
@@ -127,6 +145,7 @@ export function DashboardClient({
   const [formError, setFormError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [dueLocal, setDueLocal] = useState("");
+  const [dueHasTime, setDueHasTime] = useState(false);
   const [creating, setCreating] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
@@ -235,10 +254,12 @@ export function DashboardClient({
         user_id: userId,
         title: title.trim(),
         due_at: dueLocal ? new Date(dueLocal).toISOString() : null,
+        due_has_time: dueHasTime,
       });
       setTasks((current) => sortTasks([...current, created]));
       setTitle("");
       setDueLocal("");
+      setDueHasTime(false);
       setShowTaskForm(false);
       setFilter("all");
       showMoment("task_added", "add-task", "plus");
@@ -254,6 +275,7 @@ export function DashboardClient({
     setShowTaskForm(false);
     setTitle("");
     setDueLocal("");
+    setDueHasTime(false);
     setFormError(null);
   }
 
@@ -459,7 +481,7 @@ export function DashboardClient({
   );
   const todayReminders = useMemo(() => {
     const taskItems = todayTasks
-      .filter((task) => task.due_at)
+      .filter((task) => task.due_at && task.due_has_time)
       .map((task) => {
         const due = new Date(task.due_at as string);
         const timeKey = `${String(due.getHours()).padStart(2, "0")}:${String(
@@ -1099,10 +1121,14 @@ export function DashboardClient({
             />
           </label>
           <TaskScheduleFields
-            value={dueLocal}
-            onChange={setDueLocal}
-            disabled={creating}
-          />
+              value={dueLocal}
+              hasTime={dueHasTime}
+              onChange={(value, hasTime) => {
+                setDueLocal(value);
+                setDueHasTime(hasTime);
+              }}
+              disabled={creating}
+            />
           <Collapse show={!!formError}>
             <ErrorNotice>{formError}</ErrorNotice>
           </Collapse>
