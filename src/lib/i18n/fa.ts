@@ -101,6 +101,7 @@ export const fa: Record<TranslationKey, string> = {
   "theme.description":
     "رنگ‌ها را با زمان محلی روز، ظاهر دستگاه یا یک حالت ثابت هماهنگ کنید.",
   "theme.auto": "خودکار بر اساس زمان روز",
+  "theme.autoShort": "خودکار",
   "theme.system": "هماهنگ با دستگاه",
   "theme.light": "روشن",
   "theme.dark": "تاریک",
