@@ -27,6 +27,22 @@ test("server auth boundary validates privileged API requests", () => {
   assert.match(requestAuth, /SUPABASE_SERVICE_ROLE_KEY/);
 });
 
+test("unauthenticated telemetry has a non-IP global abuse cap", () => {
+  const errorRoute = source("src/app/api/errors/client/route.ts");
+  const rateLimit = source("src/lib/server/rateLimit.ts");
+
+  assert.match(errorRoute, /client-error-report-global/);
+  assert.match(errorRoute, /"global"/);
+  assert.match(rateLimit, /Never use this value as the sole authorization/);
+});
+
+test("dependency update automation is configured", () => {
+  const dependabot = source(".github/dependabot.yml");
+  assert.match(dependabot, /package-ecosystem: "npm"/);
+  assert.match(dependabot, /package-ecosystem: "github-actions"/);
+  assert.match(dependabot, /interval: "weekly"/);
+});
+
 test("first-run flow reaches Today without notification permission", () => {
   const onboarding = source("src/app/onboarding/OnboardingClient.tsx");
   assert.match(onboarding, /await completeOnboarding\(userId\)/);
