@@ -560,7 +560,12 @@ export function DashboardClient({
     userId,
   ]);
 
-  const dayOne = routines.length === 0 && todayTasks.length === 0 && !checkedInToday;
+  const dayOne =
+    routines.length === 0 &&
+    todayTasks.length === 0 &&
+    todayMedication.length === 0 &&
+    todayWorkouts.length === 0 &&
+    !checkedInToday;
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
     date.setDate(today.getDate() - ((today.getDay() + 6) % 7) + index);
