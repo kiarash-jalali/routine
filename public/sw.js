@@ -45,6 +45,16 @@ self.addEventListener("activate", (event) => {
           ),
         ),
       self.registration.navigationPreload?.enable?.().catch(() => undefined),
+      self.registration
+        .getNotifications()
+        .then((notifications) => {
+          for (const notification of notifications) {
+            if (notification.tag?.startsWith("rootine-health-")) {
+              notification.close();
+            }
+          }
+        })
+        .catch(() => undefined),
       clients.claim(),
     ]),
   );
