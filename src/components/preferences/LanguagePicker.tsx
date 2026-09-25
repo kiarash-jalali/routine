@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useLanguage } from "./LanguageProvider";
 import { Select } from "@/components/ui";
 import { isLanguage } from "@/lib/i18n";
@@ -7,12 +7,15 @@ export function LanguagePicker() {
   const { language, setLanguage, t } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const errorId = useId();
   return (
     <div>
       <label className="grid gap-2 text-sm font-medium">
         {t("language.title")}
         <Select
           aria-label={t("language.title")}
+          invalid={failed}
+          describedBy={failed ? errorId : undefined}
           value={language}
           disabled={busy}
           onChange={async (event) => {
@@ -38,7 +41,7 @@ export function LanguagePicker() {
         </Select>
       </label>
       {failed && (
-        <p role="alert" className="mt-2 text-sm text-danger">
+        <p id={errorId} role="alert" className="mt-2 text-sm text-danger">
           {t("language.error")}
         </p>
       )}
