@@ -32,7 +32,6 @@ test("auth proxy protects app routes while leaving public PWA resources reachabl
     "/workouts",
     "/guide",
     "/onboarding",
-    "/design-lab",
   ]) {
     assert.match(proxy, new RegExp(`"${pathname.replaceAll("/", "\\/")}"`));
   }
@@ -40,6 +39,19 @@ test("auth proxy protects app routes while leaving public PWA resources reachabl
   assert.deepEqual(config.matcher, [
     "/((?!api|_next/static|_next/image|favicon.ico|offline.html|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|css|js)$).*)",
   ]);
+});
+
+test("Design Lab is development-only and production returns 404", () => {
+  const proxy = source("src/proxy.ts");
+  const nav = source("src/components/AppNav.tsx");
+
+  assert.match(proxy, /function isDesignLabPath/);
+  assert.match(proxy, /if \(!development\)[\s\S]*status: 404/);
+  assert.doesNotMatch(
+    proxy.slice(proxy.indexOf("const protectedRoutes"), proxy.indexOf("] as const")),
+    /"\/design-lab"/,
+  );
+  assert.match(nav, /process\.env\.NODE_ENV !== "production"/);
 });
 
 test("public auth routes receive CSP but are not authentication-gated", () => {
