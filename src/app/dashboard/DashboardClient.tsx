@@ -33,6 +33,8 @@ import {
 } from "@/lib/db/checkins";
 import { getRhythmSummary, type RhythmSummary } from "@/lib/db/rhythm";
 import { addTask, removeTask } from "@/lib/db/tasks";
+import { setMedicationTaken } from "@/lib/db/health";
+import { completeWorkout } from "@/lib/db/workouts";
 import { getErrorMessage } from "@/lib/errors";
 import { getMomentCopy, type MomentCopyKey } from "@/lib/moments";
 import { consumeFirstRoutineSuccess } from "@/lib/firstRun";
@@ -47,6 +49,8 @@ import { saveOfflineSnapshot } from "@/lib/offlineStore";
 import type { CheckinCompletionMap } from "@/types/checkin";
 import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
+import type { MedicationReminder } from "@/types/health";
+import type { WorkoutSession } from "@/types/workout";
 import type { NotificationPreference } from "@/lib/db/notifications";
 
 function formatDueTime(
@@ -86,6 +90,8 @@ export function DashboardClient({
   initialCompletionByItem,
   initialDayKey,
   initialNotificationPreference,
+  initialMedicationReminders,
+  initialWorkoutSessions,
   initialPartialError,
 }: {
   userId: string;
@@ -95,10 +101,16 @@ export function DashboardClient({
   initialCompletionByItem: CheckinCompletionMap;
   initialDayKey: string | null;
   initialNotificationPreference: NotificationPreference | null | undefined;
+  initialMedicationReminders: MedicationReminder[];
+  initialWorkoutSessions: WorkoutSession[];
   initialPartialError: boolean;
 }) {
   const { t, language, locale, date, time, number, weekday } = useLanguage();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [medicationReminders, setMedicationReminders] = useState(
+    initialMedicationReminders,
+  );
+  const [workoutSessions, setWorkoutSessions] = useState(initialWorkoutSessions);
   const [rhythm, setRhythm] = useState<RhythmSummary | null>(initialRhythm);
   const [completionByItem, setCompletionByItem] =
     useState<CheckinCompletionMap>(initialCompletionByItem);
@@ -313,6 +325,79 @@ export function DashboardClient({
     }
   }
 
+  async function toggleMedication(reminder: MedicationReminder) {
+    const pendingKey = `medication:${reminder.id}`;
+    if (pending.current.has(pendingKey)) return;
+    const wasTaken = Boolean(reminder.taken_at);
+    const optimisticTakenAt = wasTaken ? null : new Date().toISOString();
+
+    pending.current.add(pendingKey);
+    setPendingIds([...pending.current]);
+    setError(null);
+    setMedicationReminders((current) =>
+      current.map((item) =>
+        item.id === reminder.id
+          ? { ...item, taken_at: optimisticTakenAt }
+          : item,
+      ),
+    );
+
+    try {
+      await setMedicationTaken(userId, reminder.id, !wasTaken);
+    } catch (error: unknown) {
+      setMedicationReminders((current) =>
+        current.map((item) =>
+          item.id === reminder.id
+            ? { ...item, taken_at: reminder.taken_at }
+            : item,
+        ),
+      );
+      setError(getErrorMessage(error, t("common.error")));
+    } finally {
+      pending.current.delete(pendingKey);
+      setPendingIds([...pending.current]);
+    }
+  }
+
+  async function toggleWorkout(session: WorkoutSession) {
+    const pendingKey = `workout:${session.id}`;
+    if (pending.current.has(pendingKey)) return;
+    const wasCompleted = Boolean(session.completed_at);
+    const optimisticCompletedAt = wasCompleted ? null : new Date().toISOString();
+
+    pending.current.add(pendingKey);
+    setPendingIds([...pending.current]);
+    setError(null);
+    setWorkoutSessions((current) =>
+      current.map((item) =>
+        item.id === session.id
+          ? { ...item, completed_at: optimisticCompletedAt }
+          : item,
+      ),
+    );
+
+    try {
+      await completeWorkout(
+        userId,
+        session.id,
+        !wasCompleted,
+        session.duration_minutes,
+      );
+    } catch (error: unknown) {
+      setWorkoutSessions((current) =>
+        current.map((item) =>
+          item.id === session.id
+            ? { ...item, completed_at: session.completed_at }
+            : item,
+        ),
+      );
+      setError(getErrorMessage(error, t("common.error")));
+    } finally {
+      pending.current.delete(pendingKey);
+      setPendingIds([...pending.current]);
+    }
+  }
+
   async function deleteTask() {
     if (!deleteTarget || deleting) return;
     setDeleting(true);
@@ -339,6 +424,91 @@ export function DashboardClient({
     () => filterTasksForToday(tasks, today),
     [tasks, today],
   );
+  const todayMedication = useMemo(
+    () =>
+      medicationReminders
+        .filter((reminder) => reminder.scheduled_day === todayKey)
+        .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at)),
+    [medicationReminders, todayKey],
+  );
+  const todayWorkouts = useMemo(
+    () =>
+      workoutSessions
+        .filter((session) => session.scheduled_day === todayKey)
+        .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at)),
+    [todayKey, workoutSessions],
+  );
+  const todayReminders = useMemo(() => {
+    const taskItems = todayTasks
+      .filter((task) => task.due_at)
+      .map((task) => {
+        const due = new Date(task.due_at as string);
+        const timeKey = `${String(due.getHours()).padStart(2, "0")}:${String(
+          due.getMinutes(),
+        ).padStart(2, "0")}`;
+        return {
+          key: `task-${task.id}`,
+          icon: "today" as const,
+          label: task.title,
+          category: t("reminder.tasks"),
+          timeKey,
+          displayTime: new Intl.DateTimeFormat(locale, {
+            hour: "2-digit",
+            minute: "2-digit",
+          }).format(due),
+          href: "/dashboard",
+        };
+      });
+
+    const routineItems = routines
+      .filter((routine) => routine.preferred_time)
+      .map((routine) => ({
+        key: `routine-${routine.id}`,
+        icon: "routines" as const,
+        label: routine.title,
+        category: t("reminder.routines"),
+        timeKey: routine.preferred_time?.slice(0, 5) ?? "99:99",
+        displayTime: routine.preferred_time
+          ? time(routine.preferred_time)
+          : t("common.anytime"),
+        href: "/routines",
+      }));
+
+    const medicationItems = todayMedication.map((reminder) => ({
+      key: `medication-${reminder.id}`,
+      icon: "health" as const,
+      label: reminder.name,
+      category: t("reminder.medication"),
+      timeKey: reminder.scheduled_time.slice(0, 5),
+      displayTime: time(reminder.scheduled_time),
+      href: "/health",
+    }));
+
+    const workoutItems = todayWorkouts.map((session) => ({
+      key: `workout-${session.id}`,
+      icon: "sport" as const,
+      label: session.name,
+      category: t("reminder.sport"),
+      timeKey: session.scheduled_time.slice(0, 5),
+      displayTime: time(session.scheduled_time),
+      href: "/workouts",
+    }));
+
+    return [
+      ...taskItems,
+      ...routineItems,
+      ...medicationItems,
+      ...workoutItems,
+    ].sort((a, b) => a.timeKey.localeCompare(b.timeKey));
+  }, [
+    locale,
+    routines,
+    t,
+    time,
+    todayMedication,
+    todayTasks,
+    todayWorkouts,
+  ]);
   const visibleTasks =
     filter === "today"
       ? todayTasks
