@@ -310,7 +310,7 @@ export function WorkoutsClient({
           className="mt-5 space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (completion)
+            if (completion && !completionDurationInvalid)
               void act(async () => {
                 await completeWorkout(userId, completion.id, true, duration);
                 setCompletion(null);
