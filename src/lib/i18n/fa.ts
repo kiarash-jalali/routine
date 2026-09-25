@@ -245,7 +245,7 @@ export const fa: Record<TranslationKey, string> = {
   "settings.deviceBody": "روتین را نصب کن و انتخاب کن چه زمانی توجهت را جلب کند.",
   "settings.account": "حساب و امنیت",
   "settings.accountBody": "اطلاعات ورود و نشست این دستگاه.",
-  "settings.data": "اطلاعات تو",
+  "settings.data": "داده و حریم خصوصی",
   "settings.dataBody": "یک نسخه دریافت کن یا حسابت را برای همیشه حذف کن.",
   "settings.profile": "پروفایل",
   "settings.profileBody": "نامی که روتین برای خطاب به تو استفاده می‌کند.",
