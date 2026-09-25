@@ -442,6 +442,20 @@
   .btn:disabled {
     opacity: 0.48;
   }
+  .btn-sm {
+    min-height: 44px;
+    padding: 9px 13px;
+    border-radius: 14px;
+    font-size: 13px;
+  }
+  .btn-md {
+    min-height: 44px;
+  }
+  .btn-lg {
+    min-height: 48px;
+    padding: 13px 19px;
+    font-size: 15px;
+  }
   .btn-primary {
     color: var(--on-primary);
     background: linear-gradient(160deg, var(--primary-gloss), var(--primary));
@@ -501,6 +515,14 @@
       border-color 200ms,
       box-shadow 200ms;
   }
+  .field-sm {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 15px;
+  }
+  .field-md {
+    min-height: 48px;
+  }
   .field::placeholder {
     color: var(--muted-soft);
   }
@@ -508,6 +530,14 @@
     background: var(--surface);
     border-color: var(--primary);
     box-shadow: 0 0 0 4px var(--primary-ring);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+  }
+  .field[aria-invalid="true"]:focus {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 18%, transparent);
   }
   .icon-button {
     display: inline-flex;
@@ -575,8 +605,8 @@
   .segmented button {
     position: relative;
     flex: 1;
-    min-height: 36px;
-    padding: 7px 14px;
+    min-height: 44px;
+    padding: 9px 14px;
     color: var(--muted);
     font-size: 14px;
     font-weight: 500;
@@ -585,8 +615,14 @@
   .segmented button[aria-pressed="true"] {
     color: var(--foreground);
   }
-  .segmented button:hover {
+  .segmented button:hover:not(:disabled) {
     color: var(--foreground);
+  }
+  .segmented[aria-disabled="true"] {
+    opacity: 0.6;
+  }
+  :root[dir="rtl"] .segmented-indicator {
+    transform: translateX(calc(var(--segment-index) * -100%));
   }
   .list-row {
     display: flex;
