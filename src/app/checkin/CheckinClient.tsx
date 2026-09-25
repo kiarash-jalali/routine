@@ -429,14 +429,16 @@ export function CheckinClient({
                   <CheckinChoice
                     title={task.title}
                     detail={
-                      task.due_at
+                      task.due_at && task.due_has_time
                         ? t("task.dueAt", {
                             time: date(task.due_at, {
                               hour: "2-digit",
                               minute: "2-digit",
                             }),
                           })
-                        : t("task.flexible")
+                        : task.due_at
+                          ? t("common.today")
+                          : t("task.flexible")
                     }
                     completed={isItemCompleted("task", task.id)}
                     locked={checkinLocked}
