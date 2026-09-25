@@ -15,7 +15,6 @@ import { Sheet } from "@/components/Sheet";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { ReminderSetup } from "@/components/notifications/ReminderSetup";
 import { WorkoutForm } from "@/components/workouts/WorkoutForm";
-import { LifeLinks } from "@/components/life/LifeLinks";
 import { useOwnedData } from "@/components/life/useOwnedData";
 import {
   completeWorkout,
@@ -77,7 +76,6 @@ export function WorkoutsClient({
           </div>
         }
       />
-      <LifeLinks />
       {error && <ErrorNotice>{t("common.error")}</ErrorNotice>}
       <>
           <div className="mb-5 flex gap-3">
