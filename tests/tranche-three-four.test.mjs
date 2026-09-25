@@ -26,8 +26,10 @@ test("Tranche 3 exposes explicit theme choices and localized destructive confirm
 
   assert.match(picker, /SegmentedControl/);
   assert.doesNotMatch(picker, /function cycle/);
-  assert.match(toggle, /<select/);
-  assert.doesNotMatch(toggle, /function toggle/);
+  assert.match(toggle, /<button/);
+  assert.match(toggle, /cycleModes = \["auto", "light", "dark"\]/);
+  assert.match(toggle, /onClick=\{\(\) => setThemeMode\(nextMode\)\}/);
+  assert.doesNotMatch(toggle, /<select/);
   assert.match(settings, /language === "fa" \? "حذف" : "DELETE"/);
 });
 
