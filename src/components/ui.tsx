@@ -133,9 +133,9 @@ export function Button({
         buttonSizes[size],
         className,
       )}
+      {...props}
       aria-busy={busy || undefined}
       disabled={disabled || busy}
-      {...props}
     >
       <AnimatePresence initial={false}>
         {busy && (
@@ -164,9 +164,9 @@ const fieldSizes: Record<FieldSize, string> = {
 };
 
 type SharedFieldProps = {
-  size?: FieldSize;
-  invalid?: boolean;
-  describedBy?: string;
+  size?: FieldSize | undefined;
+  invalid?: boolean | undefined;
+  describedBy?: string | undefined;
 };
 
 export function Input({
