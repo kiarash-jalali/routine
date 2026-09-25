@@ -4,6 +4,7 @@ import { AnimatedList, AnimatedListItem } from "@/components/Motion";
 import {
   Button,
   Card,
+  EmptyState,
   ErrorNotice,
   Input,
   PageHeader,
@@ -124,6 +125,11 @@ export function WorkoutsClient({
                     </div>
                     <Button
                       disabled={busy}
+                      aria-label={`${t(
+                        session.completed_at
+                          ? "workout.undo"
+                          : "workout.complete",
+                      )}: ${session.name}`}
                       onClick={() => {
                         if (session.completed_at)
                           void act(() =>
@@ -157,11 +163,24 @@ export function WorkoutsClient({
             ))}
           </AnimatedList>
           {!rows.length && (
-            <Card>
+            <EmptyState
+              action={
+                tab === "today" ? (
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <Button onClick={() => setEditor("log")}>
+                      {t("workout.log")}
+                    </Button>
+                    <Button variant="primary" onClick={() => setEditor("new")}>
+                      {t("workout.add")}
+                    </Button>
+                  </div>
+                ) : undefined
+              }
+            >
               {t(
                 tab === "today" ? "workout.todayEmpty" : "workout.historyEmpty",
               )}
-            </Card>
+            </EmptyState>
           )}
           {tab === "history" && data.sessions.length >= limit && (
             <Button className="mt-4" onClick={more}>
@@ -199,11 +218,18 @@ export function WorkoutsClient({
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
-                      <Button disabled={busy} onClick={() => setEditor(plan)}>
+                      <Button
+                        disabled={busy}
+                        aria-label={`${t("common.edit")}: ${plan.name}`}
+                        onClick={() => setEditor(plan)}
+                      >
                         {t("common.edit")}
                       </Button>
                       <Button
                         disabled={busy}
+                        aria-label={`${t(
+                          plan.is_active ? "common.pause" : "common.resume",
+                        )}: ${plan.name}`}
                         onClick={() =>
                           void act(() =>
                             setWorkoutActive(userId, plan.id, !plan.is_active),
@@ -216,7 +242,17 @@ export function WorkoutsClient({
                   </div>
                 </Card>
               ))}
-              {!data.plans.length && <Card tone="soft">{t("workout.empty")}</Card>}
+              {!data.plans.length && (
+                <EmptyState
+                  action={
+                    <Button variant="primary" onClick={() => setEditor("new")}>
+                      {t("workout.add")}
+                    </Button>
+                  }
+                >
+                  {t("workout.empty")}
+                </EmptyState>
+              )}
             </div>
           </div>
         </>
@@ -240,6 +276,7 @@ export function WorkoutsClient({
             key={typeof editor === "string" ? editor : editor.id}
             initial={typeof editor === "object" ? editor : undefined}
             busy={busy}
+            onCancel={() => setEditor(null)}
             onLog={
               editor === "log"
                 ? async (values) => {
