@@ -3,8 +3,8 @@ import { completionMapFromItems } from "@/lib/checkinProgress";
 import { getDailyProgress } from "@/lib/db/checkins";
 import { getRhythmSummary } from "@/lib/db/rhythm";
 import { getNotificationPreference } from "@/lib/db/notifications";
-import { loadHealth } from "@/lib/db/health";
-import { loadWorkouts } from "@/lib/db/workouts";
+import { listMedicationRemindersForDay } from "@/lib/db/health";
+import { listWorkoutSessionsForDay } from "@/lib/db/workouts";
 import { listTasks } from "@/lib/db/tasks";
 import { listActiveRoutines } from "@/lib/db/today";
 import { getServerLocalDay } from "@/lib/server/localDay";
@@ -34,8 +34,12 @@ export default async function DashboardPage() {
       ? getDailyProgress(userId, initialDayKey, supabase)
       : Promise.resolve(null),
     getNotificationPreference(userId, supabase),
-    loadHealth(userId, 100, supabase),
-    loadWorkouts(userId, 100, supabase),
+    initialDayKey
+      ? listMedicationRemindersForDay(userId, initialDayKey, supabase)
+      : Promise.resolve([]),
+    initialDayKey
+      ? listWorkoutSessionsForDay(userId, initialDayKey, supabase)
+      : Promise.resolve([]),
   ]);
 
   const initialTasks =
@@ -53,9 +57,9 @@ export default async function DashboardPage() {
       ? notificationPreferenceResult.value
       : undefined;
   const initialMedicationReminders =
-    healthResult.status === "fulfilled" ? healthResult.value.reminders : [];
+    healthResult.status === "fulfilled" ? healthResult.value : [];
   const initialWorkoutSessions =
-    workoutsResult.status === "fulfilled" ? workoutsResult.value.sessions : [];
+    workoutsResult.status === "fulfilled" ? workoutsResult.value : [];
 
   return (
     <DashboardClient
