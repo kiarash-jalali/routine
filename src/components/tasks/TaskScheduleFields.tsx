@@ -4,15 +4,16 @@ import { Input } from "@/components/ui";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { getLocalDateKey } from "@/lib/today";
 
-function splitLocalDateTime(value: string) {
+function splitLocalDateTime(value: string, hasTime: boolean) {
   const [date = "", time = ""] = value.split("T");
-  return { date, time };
+  return { date, time: hasTime ? time : "" };
 }
 
 function combineLocalDateTime(date: string, time: string) {
   if (!date && !time) return "";
 
-  // A time on its own means today; a date on its own means by the end of day.
+  // A time on its own means today. Date-only tasks keep an end-of-day
+  // timestamp for day grouping, while due_has_time prevents a notification.
   const resolvedDate = date || getLocalDateKey(new Date());
   const resolvedTime = time || "23:59";
   return `${resolvedDate}T${resolvedTime}`;
@@ -20,15 +21,17 @@ function combineLocalDateTime(date: string, time: string) {
 
 export function TaskScheduleFields({
   value,
+  hasTime,
   onChange,
   disabled = false,
 }: {
   value: string;
-  onChange: (value: string) => void;
+  hasTime: boolean;
+  onChange: (value: string, hasTime: boolean) => void;
   disabled?: boolean;
 }) {
   const { t } = useLanguage();
-  const { date, time } = splitLocalDateTime(value);
+  const { date, time } = splitLocalDateTime(value, hasTime);
 
   return (
     <div className="space-y-3">
@@ -45,9 +48,10 @@ export function TaskScheduleFields({
           <Input
             type="date"
             value={date}
-            onChange={(event) =>
-              onChange(combineLocalDateTime(event.target.value, time))
-            }
+            onChange={(event) => {
+              const nextDate = event.target.value;
+              onChange(combineLocalDateTime(nextDate, time), Boolean(time));
+            }}
             disabled={disabled}
           />
         </label>
@@ -57,9 +61,10 @@ export function TaskScheduleFields({
           <Input
             type="time"
             value={time}
-            onChange={(event) =>
-              onChange(combineLocalDateTime(date, event.target.value))
-            }
+            onChange={(event) => {
+              const nextTime = event.target.value;
+              onChange(combineLocalDateTime(date, nextTime), Boolean(nextTime));
+            }}
             disabled={disabled}
           />
         </label>
