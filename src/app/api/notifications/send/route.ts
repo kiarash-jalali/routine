@@ -235,6 +235,12 @@ async function sendNotifications(request: Request) {
       .eq("is_done", false)
       .not("due_at", "is", null)
       .lte("due_at", now.toISOString())
+      .gte(
+        "due_at",
+        new Date(
+          now.getTime() - SCHEDULE_CATCHUP_MINUTES * 60 * 1000,
+        ).toISOString(),
+      )
       .order("due_at", { ascending: false })
       .limit(500);
 
@@ -254,7 +260,7 @@ async function sendNotifications(request: Request) {
           task.user_id,
           "checkin",
           "task",
-          `task:${task.id}:${eventBucket}`,
+          `task:${task.id}`,
           task.title,
         );
       });
