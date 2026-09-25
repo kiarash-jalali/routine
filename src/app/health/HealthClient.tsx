@@ -12,7 +12,6 @@ import {
 } from "@/components/ui";
 import { Sheet } from "@/components/Sheet";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
-import { ReminderSetup } from "@/components/notifications/ReminderSetup";
 import { MedicationForm } from "@/components/health/MedicationForm";
 import { useOwnedData } from "@/components/life/useOwnedData";
 import {
@@ -43,7 +42,6 @@ export function HealthClient({
   );
   const [editor, setEditor] = useState<MedicationPlan | "new" | null>(null);
   const [tab, setTab] = useState<"today" | "history">("today");
-  const [notificationOpen, setNotificationOpen] = useState(false);
   const today =
     data?.reminders
       .filter((r) => r.scheduled_day === localClock(now, r.timezone).day)
@@ -210,9 +208,6 @@ export function HealthClient({
               {!data.plans.length && <Card tone="soft">{t("health.empty")}</Card>}
             </div>
           </div>
-          <Button className="mt-6" onClick={() => setNotificationOpen(true)}>
-            {t("reminder.device")}
-          </Button>
         </>
       <Sheet
         open={editor !== null}
@@ -236,31 +231,10 @@ export function HealthClient({
                   editor === "new" ? undefined : editor.id,
                 );
                 setEditor(null);
-                if (
-                  values.reminders_enabled &&
-                  (editor === "new" || !editor.reminders_enabled)
-                )
-                  setNotificationOpen(true);
               });
             }}
           />
         )}
-      </Sheet>
-      <Sheet
-        open={notificationOpen}
-        onClose={() => setNotificationOpen(false)}
-        title={t("reminder.device")}
-      >
-        <div className="mt-5">
-          <ReminderSetup
-            userId={userId}
-            deviceOnly
-            onDone={() => setNotificationOpen(false)}
-          />
-          <Button className="mt-4" onClick={() => setNotificationOpen(false)}>
-            {t("common.done")}
-          </Button>
-        </div>
       </Sheet>
     </PageShell>
   );
