@@ -114,7 +114,7 @@ export function MomentPopup({
             <span className="moment-popup-icon" aria-hidden="true">
               <Icon name={notice.icon ?? "spark"} size={19} />
             </span>
-            <span className="min-w-0 flex-1 text-left">
+            <span className="min-w-0 flex-1 text-start">
               <strong className="moment-popup-title">{notice.title}</strong>
               {notice.detail && (
                 <span className="moment-popup-detail">{notice.detail}</span>
