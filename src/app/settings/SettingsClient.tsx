@@ -427,12 +427,16 @@ export function SettingsClient({
                         type="password"
                         minLength={MIN_PASSWORD_LENGTH}
                         value={newPassword}
+                        describedBy="settings-password-guidance"
                         autoComplete="new-password"
                         disabled={Boolean(busyAction)}
                         onChange={(event) => setNewPassword(event.target.value)}
                       />
                     </label>
-                    <PasswordGuidance password={newPassword} />
+                    <PasswordGuidance
+                      id="settings-password-guidance"
+                      password={newPassword}
+                    />
                     <label className="grid gap-2 text-sm font-medium">
                       {t("settings.confirmPassword")}
                       <Input
@@ -540,16 +544,20 @@ export function SettingsClient({
                   description={t("settings.deleteBody")}
                 >
                   <div className="space-y-4">
-                    <p className="text-sm leading-6 text-muted">
-                      {t("settings.typeDelete", { word: deleteWord })}
-                    </p>
-                    <Input
-                      value={deleteConfirmation}
-                      placeholder={deleteWord}
-                      autoComplete="off"
-                      disabled={Boolean(busyAction)}
-                      onChange={(event) => setDeleteConfirmation(event.target.value)}
-                    />
+                    <label className="grid gap-2 text-sm font-medium">
+                      <span className="font-normal leading-6 text-muted">
+                        {t("settings.typeDelete", { word: deleteWord })}
+                      </span>
+                      <Input
+                        value={deleteConfirmation}
+                        placeholder={deleteWord}
+                        autoComplete="off"
+                        disabled={Boolean(busyAction)}
+                        onChange={(event) =>
+                          setDeleteConfirmation(event.target.value)
+                        }
+                      />
+                    </label>
                     <label className="grid gap-2 text-sm font-medium">
                       {t("settings.currentPassword")}
                       <Input
