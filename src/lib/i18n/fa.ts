@@ -72,6 +72,7 @@ export const fa: Record<TranslationKey, string> = {
   "common.today": "امروز",
   "common.history": "سابقه",
   "common.done": "انجام شد",
+  "common.dismiss": "بستن",
   "common.days": "روزهای هفته",
   "common.daily": "هر روز",
   "common.chooseDays": "انتخاب روزها",
