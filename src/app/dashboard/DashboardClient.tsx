@@ -769,16 +769,15 @@ export function DashboardClient({
             />
             <div className="mt-6">
               {routines.length === 0 ? (
-                <EmptyState>
+                <EmptyState
+                  action={
+                    <Link href="/routines" className="btn btn-secondary">
+                      {t("routine.addSmall")}
+                      <Icon name="arrow" size={16} />
+                    </Link>
+                  }
+                >
                   {t("product.noRoutines")}
-                  <br />
-                  <Link
-                    className="mt-2 inline-flex min-h-11 items-center text-primary"
-                    href="/routines"
-                  >
-                    {t("routine.addSmall")}
-                    <Icon name="arrow" size={16} className="ms-2" />
-                  </Link>
                 </EmptyState>
               ) : (
                 <ul>
@@ -843,7 +842,15 @@ export function DashboardClient({
               />
               <div className="mt-5">
                 {todayMedication.length === 0 ? (
-                  <EmptyState>{t("dashboard.noMedicationToday")}</EmptyState>
+                  <EmptyState
+                    action={
+                      <Link href="/health" className="btn btn-secondary">
+                        {t("health.add")}
+                      </Link>
+                    }
+                  >
+                    {t("dashboard.noMedicationToday")}
+                  </EmptyState>
                 ) : (
                   <ul>
                     {todayMedication.map((reminder) => {
@@ -902,7 +909,15 @@ export function DashboardClient({
               />
               <div className="mt-5">
                 {todayWorkouts.length === 0 ? (
-                  <EmptyState>{t("dashboard.noSportToday")}</EmptyState>
+                  <EmptyState
+                    action={
+                      <Link href="/workouts" className="btn btn-secondary">
+                        {t("workout.add")}
+                      </Link>
+                    }
+                  >
+                    {t("dashboard.noSportToday")}
+                  </EmptyState>
                 ) : (
                   <ul>
                     {todayWorkouts.map((session) => {
@@ -976,14 +991,9 @@ export function DashboardClient({
             <AnimatedList>
               {visibleTasks.length === 0 ? (
                 <AnimatedListItem key="empty">
-                  <EmptyState>
-                    {filter === "done"
-                      ? t("task.emptyDone")
-                      : filter === "all"
-                        ? t("task.emptyAll")
-                        : t("task.emptyToday")}
-                    {filter !== "done" && (
-                      <div className="mt-4">
+                  <EmptyState
+                    action={
+                      filter !== "done" ? (
                         <Button
                           variant="primary"
                           onClick={() => {
@@ -994,8 +1004,14 @@ export function DashboardClient({
                           <Icon name="plus" size={16} />
                           {t("product.addTask")}
                         </Button>
-                      </div>
-                    )}
+                      ) : undefined
+                    }
+                  >
+                    {filter === "done"
+                      ? t("task.emptyDone")
+                      : filter === "all"
+                        ? t("task.emptyAll")
+                        : t("task.emptyToday")}
                   </EmptyState>
                 </AnimatedListItem>
               ) : (
