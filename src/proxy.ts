@@ -12,7 +12,6 @@ const protectedRoutes = [
   "/workouts",
   "/guide",
   "/onboarding",
-  "/design-lab",
 ] as const;
 
 function isProtectedPath(pathname: string) {
@@ -21,12 +20,18 @@ function isProtectedPath(pathname: string) {
   );
 }
 
+function isDesignLabPath(pathname: string) {
+  return pathname === "/design-lab" || pathname.startsWith("/design-lab/");
+}
+
 function contentSecurityPolicy(nonce: string) {
   const development = process.env.NODE_ENV === "development";
 
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ""}`,
+    // Dynamic theme previews and a few runtime layout values still use inline
+    // styles. Keep this exception until those are moved to nonceable styles.
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
@@ -43,14 +48,25 @@ function contentSecurityPolicy(nonce: string) {
 
 export async function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const development = process.env.NODE_ENV === "development";
   const csp = contentSecurityPolicy(nonce);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
 
-  const response = isProtectedPath(request.nextUrl.pathname)
-    ? await updateSession(request, requestHeaders)
-    : NextResponse.next({ request: { headers: requestHeaders } });
+  let response: NextResponse;
+
+  if (isDesignLabPath(request.nextUrl.pathname)) {
+    if (!development) {
+      response = new NextResponse(null, { status: 404 });
+    } else {
+      response = await updateSession(request, requestHeaders);
+    }
+  } else {
+    response = isProtectedPath(request.nextUrl.pathname)
+      ? await updateSession(request, requestHeaders)
+      : NextResponse.next({ request: { headers: requestHeaders } });
+  }
 
   response.headers.set("Content-Security-Policy", csp);
   return response;
