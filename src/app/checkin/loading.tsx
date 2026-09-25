@@ -8,9 +8,12 @@ export default function CheckinLoading() {
           <div className="skeleton h-5 w-72 max-w-full" />
         </div>
         <div className="space-y-6">
-          <div className="card h-56" />
-          <div className="card h-56" />
-          <div className="card h-24" />
+          <div className="card h-60" />
+          <div className="card h-60" />
+          <div className="card h-28">
+            <div className="skeleton h-4 w-36" />
+            <div className="skeleton mt-4 h-2 w-full" />
+          </div>
         </div>
       </div>
     </main>
