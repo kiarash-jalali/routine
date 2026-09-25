@@ -1,5 +1,4 @@
 "use client";
-import { LifeLinks } from "@/components/life/LifeLinks";
 import { InstallAppCard } from "@/components/pwa/InstallAppCard";
 import { FirstNotificationPrompt } from "@/components/notifications/FirstNotificationPrompt";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
@@ -428,7 +427,6 @@ export function DashboardClient({
           </MomentSource>
         }
       />
-      <LifeLinks />
       <InstallAppCard deferUntilReturn />
       <Collapse show={!!firstSuccessRoutine}>
         <Card tone="accent" className="mb-7">
