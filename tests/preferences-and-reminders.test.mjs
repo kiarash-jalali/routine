@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 import { loadTypeScriptModule } from "./load-typescript.mjs";
@@ -80,6 +81,17 @@ test("notification schedule helpers keep five-minute cadence and local days", ()
   assert.equal(routineOccursOnDay("daily", null, "2026-09-22"), true);
   assert.equal(routineOccursOnDay("weekly", [1, 3], "2026-09-21"), true);
   assert.equal(routineOccursOnDay("weekly", [1, 3], "2026-09-22"), false);
+});
+
+test("task notifications are one-shot while medication keeps five-minute buckets", () => {
+  const route = readFileSync(
+    new URL("../src/app/api/notifications/send/route.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(route, /`task:\${task\.id}`/);
+  assert.doesNotMatch(route, /`task:\${task\.id}:\${eventBucket}`/);
+  assert.match(route, /`health:\${reminder\.id}:\${eventBucket}`/);
 });
 
 test("push transport rejects SSRF destinations", () => {
