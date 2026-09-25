@@ -28,14 +28,25 @@ export async function POST(request: Request) {
   });
 
   try {
-    const allowed = await enforceRateLimit(
-      admin,
-      "client-error-report",
-      requestIp(request),
-      20,
-      60,
-    );
-    if (!allowed) return new NextResponse(null, { status: 204 });
+    const [ipAllowed, globalAllowed] = await Promise.all([
+      enforceRateLimit(
+        admin,
+        "client-error-report",
+        requestIp(request),
+        20,
+        60,
+      ),
+      enforceRateLimit(
+        admin,
+        "client-error-report-global",
+        "global",
+        120,
+        60,
+      ),
+    ]);
+    if (!ipAllowed || !globalAllowed) {
+      return new NextResponse(null, { status: 204 });
+    }
   } catch {
     return new NextResponse(null, { status: 204 });
   }
