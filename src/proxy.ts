@@ -24,8 +24,12 @@ function isDesignLabPath(pathname: string) {
   return pathname === "/design-lab" || pathname.startsWith("/design-lab/");
 }
 
-function contentSecurityPolicy(nonce: string) {
+function contentSecurityPolicy(nonce: string, pathname: string) {
   const development = process.env.NODE_ENV === "development";
+  const loginFrameAncestors =
+    "'self' https://kiarashjalali.net https://www.kiarashjalali.net http://localhost:5173 http://127.0.0.1:5173";
+  const frameAncestors =
+    pathname === "/login" ? loginFrameAncestors : "'none'";
 
   return [
     "default-src 'self'",
@@ -41,7 +45,7 @@ function contentSecurityPolicy(nonce: string) {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'none'",
+    `frame-ancestors ${frameAncestors}`,
     ...(development ? [] : ["upgrade-insecure-requests"]),
   ].join("; ");
 }
@@ -49,7 +53,7 @@ function contentSecurityPolicy(nonce: string) {
 export async function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const development = process.env.NODE_ENV === "development";
-  const csp = contentSecurityPolicy(nonce);
+  const csp = contentSecurityPolicy(nonce, request.nextUrl.pathname);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
@@ -69,6 +73,11 @@ export async function proxy(request: NextRequest) {
   }
 
   response.headers.set("Content-Security-Policy", csp);
+  if (request.nextUrl.pathname === "/login") {
+    response.headers.delete("X-Frame-Options");
+  } else {
+    response.headers.set("X-Frame-Options", "DENY");
+  }
   return response;
 }
 
