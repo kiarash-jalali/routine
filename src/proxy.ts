@@ -27,9 +27,9 @@ function isDesignLabPath(pathname: string) {
 function contentSecurityPolicy(nonce: string, pathname: string) {
   const development = process.env.NODE_ENV === "development";
   const loginFrameAncestors =
-    "'self' https://kiarashjalali.net https://www.kiarashjalali.net http://localhost:5173 http://127.0.0.1:5173";
+    "frame-ancestors 'self' https://kiarashjalali.net https://www.kiarashjalali.net http://localhost:5173 http://127.0.0.1:5173";
   const frameAncestors =
-    pathname === "/login" ? loginFrameAncestors : "'none'";
+    pathname === "/login" ? loginFrameAncestors : "frame-ancestors 'none'";
 
   return [
     "default-src 'self'",
@@ -45,7 +45,7 @@ function contentSecurityPolicy(nonce: string, pathname: string) {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    `frame-ancestors ${frameAncestors}`,
+    frameAncestors,
     ...(development ? [] : ["upgrade-insecure-requests"]),
   ].join("; ");
 }
