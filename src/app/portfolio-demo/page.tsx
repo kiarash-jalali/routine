@@ -31,6 +31,15 @@ const initialTasks: DemoItem[] = [
   { id: "groceries", title: "Pick up groceries", detail: "Today · 17:00", done: true },
 ];
 
+const demoCopy = {
+  title: "Rootine demo",
+  note: "Local sample data · no account required",
+  reset: "Reset",
+  add: "Add",
+  progress: "DEMO PROGRESS",
+  unsaved: "Nothing here is saved. Refresh or use Reset to start over.",
+} as const;
+
 export default function PortfolioDemoPage() {
   const [routines, setRoutines] = useState(initialRoutines);
   const [tasks, setTasks] = useState(initialTasks);
@@ -88,13 +97,13 @@ export default function PortfolioDemoPage() {
             <Icon name="rootine" size={18} />
           </span>
           <span>
-            <strong className="block text-foreground">Rootine demo</strong>
-            <span className="text-xs">Local sample data · no account required</span>
+            <strong className="block text-foreground">{demoCopy.title}</strong>
+            <span className="text-xs">{demoCopy.note}</span>
           </span>
         </span>
         <Button size="sm" variant="ghost" onClick={resetDemo}>
           <Icon name="history" size={16} />
-          Reset
+          {demoCopy.reset}
         </Button>
       </div>
 
@@ -172,7 +181,7 @@ export default function PortfolioDemoPage() {
               aria-label="Add demo task"
             >
               <Icon name="plus" size={17} />
-              Add
+              {demoCopy.add}
             </Button>
           </form>
 
@@ -206,14 +215,14 @@ export default function PortfolioDemoPage() {
       <Card tone="accent" className="mt-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="page-eyebrow">DEMO PROGRESS</p>
+            <p className="page-eyebrow">{demoCopy.progress}</p>
             <p className="display-title text-2xl">
               {completed === total
                 ? "Everything is done."
                 : `${completed} of ${total} items complete`}
             </p>
             <p className="mt-2 text-sm leading-6 text-muted">
-              Nothing here is saved. Refresh or use Reset to start over.
+              {demoCopy.unsaved}
             </p>
           </div>
           <span className="success-mark" aria-hidden="true">
