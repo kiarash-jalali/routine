@@ -26,10 +26,12 @@ function isDesignLabPath(pathname: string) {
 
 function contentSecurityPolicy(nonce: string, pathname: string) {
   const development = process.env.NODE_ENV === "development";
-  const loginFrameAncestors =
+  const portfolioFrameAncestors =
     "frame-ancestors 'self' https://kiarashjalali.net https://www.kiarashjalali.net http://localhost:5173 http://127.0.0.1:5173";
   const frameAncestors =
-    pathname === "/login" ? loginFrameAncestors : "frame-ancestors 'none'";
+    pathname === "/login" || pathname === "/portfolio-demo"
+      ? portfolioFrameAncestors
+      : "frame-ancestors 'none'";
 
   return [
     "default-src 'self'",
@@ -73,7 +75,10 @@ export async function proxy(request: NextRequest) {
   }
 
   response.headers.set("Content-Security-Policy", csp);
-  if (request.nextUrl.pathname === "/login") {
+  if (
+    request.nextUrl.pathname === "/login" ||
+    request.nextUrl.pathname === "/portfolio-demo"
+  ) {
     response.headers.delete("X-Frame-Options");
   } else {
     response.headers.set("X-Frame-Options", "DENY");
