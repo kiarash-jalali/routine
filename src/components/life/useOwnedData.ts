@@ -15,7 +15,8 @@ export function useOwnedData<T>(
   const [busy, setBusy] = useState(false);
   const [limit, setLimit] = useState(100);
   const [now, setNow] = useState(() => new Date());
-  const lastRefresh = useRef(Date.now());
+  // 0 = not set yet; stamped on mount (Date.now() is impure during render).
+  const lastRefresh = useRef(0);
 
   const refresh = useCallback(async () => {
     const result = await load(userId, limit);
@@ -27,6 +28,7 @@ export function useOwnedData<T>(
 
   useEffect(() => {
     let cancelled = false;
+    if (lastRefresh.current === 0) lastRefresh.current = Date.now();
 
     async function refreshSafely() {
       try {

@@ -1,5 +1,5 @@
 import "server-only";
-import webpush from "web-push";
+import { sendNotification } from "web-push";
 import { isValidPushEndpoint } from "@/lib/pushEndpoint";
 import { translate, type Language } from "@/lib/i18n";
 
@@ -70,7 +70,7 @@ export async function sendReminderPush(
     throw new Error("push_configuration_missing");
 
   try {
-    const result = await webpush.sendNotification(
+    const result = await sendNotification(
       {
         endpoint: target.endpoint,
         keys: { p256dh: target.p256dh, auth: target.auth },

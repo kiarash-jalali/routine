@@ -182,6 +182,8 @@ export function CheckinClient({
           : "checkin_task_completed",
       );
       setMoment({
+        // Called from an event handler only, never during render.
+        // eslint-disable-next-line react-hooks/purity
         id: `checkin-${itemKey}-${Date.now()}`,
         ...copy,
         sourceId: `checkin-${itemType}-${itemId}`,

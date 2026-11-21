@@ -14,53 +14,50 @@ export default async function OnboardingPage({
   const { supabase, userId } = await requireServerUser();
   const replay = (await searchParams).replay === "1";
 
+  // null = profile could not be loaded; render the error state.
+  let introSeen: boolean | null = null;
+
   try {
     const [profile, routines] = await Promise.all([
       getProfile(userId, supabase),
       listRoutines(supabase),
     ]);
 
-    if (!profile) {
-      return (
-        <OnboardingClient
-          userId={userId}
-          initialStep="intro"
-          initialLoadError
-        />
-      );
+    if (profile) {
+      if (profile.onboarding_completed && !replay) redirect("/dashboard");
+
+      if (routines.length > 0 && !replay) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            onboarding_completed: true,
+            intro_seen: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+        if (error) throw error;
+        redirect("/dashboard");
+      }
+
+      introSeen = profile.intro_seen;
     }
-
-    if (profile.onboarding_completed && !replay) redirect("/dashboard");
-
-    if (routines.length > 0 && !replay) {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          onboarding_completed: true,
-          intro_seen: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
-      if (error) throw error;
-      redirect("/dashboard");
-    }
-
-    return (
-      <OnboardingClient
-        userId={userId}
-        initialStep={profile.intro_seen ? "routine" : "intro"}
-        initialLoadError={false}
-        replay={replay}
-      />
-    );
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
+    introSeen = null;
+  }
+
+  if (introSeen === null) {
     return (
-      <OnboardingClient
-        userId={userId}
-        initialStep="intro"
-        initialLoadError
-      />
+      <OnboardingClient userId={userId} initialStep="intro" initialLoadError />
     );
   }
+
+  return (
+    <OnboardingClient
+      userId={userId}
+      initialStep={introSeen ? "routine" : "intro"}
+      initialLoadError={false}
+      replay={replay}
+    />
+  );
 }

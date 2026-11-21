@@ -26,37 +26,40 @@ export default async function CheckinPage() {
     );
   }
 
+  const dayDate = new Date(`${initialDayKey}T12:00:00`);
+  let loaded: {
+    routines: Awaited<ReturnType<typeof listTodaysRoutines>>;
+    tasks: ReturnType<typeof tasksForDailyCheckin>;
+    completionByItem: ReturnType<typeof completionMapFromItems>;
+    finished: boolean;
+  } | null = null;
+
   try {
-    const dayDate = new Date(`${initialDayKey}T12:00:00`);
     const [routines, allTasks, checkin] = await Promise.all([
       listTodaysRoutines(dayDate, supabase),
       listTasks(supabase),
       findDailyCheckin(userId, initialDayKey, supabase),
     ]);
     const items = checkin ? await listCheckinItems(checkin.id, supabase) : [];
-
-    return (
-      <CheckinClient
-        userId={userId}
-        initialDayKey={initialDayKey}
-        initialRoutines={routines}
-        initialTasks={tasksForDailyCheckin(allTasks, items, dayDate)}
-        initialCompletionByItem={completionMapFromItems(items)}
-        initialFinished={Boolean(checkin?.completed_at)}
-        initialLoadError={false}
-      />
-    );
+    loaded = {
+      routines,
+      tasks: tasksForDailyCheckin(allTasks, items, dayDate),
+      completionByItem: completionMapFromItems(items),
+      finished: Boolean(checkin?.completed_at),
+    };
   } catch {
-    return (
-      <CheckinClient
-        userId={userId}
-        initialDayKey={initialDayKey}
-        initialRoutines={[]}
-        initialTasks={[]}
-        initialCompletionByItem={{}}
-        initialFinished={false}
-        initialLoadError
-      />
-    );
+    loaded = null;
   }
+
+  return (
+    <CheckinClient
+      userId={userId}
+      initialDayKey={initialDayKey}
+      initialRoutines={loaded?.routines ?? []}
+      initialTasks={loaded?.tasks ?? []}
+      initialCompletionByItem={loaded?.completionByItem ?? {}}
+      initialFinished={loaded?.finished ?? false}
+      initialLoadError={loaded === null}
+    />
+  );
 }
