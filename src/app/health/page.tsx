@@ -1,8 +1,13 @@
+import { pageMetadata } from "@/lib/server/pageMetadata";
 import { HealthClient } from "./HealthClient";
 import { loadHealth } from "@/lib/db/health";
 import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata() {
+  return pageMetadata("nav.health");
+}
 
 type HealthData = Awaited<ReturnType<typeof loadHealth>>;
 

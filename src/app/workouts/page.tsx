@@ -1,8 +1,13 @@
+import { pageMetadata } from "@/lib/server/pageMetadata";
 import { WorkoutsClient } from "./WorkoutsClient";
 import { loadWorkouts } from "@/lib/db/workouts";
 import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata() {
+  return pageMetadata("nav.workouts");
+}
 
 type WorkoutData = Awaited<ReturnType<typeof loadWorkouts>>;
 

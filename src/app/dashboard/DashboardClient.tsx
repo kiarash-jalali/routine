@@ -743,10 +743,24 @@ export function DashboardClient({
       </Card>
       <div className="stats-strip mb-7 grid grid-cols-3 divide-x divide-border rounded-2xl px-2 py-5 sm:px-5">
         <div className="px-3 sm:px-5">
-          <Stat value={number(routines.length)} label={t("dashboard.routinesTodayCount")} />
+          <Stat
+            value={number(routines.length)}
+            label={
+              routines.length === 1
+                ? t("dashboard.routineTodayCount")
+                : t("dashboard.routinesTodayCount")
+            }
+          />
         </div>
         <div className="px-3 sm:px-5">
-          <Stat value={number(openTodayTasks)} label={t("dashboard.openTasksCount")} />
+          <Stat
+            value={number(openTodayTasks)}
+            label={
+              openTodayTasks === 1
+                ? t("dashboard.openTaskCount")
+                : t("dashboard.openTasksCount")
+            }
+          />
         </div>
         <div className="px-3 sm:px-5">
           <Stat

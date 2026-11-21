@@ -1,9 +1,14 @@
+import { pageMetadata } from "@/lib/server/pageMetadata";
 import { RoutinesClient } from "./RoutinesClient";
 import { listRoutines } from "@/lib/db/routines";
 import { requireServerUser } from "@/lib/supabase/requireUser";
 import type { Routine } from "@/types/routine";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata() {
+  return pageMetadata("nav.routines");
+}
 
 export default async function RoutinesPage() {
   const { supabase, userId } = await requireServerUser();

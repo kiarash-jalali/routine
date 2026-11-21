@@ -1,8 +1,13 @@
+import { pageMetadata } from "@/lib/server/pageMetadata";
 import { SettingsClient } from "./SettingsClient";
 import { getProfile } from "@/lib/db/profile";
 import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata() {
+  return pageMetadata("nav.settings");
+}
 
 export default async function SettingsPage() {
   const { supabase, userId, email } = await requireServerUser();

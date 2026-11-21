@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/server/pageMetadata";
 import { DashboardClient } from "./DashboardClient";
 import { completionMapFromItems } from "@/lib/checkinProgress";
 import { getDailyProgress } from "@/lib/db/checkins";
@@ -11,6 +12,10 @@ import { getServerLocalDay } from "@/lib/server/localDay";
 import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata() {
+  return pageMetadata("nav.today");
+}
 
 export default async function DashboardPage() {
   const { supabase, userId } = await requireServerUser();
