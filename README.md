@@ -193,12 +193,14 @@ messages, mobile keyboard/sheet fixes, and an in-app feedback flow.
 
 ## Notification scheduler
 
-The repository defines the reminder scheduler in
-`.github/workflows/notifications-cron.yml`. It calls the protected notification
-endpoint every 15 minutes.
+Production reminders are triggered by the Supabase pg_cron job
+`routine-notification-reminders`, which POSTs to the protected
+`/api/notifications/send` endpoint every 5 minutes.
 
-Before enabling that workflow on `main`, configure these GitHub repository
-settings:
+`.github/workflows/notifications-cron.yml` is a manual backup trigger only
+(`workflow_dispatch`). GitHub throttles scheduled workflows and disables them in
+inactive repositories, so it is not used as the primary scheduler. To use it,
+configure these GitHub repository settings:
 
 - Actions secret `NOTIFICATION_CRON_SECRET`: the same value used by the
   production server environment.
