@@ -1,0 +1,3398 @@
+{
+ "version": 1,
+ "generated": "2026-11-21",
+ "notes": "Starter recipes (Persian). steps_en/tip_en are null: translate before showing in English. per_portion_incl_side is per 1 serving plus suggested_side.",
+ "recipes": [
+  {
+   "slug": "starter-b01",
+   "title_fa": "نان، پنیر، گردو و سبزی",
+   "title_en": "Bread, feta, walnut & herbs",
+   "category": "breakfast",
+   "servings": 1,
+   "tags": [
+    "quick"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-sangak",
+     "name_fa": "نان سنگک",
+     "grams": 80,
+     "amount_fa": "80 گرم (حدود یک چهارم نان)",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-feta-low",
+     "name_fa": "پنیر سفید کم‌چرب",
+     "grams": 40,
+     "amount_fa": "40 گرم (اندازه یک قوطی کبریت)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-walnut",
+     "name_fa": "گردو",
+     "grams": 10,
+     "amount_fa": "2 مغز کامل",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-herbs",
+     "name_fa": "سبزی خوردن",
+     "grams": 50,
+     "amount_fa": "یک مشت (50 گرم)",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 100,
+     "amount_fa": "1 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-cucumber",
+     "name_fa": "خیار",
+     "grams": 100,
+     "amount_fa": "1 عدد",
+     "is_staple": false
+    }
+   ],
+   "steps_fa": [
+    "نان را وزن کنید یا به اندازه گفته‌شده جدا کنید.",
+    "پنیر را به اندازه یک قوطی کبریت ببرید.",
+    "سبزی را بشویید و با گوجه و خیار کنار نان بچینید.",
+    "چای را بدون قند یا با یک خرما میل کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "پنیر کم‌چرب و کم‌نمک بخرید. گردو را بیشتر از ۲ مغز نکنید؛ کالری بالایی دارد.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 404,
+    "protein": 18,
+    "fat": 14,
+    "carbs": 55
+   }
+  },
+  {
+   "slug": "starter-b02",
+   "title_fa": "املت گوجه‌فرنگی",
+   "title_en": "Tomato omelette",
+   "category": "breakfast",
+   "servings": 1,
+   "tags": [
+    "quick"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 100,
+     "amount_fa": "2 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 200,
+     "amount_fa": "2 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 30,
+     "amount_fa": "یک چهارم پیاز کوچک",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 5,
+     "amount_fa": "1 قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-sangak",
+     "name_fa": "نان سنگک",
+     "grams": 60,
+     "amount_fa": "60 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "نمک، فلفل، زردچوبه",
+     "grams": 0,
+     "amount_fa": "به مقدار کم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "پیاز را ریز خرد کنید و با روغن در تابه نچسب ۲ دقیقه تفت دهید.",
+    "گوجه‌ها را پوست بگیرید، خرد کنید و اضافه کنید تا آبش کم شود (حدود ۸ دقیقه).",
+    "ادویه را بزنید، تخم‌مرغ‌ها را بشکنید و هم بزنید تا ببندد.",
+    "با نان و سبزی سرو کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "با تابه نچسب، یک قاشق چای‌خوری روغن کافی است.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 391,
+    "protein": 20,
+    "fat": 16,
+    "carbs": 42
+   }
+  },
+  {
+   "slug": "starter-b03",
+   "title_fa": "فرنی جو دوسر با سیب و دارچین",
+   "title_en": "Oat porridge with apple & cinnamon",
+   "category": "breakfast",
+   "servings": 1,
+   "tags": [
+    "quick"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-oats",
+     "name_fa": "جو دوسر",
+     "grams": 50,
+     "amount_fa": "5 قاشق غذاخوری",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-milk-low",
+     "name_fa": "شیر کم‌چرب",
+     "grams": 250,
+     "amount_fa": "1 لیوان",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-apple",
+     "name_fa": "سیب",
+     "grams": 100,
+     "amount_fa": "نصف سیب بزرگ، رنده یا خرد شده",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-walnut",
+     "name_fa": "گردو",
+     "grams": 10,
+     "amount_fa": "2 مغز",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": null,
+     "name_fa": "دارچین",
+     "grams": 0,
+     "amount_fa": "یک قاشق چای‌خوری",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "جو دوسر و شیر را در قابلمه کوچک روی حرارت ملایم بگذارید.",
+    "مدام هم بزنید تا ۵ دقیقه غلیظ شود.",
+    "سیب و دارچین را اضافه کنید و ۱ دقیقه دیگر بپزید.",
+    "گردوی خرد شده را روی آن بریزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "شکر یا عسل اضافه نکنید؛ شیرینی سیب کافی است.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 427,
+    "protein": 19,
+    "fat": 14,
+    "carbs": 60
+   }
+  },
+  {
+   "slug": "starter-b04",
+   "title_fa": "نیمرو با نان سنگک و سبزی",
+   "title_en": "Fried eggs with sangak & herbs",
+   "category": "breakfast",
+   "servings": 1,
+   "tags": [
+    "quick"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 100,
+     "amount_fa": "2 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 3,
+     "amount_fa": "نصف قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-sangak",
+     "name_fa": "نان سنگک",
+     "grams": 70,
+     "amount_fa": "70 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 100,
+     "amount_fa": "1 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-cucumber",
+     "name_fa": "خیار",
+     "grams": 100,
+     "amount_fa": "1 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-herbs",
+     "name_fa": "سبزی خوردن",
+     "grams": 30,
+     "amount_fa": "یک مشت کوچک",
+     "is_staple": false
+    }
+   ],
+   "steps_fa": [
+    "تابه نچسب را با کمی روغن گرم کنید.",
+    "تخم‌مرغ‌ها را بشکنید، درِ تابه را بگذارید تا روی آن ببندد.",
+    "با نان، گوجه، خیار و سبزی سرو کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "زرده را می‌توان کامل پخت؛ تفاوتی در کالری ندارد.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 395,
+    "protein": 21,
+    "fat": 14,
+    "carbs": 46
+   }
+  },
+  {
+   "slug": "starter-b05",
+   "title_fa": "کاسه ماست، جو دوسر و انار",
+   "title_en": "Yogurt, oat & pomegranate bowl",
+   "category": "breakfast",
+   "servings": 1,
+   "tags": [
+    "quick"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-yogurt-low",
+     "name_fa": "ماست کم‌چرب",
+     "grams": 200,
+     "amount_fa": "1 کاسه کوچک",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-oats",
+     "name_fa": "جو دوسر",
+     "grams": 30,
+     "amount_fa": "3 قاشق غذاخوری",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-pomegranate",
+     "name_fa": "دانه انار",
+     "grams": 80,
+     "amount_fa": "نصف پیمانه دانه انار",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-honey",
+     "name_fa": "عسل",
+     "grams": 5,
+     "amount_fa": "1 قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-walnut",
+     "name_fa": "گردو",
+     "grams": 8,
+     "amount_fa": "1 و نیم مغز",
+     "is_staple": false
+    }
+   ],
+   "steps_fa": [
+    "ماست را در کاسه بریزید.",
+    "جو دوسر (خام یا کمی تفت‌داده در تابه خشک) را روی آن بریزید.",
+    "انار، گردو و عسل را اضافه کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "در فصل‌های دیگر به جای انار سیب یا توت‌فرنگی بگذارید.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 363,
+    "protein": 15,
+    "fat": 11,
+    "carbs": 52
+   }
+  },
+  {
+   "slug": "starter-b06",
+   "title_fa": "عدسی",
+   "title_en": "Lentil breakfast stew",
+   "category": "breakfast",
+   "servings": 4,
+   "tags": [
+    "legume",
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-lentils-dry",
+     "name_fa": "عدس",
+     "grams": 200,
+     "amount_fa": "1 پیمانه",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-potato",
+     "name_fa": "سیب‌زمینی",
+     "grams": 200,
+     "amount_fa": "1 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": null,
+     "name_fa": "زردچوبه، نمک کم، گلپر، آبلیمو",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "عدس را از شب قبل خیس کنید و صبح آبکش کنید.",
+    "پیاز را خرد کنید و با روغن طلایی کنید، زردچوبه بزنید.",
+    "عدس و سیب‌زمینی خرد شده و ۴ لیوان آب اضافه کنید.",
+    "با حرارت ملایم ۴۰ دقیقه بپزید تا لعاب بیندازد.",
+    "در پایان نمک کم و گلپر بزنید. با آبلیمو سرو کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "حبوبات: فقط اگر پزشک اجازه داد. یک سهم = یک کاسه (یک چهارم قابلمه).",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-sangak",
+    "grams": 50,
+    "text_fa": "50 گرم نان سنگک"
+   },
+   "per_portion_incl_side": {
+    "kcal": 393,
+    "protein": 18,
+    "fat": 5,
+    "carbs": 69
+   }
+  },
+  {
+   "slug": "starter-b07",
+   "title_fa": "پنکیک جو دوسر و موز",
+   "title_en": "Oat & banana pancakes",
+   "category": "breakfast",
+   "servings": 1,
+   "tags": [],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-oats",
+     "name_fa": "جو دوسر",
+     "grams": 40,
+     "amount_fa": "4 قاشق غذاخوری (آسیاب شده)",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 50,
+     "amount_fa": "1 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-milk-low",
+     "name_fa": "شیر کم‌چرب",
+     "grams": 60,
+     "amount_fa": "یک چهارم لیوان",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-banana",
+     "name_fa": "موز",
+     "grams": 80,
+     "amount_fa": "نصف موز بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 3,
+     "amount_fa": "نصف قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-honey",
+     "name_fa": "عسل",
+     "grams": 5,
+     "amount_fa": "1 قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "دارچین",
+     "grams": 0,
+     "amount_fa": "کمی",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "جو دوسر را در مخلوط‌کن پودر کنید.",
+    "موز، تخم‌مرغ، شیر و دارچین را اضافه کنید و مخلوط کنید.",
+    "تابه نچسب را با کمی روغن چرب کنید و برای هر پنکیک ۲ قاشق مایه بریزید.",
+    "هر طرف ۲ دقیقه بپزید. با یک قاشق چای‌خوری عسل سرو کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "برای روزهای تعطیل؛ حدود ۴ پنکیک کوچک می‌شود.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 368,
+    "protein": 16,
+    "fat": 12,
+    "carbs": 52
+   }
+  },
+  {
+   "slug": "starter-m01",
+   "title_fa": "زرشک پلو با مرغ",
+   "title_en": "Barberry rice with chicken",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 400,
+     "amount_fa": "400 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-tomato-paste",
+     "name_fa": "رب گوجه‌فرنگی",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-barberry",
+     "name_fa": "زرشک",
+     "grams": 20,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "زعفران دم‌کرده",
+     "grams": 0,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "نمک، فلفل، زردچوبه",
+     "grams": 0,
+     "amount_fa": "به مقدار کم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "مرغ را با پیاز حلقه شده، زردچوبه، نمک کم و نصف لیوان آب در قابلمه بگذارید.",
+    "با حرارت ملایم ۴۰ دقیقه بپزید. رب و نصف زعفران را اضافه کنید و ۱۰ دقیقه دیگر بپزید تا سس غلیظ شود.",
+    "زرشک را بشویید و با یک قاشق چای‌خوری روغن و کمی زعفران فقط ۳۰ ثانیه تفت دهید (زود می‌سوزد).",
+    "برنج را جدا بپزید. سهم کیارش را وزن کنید، زرشک را رویش بریزید و مرغ را کنارش بگذارید."
+   ],
+   "steps_en": null,
+   "tip_fa": "شکر به زرشک اضافه نکنید. پوست مرغ را حتماً جدا کنید.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 180,
+    "text_fa": "180 گرم برنج پخته (حدود یک لیوان)"
+   },
+   "per_portion_incl_side": {
+    "kcal": 437,
+    "protein": 28,
+    "fat": 9,
+    "carbs": 58
+   }
+  },
+  {
+   "slug": "starter-m02",
+   "title_fa": "خورش قورمه سبزی سبک",
+   "title_en": "Light ghormeh sabzi",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "red_meat",
+    "legume",
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-beef-lean",
+     "name_fa": "گوشت گوساله کم‌چرب",
+     "grams": 300,
+     "amount_fa": "300 گرم (خورشی، چربی گرفته)",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-kidney-dry",
+     "name_fa": "لوبیا قرمز",
+     "grams": 60,
+     "amount_fa": "یک سوم پیمانه (کمتر از معمول)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-herbs",
+     "name_fa": "سبزی قورمه",
+     "grams": 400,
+     "amount_fa": "400 گرم سبزی قورمه",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 25,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "لیمو عمانی",
+     "grams": 0,
+     "amount_fa": "4 عدد",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "نمک، زردچوبه",
+     "grams": 0,
+     "amount_fa": "به مقدار کم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "لوبیا را از شب قبل خیس کنید و آبش را چند بار عوض کنید.",
+    "پیاز را با یک قاشق روغن تفت دهید، گوشت و زردچوبه را اضافه کنید تا رنگ گوشت عوض شود.",
+    "لوبیا و ۴ لیوان آب را اضافه کنید و ۱ ساعت با حرارت ملایم بپزید.",
+    "سبزی را با یک قاشق روغن در تابه نچسب سرخ کنید (کم روغن، با حرارت ملایم و صبر).",
+    "سبزی و لیموعمانی سوراخ‌شده را اضافه کنید و ۱ ساعت دیگر بپزید. نمک را آخر بزنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "سبزی را می‌شود یکجا سرخ و فریز کرد. روغن سطح خورش را پیش از سرو با قاشق بگیرید.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 180,
+    "text_fa": "180 گرم برنج پخته (حدود یک لیوان)"
+   },
+   "per_portion_incl_side": {
+    "kcal": 521,
+    "protein": 28,
+    "fat": 15,
+    "carbs": 69
+   }
+  },
+  {
+   "slug": "starter-m03",
+   "title_fa": "خورش قیمه سبک",
+   "title_en": "Light gheymeh",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "red_meat",
+    "legume",
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-beef-lean",
+     "name_fa": "گوشت گوساله کم‌چرب",
+     "grams": 250,
+     "amount_fa": "250 گرم (ریز خرد شده)",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-splitpea-dry",
+     "name_fa": "لپه",
+     "grams": 80,
+     "amount_fa": "نصف پیمانه",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-tomato-paste",
+     "name_fa": "رب گوجه‌فرنگی",
+     "grams": 30,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-potato",
+     "name_fa": "سیب‌زمینی",
+     "grams": 300,
+     "amount_fa": "2 عدد متوسط (سیب‌زمینی تنوری به جای سرخ‌کرده)",
+     "is_staple": false
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 5,
+     "amount_fa": "1 قاشق چای‌خوری برای سیب‌زمینی",
+     "is_staple": true
+    },
+    {
+     "position": 7,
+     "food_slug": null,
+     "name_fa": "لیمو عمانی",
+     "grams": 0,
+     "amount_fa": "3 عدد",
+     "is_staple": true
+    },
+    {
+     "position": 8,
+     "food_slug": null,
+     "name_fa": "نمک، زردچوبه، دارچین",
+     "grams": 0,
+     "amount_fa": "به مقدار کم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "لپه را ۲ ساعت خیس کنید.",
+    "پیاز را با روغن تفت دهید، گوشت و زردچوبه را اضافه کنید.",
+    "رب را اضافه کنید و ۲ دقیقه تفت دهید. لپه و ۳ لیوان آب و لیمو عمانی را اضافه کنید.",
+    "۱ ساعت و نیم با حرارت ملایم بپزید تا لپه نرم شود ولی له نشود.",
+    "سیب‌زمینی را خلالی کنید، با یک قاشق چای‌خوری روغن و نمک کم هم بزنید و در فر ۲۰۰ درجه ۲۵ دقیقه بپزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "سیب‌زمینی سرخ‌کرده در روغن زیاد کالری خورش را دو برابر می‌کند؛ فر یا سرخ‌کن بدون روغن بهتر است.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 180,
+    "text_fa": "180 گرم برنج پخته (حدود یک لیوان)"
+   },
+   "per_portion_incl_side": {
+    "kcal": 537,
+    "protein": 25,
+    "fat": 12,
+    "carbs": 80
+   }
+  },
+  {
+   "slug": "starter-m04",
+   "title_fa": "خورش کرفس با مرغ",
+   "title_en": "Celery stew with chicken",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-thigh",
+     "name_fa": "ران مرغ بدون پوست",
+     "grams": 360,
+     "amount_fa": "360 گرم ران بدون پوست",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-celery",
+     "name_fa": "کرفس",
+     "grams": 500,
+     "amount_fa": "500 گرم (ساقه، 4 سانتی خرد شده)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-herbs",
+     "name_fa": "جعفری و نعناع",
+     "grams": 150,
+     "amount_fa": "150 گرم جعفری و نعناع",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-lemon-juice",
+     "name_fa": "آبلیمو",
+     "grams": 30,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "نمک، زردچوبه، زعفران",
+     "grams": 0,
+     "amount_fa": "به مقدار کم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "پیاز را با نصف روغن تفت دهید، مرغ و زردچوبه را اضافه کنید.",
+    "۲ لیوان آب اضافه کنید و ۳۰ دقیقه بپزید.",
+    "کرفس را با بقیه روغن ۵ دقیقه تفت دهید، سپس جعفری و نعناع را اضافه کنید و ۵ دقیقه دیگر تفت دهید.",
+    "کرفس و سبزی را به مرغ اضافه کنید و ۴۵ دقیقه بپزید. آبلیمو، زعفران و نمک را در ۱۰ دقیقه آخر بزنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "به جای ران می‌توان از سینه مرغ استفاده کرد؛ زمان پخت را ۱۵ دقیقه کم کنید.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 180,
+    "text_fa": "180 گرم برنج پخته (حدود یک لیوان)"
+   },
+   "per_portion_incl_side": {
+    "kcal": 455,
+    "protein": 25,
+    "fat": 12,
+    "carbs": 60
+   }
+  },
+  {
+   "slug": "starter-m05",
+   "title_fa": "خورش آلو اسفناج با مرغ",
+   "title_en": "Spinach & prune stew with chicken",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-thigh",
+     "name_fa": "ران مرغ بدون پوست",
+     "grams": 360,
+     "amount_fa": "360 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-spinach",
+     "name_fa": "اسفناج",
+     "grams": 500,
+     "amount_fa": "500 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-prune",
+     "name_fa": "آلو بخارا",
+     "grams": 60,
+     "amount_fa": "10 عدد آلو بخارا",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "نمک، زردچوبه، آبغوره یا آبلیمو",
+     "grams": 0,
+     "amount_fa": "به مقدار کم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "پیاز را با روغن تفت دهید، مرغ و زردچوبه را اضافه کنید.",
+    "۲ لیوان آب اضافه کنید و ۳۰ دقیقه بپزید.",
+    "اسفناج خرد شده را در تابه خشک (بدون روغن) بریزید تا آبش کشیده شود.",
+    "اسفناج و آلوها را به خورش اضافه کنید و ۳۰ دقیقه دیگر بپزید. ترشی و نمک را آخر تنظیم کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "اسفناج یخ‌زده هم خوب است.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 180,
+    "text_fa": "180 گرم برنج پخته (حدود یک لیوان)"
+   },
+   "per_portion_incl_side": {
+    "kcal": 474,
+    "protein": 27,
+    "fat": 10,
+    "carbs": 68
+   }
+  },
+  {
+   "slug": "starter-m06",
+   "title_fa": "خورش بادمجان با مرغ (بادمجان تنوری)",
+   "title_en": "Eggplant stew with chicken (oven eggplant)",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-thigh",
+     "name_fa": "ران مرغ بدون پوست",
+     "grams": 360,
+     "amount_fa": "360 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-eggplant",
+     "name_fa": "بادمجان",
+     "grams": 800,
+     "amount_fa": "4 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 300,
+     "amount_fa": "3 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-tomato-paste",
+     "name_fa": "رب گوجه‌فرنگی",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "نمک، زردچوبه، غوره یا آبغوره",
+     "grams": 0,
+     "amount_fa": "به مقدار کم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "بادمجان‌ها را پوست بگیرید، طولی برش بزنید، کمی نمک بزنید و ۲۰ دقیقه بگذارید تلخی‌اش برود.",
+    "بادمجان‌ها را خشک کنید، با برس یک قاشق غذاخوری روغن به آن‌ها بزنید و در فر ۲۰۰ درجه ۲۵ دقیقه بپزید.",
+    "پیاز را با بقیه روغن تفت دهید، مرغ، زردچوبه و رب را اضافه کنید، سپس ۲ لیوان آب بریزید و ۳۰ دقیقه بپزید.",
+    "بادمجان و گوجه‌های حلقه شده را روی مرغ بچینید، آبغوره بریزید و ۳۰ دقیقه با حرارت ملایم بپزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "بادمجان سرخ‌کرده تا ۴ برابر روغن جذب می‌کند؛ فر را جایگزین کنید.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 180,
+    "text_fa": "180 گرم برنج پخته (حدود یک لیوان)"
+   },
+   "per_portion_incl_side": {
+    "kcal": 488,
+    "protein": 26,
+    "fat": 12,
+    "carbs": 70
+   }
+  },
+  {
+   "slug": "starter-m07",
+   "title_fa": "فسنجان سبک با مرغ",
+   "title_en": "Light fesenjan with chicken",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "treat"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 360,
+     "amount_fa": "360 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-walnut",
+     "name_fa": "گردو",
+     "grams": 120,
+     "amount_fa": "120 گرم گردوی آسیاب شده (نصف مقدار معمول)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-pom-paste",
+     "name_fa": "رب انار",
+     "grams": 80,
+     "amount_fa": "4 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 100,
+     "amount_fa": "1 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 5,
+     "amount_fa": "1 قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "نمک، دارچین، زعفران",
+     "grams": 0,
+     "amount_fa": "به مقدار کم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "گردو را در تابه خشک ۳ دقیقه تفت دهید، با ۳ لیوان آب در قابلمه بریزید و ۱ ساعت بپزید تا روغن بیندازد.",
+    "پیاز را با روغن تفت دهید، مرغ تکه شده را اضافه کنید تا رنگش عوض شود.",
+    "مرغ و رب انار را به گردو اضافه کنید و ۴۵ دقیقه دیگر بپزید.",
+    "مزه را با کمی دارچین و نمک تنظیم کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "پرکالری‌ترین غذای این کتاب است؛ حداکثر ماهی دو بار و با برنج کمتر.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 150,
+    "text_fa": "150 گرم برنج پخته (کمی کمتر از بقیه خورش‌ها)"
+   },
+   "per_portion_incl_side": {
+    "kcal": 587,
+    "protein": 29,
+    "fat": 25,
+    "carbs": 61
+   }
+  },
+  {
+   "slug": "starter-m08",
+   "title_fa": "لوبیا پلو با مرغ",
+   "title_en": "Green bean rice with chicken",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "batch",
+    "one_pot"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 300,
+     "amount_fa": "300 گرم (مکعبی)",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-green-beans",
+     "name_fa": "لوبیا سبز",
+     "grams": 400,
+     "amount_fa": "400 گرم (خرد شده)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-tomato-paste",
+     "name_fa": "رب گوجه‌فرنگی",
+     "grams": 30,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-rice-raw",
+     "name_fa": "برنج ایرانی (خام)",
+     "grams": 260,
+     "amount_fa": "260 گرم برنج خام (حدود 1 و نیم پیمانه)",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "ادویه پلویی، دارچین، زعفران، نمک کم",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "پیاز را با روغن تفت دهید، مرغ را اضافه کنید تا رنگش عوض شود.",
+    "لوبیا سبز را اضافه کنید و ۵ دقیقه تفت دهید. رب و ادویه را اضافه کنید.",
+    "نصف لیوان آب بریزید و ۱۵ دقیقه بپزید تا لوبیا نیم‌پز شود.",
+    "برنج را آبکش کنید، لایه‌لایه با مواد در قابلمه بریزید و ۴۵ دقیقه با حرارت ملایم دم کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "یک سهم = یک چهارم قابلمه (حدود ۳۵۰ گرم). ته‌دیگ را حذف کنید یا با نان لواش نازک درست کنید.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 417,
+    "protein": 24,
+    "fat": 8,
+    "carbs": 63
+   }
+  },
+  {
+   "slug": "starter-m09",
+   "title_fa": "عدس پلو",
+   "title_en": "Lentil rice",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "legume",
+    "batch",
+    "one_pot",
+    "low_protein"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-lentils-dry",
+     "name_fa": "عدس",
+     "grams": 150,
+     "amount_fa": "سه چهارم پیمانه",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-rice-raw",
+     "name_fa": "برنج ایرانی (خام)",
+     "grams": 260,
+     "amount_fa": "260 گرم برنج خام",
+     "is_staple": true
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-raisin",
+     "name_fa": "کشمش",
+     "grams": 40,
+     "amount_fa": "4 قاشق غذاخوری کشمش",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ (پیاز داغ کم‌روغن)",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "زعفران، دارچین، نمک کم",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "عدس را ۲۰ دقیقه بپزید تا نیم‌پز شود.",
+    "برنج را نیم‌پز و با عدس آبکش کنید.",
+    "پیاز را نازک خلال کنید و با یک قاشق روغن و حرارت ملایم طلایی کنید.",
+    "کشمش را ۳۰ ثانیه با پیاز تفت دهید.",
+    "برنج و عدس را دم کنید و پیاز داغ و کشمش را رویش بریزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "بدون گوشت است؛ برای روزهایی که پروتئین بیشتری خورده‌اید مناسب است. حبوبات فقط با اجازه پزشک.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-yogurt-low",
+    "grams": 150,
+    "text_fa": "150 گرم ماست کم‌چرب کنار غذا"
+   },
+   "per_portion_incl_side": {
+    "kcal": 536,
+    "protein": 20,
+    "fat": 8,
+    "carbs": 95
+   }
+  },
+  {
+   "slug": "starter-m10",
+   "title_fa": "کلم پلو شیرازی با قلقلی مرغ",
+   "title_en": "Shirazi cabbage rice with chicken meatballs",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "batch",
+    "one_pot"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-cabbage",
+     "name_fa": "کلم",
+     "grams": 500,
+     "amount_fa": "نصف کلم متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 300,
+     "amount_fa": "300 گرم سینه مرغ چرخ‌کرده",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-herbs",
+     "name_fa": "سبزی معطر",
+     "grams": 100,
+     "amount_fa": "100 گرم شوید، ترخون، ریحان و نعناع",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-rice-raw",
+     "name_fa": "برنج ایرانی (خام)",
+     "grams": 260,
+     "amount_fa": "260 گرم برنج خام",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "زردچوبه، زیره، نمک کم",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "مرغ چرخ‌کرده را با نصف پیاز رنده و آبگیری شده و کمی نمک ورز دهید و قلقلی‌های کوچک درست کنید.",
+    "قلقلی‌ها را در تابه نچسب با یک قاشق چای‌خوری روغن طلایی کنید.",
+    "بقیه پیاز را خرد کنید و با کلم خرد شده و بقیه روغن ۱۰ دقیقه تفت دهید. سبزی را اضافه کنید.",
+    "برنج نیم‌پز را با کلم و قلقلی لایه‌لایه در قابلمه بریزید و ۴۵ دقیقه دم کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "سبزی خشک هم می‌شود (یک چهارم مقدار).",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 420,
+    "protein": 24,
+    "fat": 8,
+    "carbs": 63
+   }
+  },
+  {
+   "slug": "starter-m11",
+   "title_fa": "استانبولی پلو با مرغ",
+   "title_en": "Tomato rice with chicken & potato",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "batch",
+    "one_pot"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 300,
+     "amount_fa": "300 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-potato",
+     "name_fa": "سیب‌زمینی",
+     "grams": 300,
+     "amount_fa": "2 عدد متوسط (مکعبی)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 400,
+     "amount_fa": "4 عدد (رنده شده)",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-tomato-paste",
+     "name_fa": "رب گوجه‌فرنگی",
+     "grams": 30,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-rice-raw",
+     "name_fa": "برنج ایرانی (خام)",
+     "grams": 260,
+     "amount_fa": "260 گرم برنج خام",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 7,
+     "food_slug": null,
+     "name_fa": "زردچوبه، فلفل، نمک کم",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "پیاز را با روغن تفت دهید، مرغ مکعبی را اضافه کنید.",
+    "سیب‌زمینی، رب و گوجه رنده‌شده را اضافه کنید و ۱۰ دقیقه بپزید.",
+    "برنج خیس‌خورده و ۲ لیوان آب را اضافه کنید.",
+    "وقتی آب کشیده شد، درِ قابلمه را دم‌کنی بگذارید و ۴۰ دقیقه با حرارت ملایم بپزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "یک سهم = یک چهارم قابلمه. با سالاد شیرازی عالی است.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 462,
+    "protein": 25,
+    "fat": 8,
+    "carbs": 72
+   }
+  },
+  {
+   "slug": "starter-m12",
+   "title_fa": "خورش به و آلو با مرغ",
+   "title_en": "Quince & prune stew with chicken",
+   "category": "rice",
+   "servings": 4,
+   "tags": [
+    "batch",
+    "seasonal"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-thigh",
+     "name_fa": "ران مرغ بدون پوست",
+     "grams": 360,
+     "amount_fa": "360 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-quince",
+     "name_fa": "به",
+     "grams": 500,
+     "amount_fa": "2 عدد به متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-prune",
+     "name_fa": "آلو بخارا",
+     "grams": 40,
+     "amount_fa": "6 عدد آلو بخارا",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-lemon-juice",
+     "name_fa": "آبلیمو",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "زعفران، دارچین، نمک کم",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "پیاز را با نصف روغن تفت دهید، مرغ را اضافه کنید، ۲ لیوان آب بریزید و ۳۰ دقیقه بپزید.",
+    "به را بدون پوست قاچ کنید و با بقیه روغن ۵ دقیقه تفت دهید.",
+    "به، آلو، زعفران و آبلیمو را به مرغ اضافه کنید و ۴۵ دقیقه بپزید تا به نرم و صورتی شود."
+   ],
+   "steps_en": null,
+   "tip_fa": "غذای فصل پاییز و زمستان. شکر اضافه نکنید.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 180,
+    "text_fa": "180 گرم برنج پخته (حدود یک لیوان)"
+   },
+   "per_portion_incl_side": {
+    "kcal": 516,
+    "protein": 24,
+    "fat": 11,
+    "carbs": 79
+   }
+  },
+  {
+   "slug": "starter-n01",
+   "title_fa": "جوجه کباب زعفرانی (فر یا منقل)",
+   "title_en": "Saffron chicken kebab",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 360,
+     "amount_fa": "360 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 75,
+     "amount_fa": "1 پیاز (رنده برای مزه دادن؛ نصفش دور ریخته می‌شود)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-yogurt-low",
+     "name_fa": "ماست کم‌چرب",
+     "grams": 100,
+     "amount_fa": "4 قاشق غذاخوری ماست",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-lemon-juice",
+     "name_fa": "آبلیمو",
+     "grams": 40,
+     "amount_fa": "3 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-olive-oil",
+     "name_fa": "روغن زیتون",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 400,
+     "amount_fa": "4 عدد برای کباب",
+     "is_staple": false
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-bell-pepper",
+     "name_fa": "فلفل دلمه‌ای",
+     "grams": 200,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 7,
+     "food_slug": null,
+     "name_fa": "زعفران دم‌کرده",
+     "grams": 0,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "مرغ را مکعبی کنید و با پیاز رنده، ماست، آبلیمو، روغن، زعفران و کمی نمک حداقل ۴ ساعت (بهتر یک شب) در یخچال بخوابانید.",
+    "به سیخ بکشید یا در سینی فر بچینید.",
+    "در فر ۲۲۰ درجه ۲۰ تا ۲۵ دقیقه یا روی منقل بپزید.",
+    "گوجه و فلفل را کنارش کباب کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "سهم کیارش ۹۰ گرم مرغ خام است (حدود ۵ تکه).",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 150,
+    "text_fa": "150 گرم برنج پخته یا 60 گرم نان لواش"
+   },
+   "per_portion_incl_side": {
+    "kcal": 406,
+    "protein": 27,
+    "fat": 9,
+    "carbs": 53
+   }
+  },
+  {
+   "slug": "starter-n02",
+   "title_fa": "کباب تابه‌ای سبک",
+   "title_en": "Light pan kebab",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "red_meat"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-beef-mince-lean",
+     "name_fa": "گوشت چرخ‌کرده کم‌چرب",
+     "grams": 360,
+     "amount_fa": "360 گرم چرخ‌کرده کم‌چرب",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ (رنده و آبگیری شده)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 10,
+     "amount_fa": "2 قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 400,
+     "amount_fa": "4 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": null,
+     "name_fa": "زردچوبه، فلفل، نمک کم، سماق",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "گوشت، پیاز آبگیری شده، زردچوبه و فلفل را ۱۰ دقیقه ورز دهید تا چسبناک شود.",
+    "در تابه نچسب چرب‌شده پهن کنید و با پشت قاشق خط بیندازید.",
+    "درب را بگذارید و ۱۰ دقیقه با حرارت متوسط بپزید؛ آب اضافه را خالی کنید.",
+    "برش بزنید، برگردانید و ۵ دقیقه دیگر بپزید. گوجه‌ها را در همان تابه بپزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "گوشت قرمز: حداکثر هفته‌ای دو بار.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 150,
+    "text_fa": "150 گرم برنج پخته یا 60 گرم نان لواش"
+   },
+   "per_portion_incl_side": {
+    "kcal": 424,
+    "protein": 23,
+    "fat": 14,
+    "carbs": 49
+   }
+  },
+  {
+   "slug": "starter-n03",
+   "title_fa": "ماهی قزل‌آلای شکم‌پر تنوری",
+   "title_en": "Oven-baked stuffed trout",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "fish"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-trout",
+     "name_fa": "ماهی قزل‌آلا (فیله)",
+     "grams": 400,
+     "amount_fa": "2 ماهی متوسط (حدود 400 گرم گوشت)",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-herbs",
+     "name_fa": "سبزی معطر",
+     "grams": 150,
+     "amount_fa": "150 گرم گشنیز، جعفری و ترخون",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-barberry",
+     "name_fa": "زرشک",
+     "grams": 20,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-walnut",
+     "name_fa": "گردو",
+     "grams": 30,
+     "amount_fa": "30 گرم (خرد شده)",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 100,
+     "amount_fa": "1 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-pom-paste",
+     "name_fa": "رب انار",
+     "grams": 20,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 7,
+     "food_slug": null,
+     "name_fa": "نمک کم، فلفل، آبلیمو",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "ماهی را بشویید، داخل و بیرونش را کمی نمک، فلفل و آبلیمو بزنید.",
+    "پیاز را با نصف روغن تفت دهید، سبزی، زرشک، گردو و رب انار را اضافه کنید و ۵ دقیقه تفت دهید.",
+    "شکم ماهی را با مواد پر کنید و با خلال دندان ببندید.",
+    "روی سینی فر با کاغذ روغنی بگذارید، روی ماهی بقیه روغن را با برس بزنید و در فر ۲۰۰ درجه ۲۵ دقیقه بپزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "ماهی: هفته‌ای یک بار کافی است. از کیلکا، ساردین و ماهی دودی پرهیز کنید.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 150,
+    "text_fa": "150 گرم برنج پخته"
+   },
+   "per_portion_incl_side": {
+    "kcal": 484,
+    "protein": 28,
+    "fat": 17,
+    "carbs": 54
+   }
+  },
+  {
+   "slug": "starter-n04",
+   "title_fa": "کوکو سبزی تنوری",
+   "title_en": "Oven kuku sabzi",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-herbs",
+     "name_fa": "سبزی کوکو",
+     "grams": 500,
+     "amount_fa": "500 گرم سبزی کوکو",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 300,
+     "amount_fa": "6 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-walnut",
+     "name_fa": "گردو",
+     "grams": 30,
+     "amount_fa": "30 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-barberry",
+     "name_fa": "زرشک",
+     "grams": 15,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-flour-ww",
+     "name_fa": "آرد",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "زردچوبه، نمک کم، فلفل",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "سبزی را خرد و کاملاً خشک کنید.",
+    "تخم‌مرغ‌ها را با ادویه و آرد هم بزنید، سبزی، گردو و زرشک را اضافه کنید.",
+    "قالب فر را با روغن چرب کنید، مایه را بریزید و روی آن کمی روغن بزنید.",
+    "در فر ۱۸۰ درجه ۳۵ دقیقه بپزید. به ۴ قسمت برش بزنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "کوکو در فر نصف روغن تابه را می‌خواهد و یکدست‌تر می‌پزد. سرد هم خوشمزه است.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-sangak",
+    "grams": 70,
+    "text_fa": "70 گرم نان سنگک + 100 گرم ماست"
+   },
+   "per_portion_incl_side": {
+    "kcal": 507,
+    "protein": 25,
+    "fat": 21,
+    "carbs": 57
+   }
+  },
+  {
+   "slug": "starter-n05",
+   "title_fa": "کوکو سیب‌زمینی تنوری",
+   "title_en": "Oven potato kuku",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "batch",
+    "low_protein"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-potato",
+     "name_fa": "سیب‌زمینی",
+     "grams": 800,
+     "amount_fa": "5 عدد متوسط (آب‌پز)",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 250,
+     "amount_fa": "5 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 100,
+     "amount_fa": "1 عدد متوسط رنده شده",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": null,
+     "name_fa": "زردچوبه، زعفران، نمک کم، فلفل",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "سیب‌زمینی‌ها را آب‌پز و پوست بگیرید و رنده کنید.",
+    "با تخم‌مرغ، پیاز آبگیری شده و ادویه مخلوط کنید.",
+    "در سینی فر چرب‌شده پهن کنید یا با دست کتلت‌های کوچک شکل دهید و روی کاغذ روغنی بچینید.",
+    "در فر ۲۰۰ درجه ۳۰ دقیقه بپزید؛ وسط پخت برگردانید."
+   ],
+   "steps_en": null,
+   "tip_fa": "با سالاد شیرازی و خیارشور سرو کنید.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-sangak",
+    "grams": 60,
+    "text_fa": "60 گرم نان سنگک"
+   },
+   "per_portion_incl_side": {
+    "kcal": 454,
+    "protein": 18,
+    "fat": 12,
+    "carbs": 68
+   }
+  },
+  {
+   "slug": "starter-n06",
+   "title_fa": "میرزا قاسمی",
+   "title_en": "Mirza ghasemi",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "low_protein"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-eggplant",
+     "name_fa": "بادمجان",
+     "grams": 1000,
+     "amount_fa": "5 عدد متوسط (کبابی)",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 400,
+     "amount_fa": "4 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-garlic",
+     "name_fa": "سیر",
+     "grams": 20,
+     "amount_fa": "5 حبه",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 200,
+     "amount_fa": "4 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "زردچوبه، نمک کم، فلفل",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "بادمجان‌ها را روی شعله گاز یا در فر کباب کنید، پوست بگیرید و ریز خرد کنید.",
+    "سیر را با روغن ۳۰ ثانیه تفت دهید، زردچوبه و بادمجان را اضافه کنید و ۵ دقیقه تفت دهید.",
+    "گوجه رنده‌شده را اضافه کنید و ۱۰ دقیقه بپزید تا آبش کشیده شود.",
+    "تخم‌مرغ‌ها را اضافه کنید و هم بزنید تا ببندد."
+   ],
+   "steps_en": null,
+   "tip_fa": "شام سبک و پرحجم؛ برای شب‌ها عالی است.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-sangak",
+    "grams": 80,
+    "text_fa": "80 گرم نان سنگک"
+   },
+   "per_portion_incl_side": {
+    "kcal": 412,
+    "protein": 17,
+    "fat": 12,
+    "carbs": 62
+   }
+  },
+  {
+   "slug": "starter-n07",
+   "title_fa": "کشک بادمجان سبک",
+   "title_en": "Light kashk-e bademjan",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "low_protein"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-eggplant",
+     "name_fa": "بادمجان",
+     "grams": 1000,
+     "amount_fa": "5 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 200,
+     "amount_fa": "2 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-kashk",
+     "name_fa": "کشک مایع",
+     "grams": 120,
+     "amount_fa": "نصف لیوان کشک",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-walnut",
+     "name_fa": "گردو",
+     "grams": 20,
+     "amount_fa": "20 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-garlic",
+     "name_fa": "سیر",
+     "grams": 15,
+     "amount_fa": "4 حبه",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "نعناع خشک، زردچوبه",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "بادمجان‌ها را پوست بگیرید، با برس کمی روغن بزنید و در فر ۲۰۰ درجه ۳۰ دقیقه بپزید.",
+    "پیاز را با یک قاشق روغن داغ کنید، سیر و زردچوبه را آخر اضافه کنید.",
+    "بادمجان را له کنید، با نصف پیاز داغ و نصف لیوان آب ۱۰ دقیقه بپزید.",
+    "کشک را اضافه کنید و ۵ دقیقه هم بزنید. با بقیه پیاز داغ، نعناع داغ و گردو تزئین کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "کشک شور است؛ به این غذا نمک اضافه نکنید.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-sangak",
+    "grams": 80,
+    "text_fa": "80 گرم نان سنگک"
+   },
+   "per_portion_incl_side": {
+    "kcal": 406,
+    "protein": 14,
+    "fat": 12,
+    "carbs": 65
+   }
+  },
+  {
+   "slug": "starter-n08",
+   "title_fa": "دلمه فلفل دلمه‌ای با مرغ",
+   "title_en": "Stuffed peppers with chicken",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-bell-pepper",
+     "name_fa": "فلفل دلمه‌ای",
+     "grams": 600,
+     "amount_fa": "4 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-rice-raw",
+     "name_fa": "برنج ایرانی (خام)",
+     "grams": 120,
+     "amount_fa": "120 گرم برنج خام",
+     "is_staple": true
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 240,
+     "amount_fa": "240 گرم سینه مرغ چرخ‌کرده",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-herbs",
+     "name_fa": "سبزی دلمه",
+     "grams": 100,
+     "amount_fa": "100 گرم شوید، جعفری و ترخون",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 100,
+     "amount_fa": "1 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-tomato-paste",
+     "name_fa": "رب گوجه‌فرنگی",
+     "grams": 30,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 7,
+     "food_slug": null,
+     "name_fa": "آبلیمو، زردچوبه، نمک کم",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "برنج را ۱۰ دقیقه نیم‌پز کنید.",
+    "پیاز را با روغن تفت دهید، مرغ چرخ‌کرده و زردچوبه را اضافه کنید تا رنگش عوض شود.",
+    "برنج، سبزی و نصف رب را اضافه کنید.",
+    "سر فلفل‌ها را ببرید، تخمه‌ها را خالی کنید و پر کنید.",
+    "در قابلمه بچینید، بقیه رب را با یک لیوان آب و آبلیمو مخلوط کنید و رویشان بریزید. ۴۵ دقیقه با حرارت ملایم بپزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "یک سهم = یک فلفل. اگر سیر نشدید، نصف فلفل دیگر هم اشکالی ندارد.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-yogurt-low",
+    "grams": 100,
+    "text_fa": "100 گرم ماست کم‌چرب"
+   },
+   "per_portion_incl_side": {
+    "kcal": 332,
+    "protein": 22,
+    "fat": 8,
+    "carbs": 44
+   }
+  },
+  {
+   "slug": "starter-n09",
+   "title_fa": "ته‌چین مرغ سبک",
+   "title_en": "Light chicken tahchin",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-rice-raw",
+     "name_fa": "برنج ایرانی (خام)",
+     "grams": 280,
+     "amount_fa": "280 گرم برنج خام",
+     "is_staple": true
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 300,
+     "amount_fa": "300 گرم (آب‌پز و ریش‌ریش)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-yogurt-low",
+     "name_fa": "ماست کم‌چرب",
+     "grams": 250,
+     "amount_fa": "1 لیوان ماست کم‌چرب",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 50,
+     "amount_fa": "1 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-barberry",
+     "name_fa": "زرشک",
+     "grams": 15,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": false
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "زعفران دم‌کرده",
+     "grams": 0,
+     "amount_fa": "3 قاشق غذاخوری",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "برنج را نیم‌پز و آبکش کنید.",
+    "ماست، تخم‌مرغ، زعفران و کمی نمک را هم بزنید و با نصف برنج مخلوط کنید.",
+    "ته قابلمه نچسب را با روغن چرب کنید، نصف برنج ماستی را بریزید، مرغ را بچینید، بقیه برنج را رویش بریزید.",
+    "۱ ساعت با حرارت ملایم یا ۱ ساعت و نیم در فر ۱۸۰ درجه بپزید. زرشک را رویش بریزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "یک سهم = یک چهارم قالب.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 446,
+    "protein": 26,
+    "fat": 10,
+    "carbs": 61
+   }
+  },
+  {
+   "slug": "starter-n10",
+   "title_fa": "کتلت تنوری",
+   "title_en": "Oven-baked kotlet",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "red_meat",
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-beef-mince-lean",
+     "name_fa": "گوشت چرخ‌کرده کم‌چرب",
+     "grams": 300,
+     "amount_fa": "300 گرم چرخ‌کرده کم‌چرب",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-potato",
+     "name_fa": "سیب‌زمینی",
+     "grams": 400,
+     "amount_fa": "3 عدد متوسط (آب‌پز و رنده شده)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 100,
+     "amount_fa": "1 عدد متوسط (رنده و آبگیری شده)",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 100,
+     "amount_fa": "2 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-breadcrumbs",
+     "name_fa": "پودر سوخاری",
+     "grams": 20,
+     "amount_fa": "2 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "زردچوبه، نمک کم، فلفل",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "همه مواد به جز پودر سوخاری و روغن را ورز دهید.",
+    "کتلت‌های بیضی شکل بدهید (حدود ۱۲ عدد) و کمی پودر سوخاری بزنید.",
+    "روی سینی فر با کاغذ روغنی بچینید و با برس روغن بزنید.",
+    "در فر ۲۰۰ درجه ۲۵ دقیقه بپزید؛ وسط پخت برگردانید."
+   ],
+   "steps_en": null,
+   "tip_fa": "یک سهم = ۳ کتلت. سرد هم برای ناهار دانشگاه خوب است.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-lavash",
+    "grams": 50,
+    "text_fa": "50 گرم نان لواش + گوجه و خیارشور"
+   },
+   "per_portion_incl_side": {
+    "kcal": 445,
+    "protein": 26,
+    "fat": 15,
+    "carbs": 51
+   }
+  },
+  {
+   "slug": "starter-n11",
+   "title_fa": "یتیمچه",
+   "title_en": "Yatimcheh (eggplant & tomato)",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "low_protein"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-eggplant",
+     "name_fa": "بادمجان",
+     "grams": 800,
+     "amount_fa": "4 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 600,
+     "amount_fa": "6 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 200,
+     "amount_fa": "2 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-garlic",
+     "name_fa": "سیر",
+     "grams": 15,
+     "amount_fa": "4 حبه",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-tomato-paste",
+     "name_fa": "رب گوجه‌فرنگی",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": null,
+     "name_fa": "زردچوبه، نمک کم، فلفل",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "بادمجان‌ها را مکعبی کنید، با برس روغن بزنید و در فر ۲۰۰ درجه ۲۰ دقیقه بپزید.",
+    "پیاز را با کمی روغن تفت دهید، سیر، زردچوبه و رب را اضافه کنید.",
+    "گوجه‌های مکعبی را اضافه کنید و ۱۰ دقیقه بپزید.",
+    "بادمجان را اضافه کنید و ۲۰ دقیقه با حرارت ملایم بپزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "بدون گوشت؛ برای روزهای کم‌پروتئین. با کته یا نان سرو کنید.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-chelo",
+    "grams": 150,
+    "text_fa": "150 گرم برنج پخته + 150 گرم ماست"
+   },
+   "per_portion_incl_side": {
+    "kcal": 445,
+    "protein": 14,
+    "fat": 10,
+    "carbs": 75
+   }
+  },
+  {
+   "slug": "starter-n12",
+   "title_fa": "خوراک مرغ و سبزیجات تنوری",
+   "title_en": "Oven chicken & vegetable tray",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "batch",
+    "one_pot"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 400,
+     "amount_fa": "400 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-potato",
+     "name_fa": "سیب‌زمینی",
+     "grams": 400,
+     "amount_fa": "3 عدد متوسط",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-carrot",
+     "name_fa": "هویج",
+     "grams": 200,
+     "amount_fa": "2 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-zucchini",
+     "name_fa": "کدو سبز",
+     "grams": 300,
+     "amount_fa": "2 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-bell-pepper",
+     "name_fa": "فلفل دلمه‌ای",
+     "grams": 200,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-olive-oil",
+     "name_fa": "روغن زیتون",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 7,
+     "food_slug": "ing-garlic",
+     "name_fa": "سیر",
+     "grams": 10,
+     "amount_fa": "3 حبه",
+     "is_staple": false
+    },
+    {
+     "position": 8,
+     "food_slug": null,
+     "name_fa": "آبلیمو، پاپریکا، آویشن، نمک کم",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "همه سبزیجات را درشت خرد کنید.",
+    "مرغ و سبزیجات را با روغن، سیر، آبلیمو و ادویه در یک کاسه بزرگ مخلوط کنید.",
+    "در سینی فر پهن کنید (روی هم نباشند).",
+    "در فر ۲۰۰ درجه ۴۰ دقیقه بپزید؛ یک بار هم بزنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "یک غذای کامل در یک سینی؛ برای روزهای شلوغ عالی است.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 306,
+    "protein": 27,
+    "fat": 8,
+    "carbs": 31
+   }
+  },
+  {
+   "slug": "starter-n13",
+   "title_fa": "سالاد الویه سبک",
+   "title_en": "Light olivieh salad",
+   "category": "main",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 240,
+     "amount_fa": "240 گرم (آب‌پز و ریش‌ریش)",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-potato",
+     "name_fa": "سیب‌زمینی",
+     "grams": 500,
+     "amount_fa": "3 عدد بزرگ (آب‌پز)",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 150,
+     "amount_fa": "3 عدد (آب‌پز)",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-peas",
+     "name_fa": "نخود فرنگی",
+     "grams": 100,
+     "amount_fa": "100 گرم نخود فرنگی",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-carrot",
+     "name_fa": "هویج",
+     "grams": 100,
+     "amount_fa": "1 عدد (آب‌پز)",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-pickle",
+     "name_fa": "خیارشور",
+     "grams": 100,
+     "amount_fa": "4 عدد خیارشور",
+     "is_staple": false
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-yogurt-low",
+     "name_fa": "ماست کم‌چرب",
+     "grams": 200,
+     "amount_fa": "1 لیوان ماست چکیده کم‌چرب (به جای سس مایونز)",
+     "is_staple": false
+    },
+    {
+     "position": 7,
+     "food_slug": "ing-olive-oil",
+     "name_fa": "روغن زیتون",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 8,
+     "food_slug": null,
+     "name_fa": "آبلیمو، خردل، نمک کم، فلفل",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "مرغ، سیب‌زمینی، تخم‌مرغ و هویج را آب‌پز کنید.",
+    "همه را رنده یا ریز خرد کنید، خیارشور و نخود فرنگی را اضافه کنید.",
+    "ماست را با روغن زیتون، آبلیمو، یک قاشق چای‌خوری خردل، نمک و فلفل هم بزنید.",
+    "سس را با مواد مخلوط کنید و ۱ ساعت در یخچال بگذارید."
+   ],
+   "steps_en": null,
+   "tip_fa": "سس ماستی به جای مایونز کالری را بیش از نصف کم می‌کند. یک سهم = یک چهارم ظرف، با کاهو یا یک نان لواش.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 317,
+    "protein": 24,
+    "fat": 10,
+    "carbs": 31
+   }
+  },
+  {
+   "slug": "starter-s01",
+   "title_fa": "سوپ جو با مرغ",
+   "title_en": "Barley soup with chicken",
+   "category": "soup",
+   "servings": 4,
+   "tags": [
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 200,
+     "amount_fa": "200 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-barley",
+     "name_fa": "جو پوست‌کنده",
+     "grams": 120,
+     "amount_fa": "نصف پیمانه جو پوست‌کنده",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-carrot",
+     "name_fa": "هویج",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-tomato-paste",
+     "name_fa": "رب گوجه‌فرنگی",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 10,
+     "amount_fa": "2 قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-herbs",
+     "name_fa": "جعفری",
+     "grams": 50,
+     "amount_fa": "50 گرم جعفری",
+     "is_staple": false
+    },
+    {
+     "position": 7,
+     "food_slug": null,
+     "name_fa": "آبلیمو، نمک کم، فلفل",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "جو را ۲ ساعت خیس کنید.",
+    "پیاز را با روغن تفت دهید، مرغ و رب را اضافه کنید.",
+    "جو و ۶ لیوان آب را اضافه کنید و ۱ ساعت بپزید.",
+    "مرغ را ریش‌ریش کنید و برگردانید، هویج رنده را اضافه کنید و ۲۰ دقیقه بپزید.",
+    "جعفری و آبلیمو را آخر اضافه کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "یک سهم = یک کاسه بزرگ. سوپ قبل از غذا اشتها را کم می‌کند.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-sangak",
+    "grams": 40,
+    "text_fa": "40 گرم نان سنگک"
+   },
+   "per_portion_incl_side": {
+    "kcal": 331,
+    "protein": 19,
+    "fat": 5,
+    "carbs": 53
+   }
+  },
+  {
+   "slug": "starter-s02",
+   "title_fa": "آش رشته سبک",
+   "title_en": "Light ash reshteh",
+   "category": "soup",
+   "servings": 4,
+   "tags": [
+    "legume",
+    "batch"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-chickpea-dry",
+     "name_fa": "نخود",
+     "grams": 50,
+     "amount_fa": "50 گرم نخود",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-kidney-dry",
+     "name_fa": "لوبیا قرمز",
+     "grams": 50,
+     "amount_fa": "50 گرم لوبیا",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-lentils-dry",
+     "name_fa": "عدس",
+     "grams": 50,
+     "amount_fa": "50 گرم عدس",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-noodle",
+     "name_fa": "رشته آشی",
+     "grams": 100,
+     "amount_fa": "100 گرم رشته",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-herbs",
+     "name_fa": "سبزی آش",
+     "grams": 500,
+     "amount_fa": "500 گرم سبزی آش",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-spinach",
+     "name_fa": "اسفناج",
+     "grams": 200,
+     "amount_fa": "200 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 200,
+     "amount_fa": "2 عدد (پیاز داغ کم‌روغن)",
+     "is_staple": false
+    },
+    {
+     "position": 7,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 20,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 8,
+     "food_slug": "ing-kashk",
+     "name_fa": "کشک مایع",
+     "grams": 60,
+     "amount_fa": "4 قاشق غذاخوری کشک",
+     "is_staple": false
+    },
+    {
+     "position": 9,
+     "food_slug": null,
+     "name_fa": "نعناع خشک، زردچوبه",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "حبوبات را از شب قبل خیس کنید و با ۸ لیوان آب ۱ ساعت بپزید.",
+    "سبزی و اسفناج خرد شده را اضافه کنید و ۴۵ دقیقه بپزید.",
+    "رشته را اضافه کنید و ۱۵ دقیقه هم بزنید.",
+    "پیاز داغ و نعناع داغ را با کمترین روغن درست کنید.",
+    "با یک قاشق کشک در هر کاسه سرو کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "حبوبات فقط با اجازه پزشک. کشک شور است؛ به آش نمک نزنید.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 356,
+    "protein": 18,
+    "fat": 8,
+    "carbs": 56
+   }
+  },
+  {
+   "slug": "starter-s03",
+   "title_fa": "سوپ سبزیجات",
+   "title_en": "Vegetable soup",
+   "category": "soup",
+   "servings": 4,
+   "tags": [
+    "batch",
+    "low_protein"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-potato",
+     "name_fa": "سیب‌زمینی",
+     "grams": 200,
+     "amount_fa": "1 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-carrot",
+     "name_fa": "هویج",
+     "grams": 200,
+     "amount_fa": "2 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-zucchini",
+     "name_fa": "کدو سبز",
+     "grams": 200,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-celery",
+     "name_fa": "کرفس",
+     "grams": 100,
+     "amount_fa": "2 ساقه",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 150,
+     "amount_fa": "1 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 5,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 300,
+     "amount_fa": "3 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 6,
+     "food_slug": "ing-chicken-breast",
+     "name_fa": "سینه مرغ بدون پوست",
+     "grams": 120,
+     "amount_fa": "120 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 7,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 10,
+     "amount_fa": "2 قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 8,
+     "food_slug": null,
+     "name_fa": "جعفری، آبلیمو، نمک کم، فلفل",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "پیاز را با روغن تفت دهید، مرغ مکعبی را اضافه کنید.",
+    "همه سبزیجات مکعبی و گوجه رنده‌شده را اضافه کنید.",
+    "۶ لیوان آب اضافه کنید و ۴۵ دقیقه بپزید.",
+    "جعفری و آبلیمو را آخر اضافه کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "کم‌کالری‌ترین غذای کتاب؛ برای شب‌های گرسنگی یا قبل از غذای اصلی.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 158,
+    "protein": 10,
+    "fat": 4,
+    "carbs": 22
+   }
+  },
+  {
+   "slug": "starter-s04",
+   "title_fa": "اشکنه پیاز",
+   "title_en": "Onion eshkeneh",
+   "category": "soup",
+   "servings": 4,
+   "tags": [
+    "low_protein"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 400,
+     "amount_fa": "3 عدد بزرگ",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-potato",
+     "name_fa": "سیب‌زمینی",
+     "grams": 200,
+     "amount_fa": "1 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-egg",
+     "name_fa": "تخم‌مرغ",
+     "grams": 150,
+     "amount_fa": "3 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-flour-ww",
+     "name_fa": "آرد",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 15,
+     "amount_fa": "1 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "نعناع خشک، زردچوبه، نمک کم",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "پیاز را نازک خلال کنید و با روغن و حرارت ملایم طلایی کنید.",
+    "آرد، زردچوبه و نعناع را اضافه کنید و ۱ دقیقه تفت دهید.",
+    "سیب‌زمینی مکعبی و ۵ لیوان آب را اضافه کنید و ۳۰ دقیقه بپزید.",
+    "تخم‌مرغ‌ها را یکی‌یکی داخل آش بشکنید و بدون هم زدن بگذارید ببندد."
+   ],
+   "steps_en": null,
+   "tip_fa": "غذای سنتی و ارزان برای شب‌های سرد.",
+   "tip_en": null,
+   "suggested_side": {
+    "food_slug": "ing-sangak",
+    "grams": 60,
+    "text_fa": "60 گرم نان سنگک"
+   },
+   "per_portion_incl_side": {
+    "kcal": 334,
+    "protein": 13,
+    "fat": 8,
+    "carbs": 52
+   }
+  },
+  {
+   "slug": "starter-k01",
+   "title_fa": "سالاد شیرازی",
+   "title_en": "Shirazi salad",
+   "category": "side",
+   "servings": 4,
+   "tags": [
+    "quick"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-cucumber",
+     "name_fa": "خیار",
+     "grams": 400,
+     "amount_fa": "3 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-tomato",
+     "name_fa": "گوجه‌فرنگی",
+     "grams": 400,
+     "amount_fa": "3 عدد",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 100,
+     "amount_fa": "1 عدد کوچک",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-lemon-juice",
+     "name_fa": "آبلیمو",
+     "grams": 40,
+     "amount_fa": "3 قاشق غذاخوری",
+     "is_staple": true
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-olive-oil",
+     "name_fa": "روغن زیتون",
+     "grams": 10,
+     "amount_fa": "2 قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "نعناع خشک، نمک کم",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "خیار، گوجه و پیاز را ریز خرد کنید.",
+    "آبلیمو، روغن زیتون، نعناع و کمی نمک را اضافه کنید.",
+    "قبل از سرو هم بزنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "کنار هر ناهار و شام؛ حجم می‌دهد و تقریباً کالری ندارد.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 67,
+    "protein": 2,
+    "fat": 3,
+    "carbs": 11
+   }
+  },
+  {
+   "slug": "starter-k02",
+   "title_fa": "ماست و خیار",
+   "title_en": "Mast-o khiar",
+   "category": "side",
+   "servings": 4,
+   "tags": [
+    "quick"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-yogurt-low",
+     "name_fa": "ماست کم‌چرب",
+     "grams": 500,
+     "amount_fa": "2 لیوان",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-cucumber",
+     "name_fa": "خیار",
+     "grams": 300,
+     "amount_fa": "2 عدد رنده یا ریز",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-walnut",
+     "name_fa": "گردو",
+     "grams": 20,
+     "amount_fa": "20 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-raisin",
+     "name_fa": "کشمش",
+     "grams": 15,
+     "amount_fa": "1 و نیم قاشق غذاخوری",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": null,
+     "name_fa": "نعناع خشک، گل‌محمدی",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "خیار را ریز خرد کنید.",
+    "با ماست، نعناع و گل‌محمدی مخلوط کنید.",
+    "گردو و کشمش را رویش بریزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "لبنیات کم‌چرب برای اسید اوریک مفید است.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 125,
+    "protein": 6,
+    "fat": 5,
+    "carbs": 14
+   }
+  },
+  {
+   "slug": "starter-k03",
+   "title_fa": "بورانی اسفناج",
+   "title_en": "Spinach borani",
+   "category": "side",
+   "servings": 4,
+   "tags": [
+    "quick"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-spinach",
+     "name_fa": "اسفناج",
+     "grams": 500,
+     "amount_fa": "500 گرم",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-yogurt-low",
+     "name_fa": "ماست کم‌چرب",
+     "grams": 400,
+     "amount_fa": "1 و نیم لیوان",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-onion",
+     "name_fa": "پیاز",
+     "grams": 100,
+     "amount_fa": "1 عدد کوچک",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": "ing-garlic",
+     "name_fa": "سیر",
+     "grams": 10,
+     "amount_fa": "3 حبه",
+     "is_staple": false
+    },
+    {
+     "position": 4,
+     "food_slug": "ing-oil",
+     "name_fa": "روغن مایع",
+     "grams": 10,
+     "amount_fa": "2 قاشق چای‌خوری",
+     "is_staple": true
+    },
+    {
+     "position": 5,
+     "food_slug": null,
+     "name_fa": "نمک کم، فلفل",
+     "grams": 0,
+     "amount_fa": "به مقدار لازم",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "اسفناج را در تابه خشک بپزید تا آبش کشیده شود و خنک کنید.",
+    "پیاز و سیر را با روغن تفت دهید.",
+    "اسفناج، پیاز داغ و ماست را مخلوط کنید."
+   ],
+   "steps_en": null,
+   "tip_fa": "کنار کوکو یا کباب.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 121,
+    "protein": 8,
+    "fat": 5,
+    "carbs": 14
+   }
+  },
+  {
+   "slug": "starter-k04",
+   "title_fa": "کاسه شبانه: ماست، سیب و دارچین",
+   "title_en": "Night bowl: yogurt, apple & cinnamon",
+   "category": "snack",
+   "servings": 1,
+   "tags": [
+    "quick",
+    "night"
+   ],
+   "ingredients": [
+    {
+     "position": 0,
+     "food_slug": "ing-yogurt-low",
+     "name_fa": "ماست کم‌چرب",
+     "grams": 150,
+     "amount_fa": "یک کاسه کوچک",
+     "is_staple": false
+    },
+    {
+     "position": 1,
+     "food_slug": "ing-apple",
+     "name_fa": "سیب",
+     "grams": 120,
+     "amount_fa": "1 عدد کوچک خرد شده",
+     "is_staple": false
+    },
+    {
+     "position": 2,
+     "food_slug": "ing-walnut",
+     "name_fa": "گردو",
+     "grams": 5,
+     "amount_fa": "1 مغز",
+     "is_staple": false
+    },
+    {
+     "position": 3,
+     "food_slug": null,
+     "name_fa": "دارچین",
+     "grams": 0,
+     "amount_fa": "کمی",
+     "is_staple": true
+    }
+   ],
+   "steps_fa": [
+    "سیب را خرد کنید.",
+    "با ماست و دارچین مخلوط کنید و گردو را رویش بریزید."
+   ],
+   "steps_en": null,
+   "tip_fa": "جایگزین کیک و بیسکویت آخر شب. اگر بعد از این هم گرسنه بودید: سوپ سبزیجات.",
+   "tip_en": null,
+   "suggested_side": null,
+   "per_portion_incl_side": {
+    "kcal": 179,
+    "protein": 7,
+    "fat": 6,
+    "carbs": 26
+   }
+  }
+ ]
+}
