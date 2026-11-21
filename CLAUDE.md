@@ -40,6 +40,9 @@ The developer works on Windows. In PowerShell, `npm.cmd` may be needed instead o
 - `src/app/globals.css` owns the design system; `foundations.css` holds palettes/RTL/Persian font.
 - `supabase/migrations/` — ordered SQL. Read `supabase/MIGRATIONS.md` before touching it.
 - `docs/` — architecture, life-management (health/workouts/notifications), agent boundary.
+- `docs/nutrition-roadmap.md` — spec for body, food catalog, recipes, meal plan, groceries, food log,
+  structured workouts and adaptive reminders. Read it before working on any of those.
+- `supabase/seed/` — food catalog and starter recipes (JSON) used by the nutrition seed migration.
 
 ## Non-negotiable rules
 
