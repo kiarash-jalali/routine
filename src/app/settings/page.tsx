@@ -7,24 +7,21 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const { supabase, userId, email } = await requireServerUser();
 
+  let displayName = "";
+  let loadError = false;
   try {
     const profile = await getProfile(userId, supabase);
-    return (
-      <SettingsClient
-        userId={userId}
-        initialDisplayName={profile?.display_name ?? ""}
-        initialEmail={email}
-        initialLoadError={false}
-      />
-    );
+    displayName = profile?.display_name ?? "";
   } catch {
-    return (
-      <SettingsClient
-        userId={userId}
-        initialDisplayName=""
-        initialEmail={email}
-        initialLoadError
-      />
-    );
+    loadError = true;
   }
+
+  return (
+    <SettingsClient
+      userId={userId}
+      initialDisplayName={displayName}
+      initialEmail={email}
+      initialLoadError={loadError}
+    />
+  );
 }

@@ -69,6 +69,8 @@ export function PwaStatus() {
 
   useEffect(() => {
     const supabase = supabaseBrowser();
+    // navigator.onLine is browser-only; sync it after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOnline(navigator.onLine);
 
     async function loadSession() {

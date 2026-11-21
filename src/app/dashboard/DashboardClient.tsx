@@ -163,6 +163,8 @@ export function DashboardClient({
 
   useEffect(() => {
     const routineTitle = consumeFirstRoutineSuccess();
+    // Reads sessionStorage/URL, which only exist after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (routineTitle) setFirstSuccessRoutine(routineTitle);
 
     const shortcut = new URLSearchParams(window.location.search).get("newTask");
@@ -185,6 +187,8 @@ export function DashboardClient({
   ) {
     const copy = getMomentCopy(key);
     setMoment({
+      // Called from event handlers only, never during render.
+      // eslint-disable-next-line react-hooks/purity
       id: `${key}-${Date.now()}`,
       ...copy,
       sourceId,
@@ -194,6 +198,7 @@ export function DashboardClient({
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- re-translates on language change
     if (initialPartialError) setError(t("dashboard.partialLoadError"));
   }, [initialPartialError, t]);
 
@@ -202,6 +207,8 @@ export function DashboardClient({
 
     let cancelled = false;
     if (initialDayKey !== todayKey) {
+      // Clear stale server data when the client's local day differs.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRhythm(null);
       setCompletionByItem({});
     }

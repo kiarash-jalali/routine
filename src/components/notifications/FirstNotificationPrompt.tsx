@@ -33,6 +33,8 @@ export function FirstNotificationPrompt({
       (initialPreference === null || initialPreference?.prompt_seen === false) &&
       notificationsSupported()
     ) {
+      // notificationsSupported() is browser-only, so this runs after hydration.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(true);
     }
   }, [initialPreference]);
