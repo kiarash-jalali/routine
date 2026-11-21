@@ -6,10 +6,13 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 5
+    # Safe minor/patch bumps arrive together in one PR. Major versions are left
+    # out of the group so each one gets its own PR and can be tested on its own.
     groups:
-      application-dependencies:
-        patterns:
-          - "*"
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"

@@ -1,8 +1,10 @@
 name: Notification cron
 
+# The production scheduler is the Supabase pg_cron job
+# `routine-notification-reminders` (every 5 minutes). GitHub throttles scheduled
+# workflows (runs landed hours apart) and disables them in repos without recent
+# activity, so this workflow is kept only as a manual backup trigger.
 on:
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
