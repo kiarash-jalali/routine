@@ -73,9 +73,12 @@ export function HealthClient({
             {reminder.taken_at && (
               <p className="text-sm text-muted">
                 {t("health.recorded", {
+                  // Explicit zone: the server renders in UTC, so without it
+                  // the server and browser text differ (hydration error).
                   time: date(reminder.taken_at, {
                     dateStyle: "short",
                     timeStyle: "short",
+                    timeZone: reminder.timezone,
                   }),
                 })}
               </p>

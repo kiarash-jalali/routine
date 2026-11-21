@@ -163,20 +163,7 @@ export function WorkoutsClient({
             ))}
           </AnimatedList>
           {!rows.length && (
-            <EmptyState
-              action={
-                tab === "today" ? (
-                  <div className="flex flex-wrap justify-center gap-2">
-                    <Button onClick={() => setEditor("log")}>
-                      {t("workout.log")}
-                    </Button>
-                    <Button variant="primary" onClick={() => setEditor("new")}>
-                      {t("workout.add")}
-                    </Button>
-                  </div>
-                ) : undefined
-              }
-            >
+            <EmptyState>
               {t(
                 tab === "today" ? "workout.todayEmpty" : "workout.historyEmpty",
               )}

@@ -17,7 +17,7 @@ import "./globals.css";
 import "./foundations.css";
 
 export const metadata: Metadata = {
-  title: "rootine",
+  title: { default: "rootine", template: "%s · rootine" },
   description: "A calm, routine-first way to shape each day.",
   applicationName: "rootine",
   manifest: "/manifest.webmanifest",

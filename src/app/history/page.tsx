@@ -1,9 +1,14 @@
+import { pageMetadata } from "@/lib/server/pageMetadata";
 import { HistoryClient } from "./HistoryClient";
 import { listCheckinDays, listRecentCheckinHistory } from "@/lib/db/history";
 import { getPointBalance, getPointRules, listStreakRepairs } from "@/lib/db/points";
 import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata() {
+  return pageMetadata("nav.history");
+}
 
 export default async function HistoryPage() {
   const { supabase, userId } = await requireServerUser();

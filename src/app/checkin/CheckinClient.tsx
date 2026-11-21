@@ -456,9 +456,6 @@ export function CheckinClient({
             <div className="min-w-0 flex-1">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm text-muted">
-                  <span className="font-semibold text-foreground">
-                    <AnimatedNumber value={completedCount} />
-                  </span>{" "}
                   {t("product.completedOf", {
                     completed: number(completedCount),
                     total: number(totalCount),
