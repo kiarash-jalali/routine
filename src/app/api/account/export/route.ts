@@ -91,6 +91,9 @@ export async function GET(request: Request) {
       recipeIngredients,
       workoutPlanExercises,
       workoutSetLogs,
+      bodyProfiles,
+      bodyMeasurements,
+      targetAdjustments,
     ] = await Promise.all([
       collectAll<Tables<"profiles">>(async (from, to) => {
         const { data, error } = await userDb
@@ -254,6 +257,32 @@ export async function GET(request: Request) {
           .range(from, to);
         return { data, error };
       }),
+      collectAll<Tables<"body_profiles">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("body_profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .range(from, to);
+        return { data, error };
+      }),
+      collectAll<Tables<"body_measurements">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("body_measurements")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("measured_on", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
+      collectAll<Tables<"target_adjustments">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("target_adjustments")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("effective_from", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
     ]);
 
     const exportedAt = new Date().toISOString();
@@ -286,6 +315,9 @@ export async function GET(request: Request) {
           recipe_ingredients: recipeIngredients,
           workout_plan_exercises: workoutPlanExercises,
           workout_set_logs: workoutSetLogs,
+          body_profiles: bodyProfiles,
+          body_measurements: bodyMeasurements,
+          target_adjustments: targetAdjustments,
         },
       },
       null,

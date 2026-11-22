@@ -35,6 +35,93 @@ export type Database = {
         }
         Relationships: []
       }
+      body_measurements: {
+        Row: {
+          body_fat_pct: number | null
+          created_at: string
+          id: string
+          measured_on: string
+          note: string | null
+          updated_at: string
+          user_id: string
+          waist_cm: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          body_fat_pct?: number | null
+          created_at?: string
+          id?: string
+          measured_on: string
+          note?: string | null
+          updated_at?: string
+          user_id: string
+          waist_cm?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          body_fat_pct?: number | null
+          created_at?: string
+          id?: string
+          measured_on?: string
+          note?: string | null
+          updated_at?: string
+          user_id?: string
+          waist_cm?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      body_profiles: {
+        Row: {
+          activity_level: string
+          birth_year: number
+          created_at: string
+          goal_mode: string
+          goal_rate_kg_week: number | null
+          goal_weight_kg: number | null
+          height_cm: number
+          kcal_target_override: number | null
+          protein_grams: number | null
+          protein_mode: string
+          sex: string | null
+          updated_at: string
+          user_id: string
+          week_starts_on: number
+        }
+        Insert: {
+          activity_level?: string
+          birth_year: number
+          created_at?: string
+          goal_mode?: string
+          goal_rate_kg_week?: number | null
+          goal_weight_kg?: number | null
+          height_cm: number
+          kcal_target_override?: number | null
+          protein_grams?: number | null
+          protein_mode?: string
+          sex?: string | null
+          updated_at?: string
+          user_id: string
+          week_starts_on?: number
+        }
+        Update: {
+          activity_level?: string
+          birth_year?: number
+          created_at?: string
+          goal_mode?: string
+          goal_rate_kg_week?: number | null
+          goal_weight_kg?: number | null
+          height_cm?: number
+          kcal_target_override?: number | null
+          protein_grams?: number | null
+          protein_mode?: string
+          sex?: string | null
+          updated_at?: string
+          user_id?: string
+          week_starts_on?: number
+        }
+        Relationships: []
+      }
       checkin_items: {
         Row: {
           checkin_id: string
@@ -722,6 +809,36 @@ export type Database = {
           created_at?: string
           day?: string
           id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      target_adjustments: {
+        Row: {
+          accepted_at: string
+          created_at: string
+          delta_kcal: number
+          effective_from: string
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          created_at?: string
+          delta_kcal: number
+          effective_from: string
+          id?: string
+          reason?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          created_at?: string
+          delta_kcal?: number
+          effective_from?: string
+          id?: string
+          reason?: string
           user_id?: string
         }
         Relationships: []

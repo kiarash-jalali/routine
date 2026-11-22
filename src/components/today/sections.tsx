@@ -6,6 +6,7 @@ import { RemindersSection } from "./RemindersSection";
 import { RoutinesSection } from "./RoutinesSection";
 import { TasksSection } from "./TasksSection";
 import { WeekSection } from "./WeekSection";
+import { WeighInSection } from "./WeighInSection";
 import { WorkoutsSection } from "./WorkoutsSection";
 
 /**
@@ -25,6 +26,7 @@ function HealthSportRow() {
 
 export const mainSections: TodaySection[] = [
   { id: "routines", Component: RoutinesSection },
+  { id: "weigh-in", Component: WeighInSection },
   { id: "health-sport", Component: HealthSportRow },
   { id: "tasks", Component: TasksSection },
 ];
