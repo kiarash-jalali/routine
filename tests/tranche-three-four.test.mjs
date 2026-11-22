@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { todaySource } from "./today-source.mjs";
 
 function source(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -57,7 +58,7 @@ test("Tranche 4 makes core life areas permanent and removes Feedback from primar
 test("Tranche 4 improves onboarding, first-day actions, reminders and auth UX", () => {
   const onboarding = source("src/app/onboarding/OnboardingClient.tsx");
   const onboardingPage = source("src/app/onboarding/page.tsx");
-  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
+  const dashboard = todaySource();
   const login = source("src/app/login/page.tsx");
 
   assert.match(onboarding, /onboarding\.quickStart/);

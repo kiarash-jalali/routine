@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { todayFiles } from "./today-source.mjs";
 
 function source(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -25,7 +26,7 @@ test("routine schedule summaries are localized at render time", () => {
 
 test("key Tranche 4 pages avoid physical Tailwind margins", () => {
   for (const path of [
-    "src/app/dashboard/DashboardClient.tsx",
+    ...todayFiles(),
     "src/app/routines/RoutinesClient.tsx",
   ]) {
     const content = source(path);

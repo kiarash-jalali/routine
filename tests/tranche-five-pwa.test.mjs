@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { todaySource } from "./today-source.mjs";
 
 function source(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -65,7 +66,7 @@ test("Tranche 5 repairs push registrations without silently requesting permissio
 
 test("Tranche 5 manifest has localized high-value shortcuts", () => {
   const manifestSource = source("src/app/manifest.ts");
-  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
+  const dashboard = todaySource();
 
   assert.match(manifestSource, /cookies\(\)/);
   assert.match(manifestSource, /shortcuts/);
@@ -77,7 +78,7 @@ test("Tranche 5 manifest has localized high-value shortcuts", () => {
 });
 
 test("Tranche 5 keeps an offline read snapshot for Dashboard and Check-in", () => {
-  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
+  const dashboard = todaySource();
   const checkin = source("src/app/checkin/CheckinClient.tsx");
 
   assert.match(dashboard, /saveOfflineSnapshot/);
@@ -92,6 +93,13 @@ test("Tranche 5 keeps health and medication data out of the offline cache", () =
 
   assert.doesNotMatch(store, /medication|dose|health_plan|medication_plan/i);
   assert.match(shell, /Health and medication data are not cached here/);
+
+  // The snapshot Today writes holds only routine/task ids, titles and completion.
+  const today = source("src/components/today/useTodayState.ts");
+  const start = today.indexOf("saveOfflineSnapshot({");
+  assert.ok(start > 0, "Today no longer saves an offline snapshot");
+  const payload = today.slice(start, today.indexOf("}).catch(", start));
+  assert.doesNotMatch(payload, /medication|dose|health|reminder|workout|note/i);
 });
 
 test("Tranche 5 sync validates account ownership on the server", () => {

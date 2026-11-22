@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { todaySource } from "./today-source.mjs";
 
 function source(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
 test("Today prioritizes the next unfinished timed item", () => {
-  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
+  const dashboard = todaySource();
 
   assert.match(dashboard, /dashboard\.upNext/);
   assert.match(
@@ -23,7 +24,7 @@ test("core creation forms validate on blur and keep mobile actions reachable", (
   const routine = source("src/components/routines/RoutineForm.tsx");
   const medication = source("src/components/health/MedicationForm.tsx");
   const workout = source("src/components/workouts/WorkoutForm.tsx");
-  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
+  const dashboard = todaySource();
   const css = source("src/app/globals.css");
 
   for (const form of [routine, medication, workout]) {
@@ -91,4 +92,14 @@ test("status and password help text remain localized and programmatically connec
   assert.match(popup, /common\.dismiss/);
   assert.match(guidance, /id=\{id\}/);
   assert.match(login, /signup-password-guidance/);
+});
+
+test("Today shell stays small and sections come from a registry", () => {
+  const shell = source("src/app/dashboard/DashboardClient.tsx");
+  assert.ok(shell.split("\n").length < 300, "DashboardClient must stay under 300 lines");
+  const registry = source("src/components/today/sections.tsx");
+  assert.match(registry, /export const mainSections/);
+  assert.match(registry, /export const sideSections/);
+  assert.match(shell, /mainSections\.map/);
+  assert.match(shell, /sideSections\.map/);
 });
