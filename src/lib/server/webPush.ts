@@ -34,11 +34,13 @@ function notificationBody(
   language: Language,
   label?: string | null,
 ) {
+  // Health pushes always use the generic body: medication names, doses and
+  // notes are health data and must never reach a push payload.
+  if (kind === "health") return translate(language, "reminder.genericHealth");
   const itemLabel = label?.trim().slice(0, 160);
-  if (itemLabel && ["task", "routine", "health", "workout"].includes(kind)) {
+  if (itemLabel && ["task", "routine", "workout"].includes(kind)) {
     return itemLabel;
   }
-  if (kind === "health") return translate(language, "reminder.genericHealth");
   if (kind === "workout")
     return translate(language, "reminder.genericWorkout");
   if (kind === "checkin_missed")
