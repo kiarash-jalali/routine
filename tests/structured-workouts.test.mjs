@@ -77,3 +77,19 @@ test("schemes do not swallow trailing digits and the last scheme on a line wins"
   assert.equal(persian?.name, "اسکات");
   assert.equal(persian?.parsed, true);
 });
+
+test("exercise saves are one RPC and archived exercises keep their set history", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const source = await readFile(new URL("../src/lib/db/workoutExercises.ts", import.meta.url), "utf8");
+  const migration = await readFile(
+    new URL("../supabase/migrations/20261122120000_nutrition_review_fixes.sql", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /rpc\("save_plan_exercises"/);
+  assert.doesNotMatch(source, /from\("workout_plan_exercises"\)\s*\.delete\(\)/);
+  assert.match(source, /archived_at/);
+  assert.match(migration, /before delete on public\.workout_plans/);
+  assert.match(migration, /security invoker/);
+  assert.match(migration, /not exists \(select 1 from public\.workout_set_logs l where l\.session_id = s\.id\)/);
+  assert.doesNotMatch(migration, /references public\.workout_plan_exercises\(id, user_id\)\s+on delete cascade/);
+});

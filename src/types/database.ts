@@ -764,6 +764,7 @@ export type Database = {
       }
       workout_plan_exercises: {
         Row: {
+          archived_at: string | null
           created_at: string
           id: string
           name: string
@@ -777,6 +778,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           id?: string
           name: string
@@ -790,6 +792,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -1031,6 +1034,10 @@ export type Database = {
         }[]
       }
       repair_streak_day: { Args: { target_day: string }; Returns: number }
+      save_plan_exercises: {
+        Args: { p_exercises: Json; p_plan_id: string }
+        Returns: undefined
+      }
       set_daily_item_completion: {
         Args: {
           p_completed: boolean

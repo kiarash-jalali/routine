@@ -50,6 +50,7 @@ export type PlanExercise = {
   rep_scheme: string;
   rest_seconds: number | null;
   notes: string | null;
+  archived_at: string | null;
 };
 export type PlanExerciseInput = {
   id?: string | undefined;

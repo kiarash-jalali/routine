@@ -43,3 +43,5 @@ From 20260918184226 onward, add new migrations instead of editing old ones, and 
 If the project later switches to the Supabase CLI migration workflow, reconcile the older history deliberately with Supabase's migration-repair workflow before running a blanket `db push`.
 
 `20261121205000_seed_food_catalog_ingredients.sql` (starter recipe ingredients) was run by hand in the Supabase SQL editor on 2026-11-22, so it has no entry in the production migration history. It is idempotent; replaying it is safe.
+
+`20261122120000_nutrition_review_fixes.sql` (S1/S6 review fixes: food-delete trigger, exercise archiving, set-log FK without cascade, plan-delete set-log trigger, `sync_workout_sessions` keeps sessions with logged sets, `save_plan_exercises` RPC) is **not yet applied to production**. Apply it before deploying structured workouts or shipping S2, rename the file to the version Supabase records, add it to the table above and regenerate `src/types/database.ts` (the `archived_at` column and RPC signature were added by hand). Then run `supabase/tests/nutrition_review_fixes.sql`.

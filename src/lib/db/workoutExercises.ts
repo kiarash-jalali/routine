@@ -9,10 +9,14 @@ import type {
 } from "@/types/workout";
 
 const exerciseColumns =
-  "id,plan_id,user_id,position,name,target_sets,rep_scheme,rest_seconds,notes";
+  "id,plan_id,user_id,position,name,target_sets,rep_scheme,rest_seconds,notes,archived_at";
 const setLogColumns =
   "id,session_id,exercise_id,user_id,set_number,reps,weight_kg,band_level,rpe,completed_at";
 
+/**
+ * All of the user's exercises, archived ones included: an archived exercise is
+ * hidden from the editor and new sessions but still shows the sets logged on it.
+ */
 export async function listUserExercises(
   userId: string,
   client?: SupabaseClient<Database>,
@@ -28,49 +32,24 @@ export async function listUserExercises(
 }
 
 /**
- * Saves the plan's exercise list. Existing rows are updated in place (their
- * set history stays attached); rows no longer in the list are deleted.
+ * Saves the plan's exercise list in one transaction (`save_plan_exercises`).
+ * Existing rows are updated in place; rows no longer in the list are archived
+ * when they have logged sets (history stays) and deleted otherwise.
  */
-export async function savePlanExercises(
-  userId: string,
-  planId: string,
-  existing: PlanExercise[],
-  rows: PlanExerciseInput[],
-) {
-  const db = supabaseBrowser();
-  const keepIds = new Set(rows.map((row) => row.id).filter(Boolean));
-  const removed = existing.filter((row) => !keepIds.has(row.id)).map((row) => row.id);
-  if (removed.length) {
-    const { error } = await db
-      .from("workout_plan_exercises")
-      .delete()
-      .eq("user_id", userId)
-      .eq("plan_id", planId)
-      .in("id", removed);
-    if (error) throw new Error("workout_exercises_save_failed");
-  }
-
-  const payload = rows.map((row, position) => ({
+export async function savePlanExercises(planId: string, rows: PlanExerciseInput[]) {
+  const payload = rows.map((row) => ({
     ...(row.id ? { id: row.id } : {}),
-    plan_id: planId,
-    user_id: userId,
-    position,
     name: row.name.trim(),
     target_sets: row.target_sets,
     rep_scheme: row.rep_scheme.trim(),
     rest_seconds: row.rest_seconds,
     notes: row.notes,
   }));
-  const updates = payload.filter((row) => "id" in row);
-  const inserts = payload.filter((row) => !("id" in row));
-  if (updates.length) {
-    const { error } = await db.from("workout_plan_exercises").upsert(updates);
-    if (error) throw new Error("workout_exercises_save_failed");
-  }
-  if (inserts.length) {
-    const { error } = await db.from("workout_plan_exercises").insert(inserts);
-    if (error) throw new Error("workout_exercises_save_failed");
-  }
+  const { error } = await supabaseBrowser().rpc("save_plan_exercises", {
+    p_plan_id: planId,
+    p_exercises: payload,
+  });
+  if (error) throw new Error("workout_exercises_save_failed");
 }
 
 export async function listSetLogs(userId: string, sessionId: string): Promise<SetLog[]> {
