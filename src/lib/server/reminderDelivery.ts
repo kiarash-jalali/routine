@@ -68,6 +68,7 @@ export function reminderDelivery(admin: SupabaseClient<Database>) {
         event,
         label,
         notificationTagKey,
+        category,
       );
 
       if (status >= 200 && status < 300) {

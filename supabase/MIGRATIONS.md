@@ -26,6 +26,8 @@ The bootstrap is **not** a migration to apply retroactively to the existing prod
 | 20260919075812 | daily_progress_completion | 20260919075812_daily_progress_completion.sql |
 | 20260919080029 | fix_daily_progress_conflict_target | 20260919080029_fix_daily_progress_conflict_target.sql |
 | 20261121202409 | nutrition_catalog_schema | 20261121202409_nutrition_catalog_schema.sql |
+| 20261121202753 | structured_workouts | 20261121202753_structured_workouts.sql |
+| 20261121202801 | push_delivery_opened_at | 20261121202801_push_delivery_opened_at.sql |
 | 20261121204046 | seed_food_catalog_foods_ingredients | 20261121204046_seed_food_catalog_foods_ingredients.sql |
 | 20261121204436 | seed_food_catalog_foods_iran | 20261121204436_seed_food_catalog_foods_iran.sql |
 | 20261121204704 | seed_food_catalog_foods_global | 20261121204704_seed_food_catalog_foods_global.sql |
@@ -41,3 +43,5 @@ From 20260918184226 onward, add new migrations instead of editing old ones, and 
 If the project later switches to the Supabase CLI migration workflow, reconcile the older history deliberately with Supabase's migration-repair workflow before running a blanket `db push`.
 
 `20261121205000_seed_food_catalog_ingredients.sql` (starter recipe ingredients) was run by hand in the Supabase SQL editor on 2026-11-22, so it has no entry in the production migration history. It is idempotent; replaying it is safe.
+
+`20261122120000_nutrition_review_fixes.sql` (S1/S6 review fixes: food-delete trigger, exercise archiving, set-log FK without cascade, plan-delete set-log trigger, `sync_workout_sessions` keeps sessions with logged sets, `save_plan_exercises` RPC) was run by hand in the Supabase SQL editor on 2026-11-22, so it has no entry in the production migration history. It is idempotent; replaying it is safe. `src/types/database.ts` matches the regenerated types.

@@ -40,3 +40,39 @@ export type SessionInput = Pick<
   | "scheduled_at"
   | "timezone"
 >;
+export type PlanExercise = {
+  id: string;
+  plan_id: string;
+  user_id: string;
+  position: number;
+  name: string;
+  target_sets: number;
+  rep_scheme: string;
+  rest_seconds: number | null;
+  notes: string | null;
+  archived_at: string | null;
+};
+export type PlanExerciseInput = {
+  id?: string | undefined;
+  name: string;
+  target_sets: number;
+  rep_scheme: string;
+  rest_seconds: number | null;
+  notes: string | null;
+};
+export type SetLog = {
+  id: string;
+  session_id: string;
+  exercise_id: string;
+  user_id: string;
+  set_number: number;
+  reps: number;
+  weight_kg: number | null;
+  band_level: string | null;
+  rpe: number | null;
+  completed_at: string;
+};
+export type SetLogInput = Pick<
+  SetLog,
+  "session_id" | "exercise_id" | "set_number" | "reps" | "weight_kg"
+>;
