@@ -89,7 +89,7 @@ begin
 end;
 $$;
 
--- 4. Another user can't save exercises on the owner's plan (now deleted, so use a fresh one).
+-- 4. Another user can't save exercises on the owner's plan (the first one is deleted, so make a fresh one).
 do $$
 declare v_plan uuid;
 begin
@@ -98,7 +98,6 @@ begin
   perform set_config('test.plan',v_plan::text,true);
 end;
 $$;
--- 4. Another user can't save exercises on the owner's plan.
 select set_config('request.jwt.claim.sub',current_setting('test.other'),true);
 do $$ begin
   begin
