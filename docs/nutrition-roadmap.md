@@ -310,6 +310,15 @@ Screens:
 - Optional CSV import on `/body` (date, weight, waist) for users moving from a
   spreadsheet.
 
+Built decisions (S2):
+- Calculations live in `src/lib/nutrition/body.ts`. Targets use the latest trend
+  weight. With no weight yet there is no calculated calorie target (an override
+  still shows). When a TDEE is below the floor, the target stops at TDEE.
+- The Today weigh-in card shows only to users with a body profile.
+- `week_starts_on` is set on first save from the language (fa → Saturday,
+  en → Monday) and can be changed in the profile form.
+- The optional CSV import is not built yet (follow-up).
+
 Acceptance:
 - [ ] Targets match the formulas in section 4 for 6 fixture profiles (unit tests).
 - [ ] Override and limit modes are labelled "set by you" and win over calculations.

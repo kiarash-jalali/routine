@@ -28,7 +28,9 @@ import type { Routine } from "@/types/routine";
 import type { Task } from "@/types/task";
 import type { MedicationReminder } from "@/types/health";
 import type { WorkoutSession } from "@/types/workout";
+import type { WeighInState } from "@/types/body";
 import { useMoment } from "./useMoment";
+import { useWeighIn } from "./useWeighIn";
 
 export type TodayInitialData = {
   userId: string;
@@ -39,6 +41,7 @@ export type TodayInitialData = {
   initialDayKey: string | null;
   initialMedicationReminders: MedicationReminder[];
   initialWorkoutSessions: WorkoutSession[];
+  initialWeighIn: WeighInState | null;
   initialPartialError: boolean;
 };
 
@@ -51,6 +54,7 @@ export function useTodayState({
   initialDayKey,
   initialMedicationReminders,
   initialWorkoutSessions,
+  initialWeighIn,
   initialPartialError,
 }: TodayInitialData) {
   const { t, language } = useLanguage();
@@ -75,6 +79,7 @@ export function useTodayState({
   const pending = useRef(new Set<string>());
   const today = useToday();
   const todayKey = getLocalDateKey(today);
+  const weighIn = useWeighIn(userId, initialDayKey, initialWeighIn, todayKey);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- re-translates on language change
@@ -400,6 +405,7 @@ export function useTodayState({
     todayMedication,
     todayWorkouts,
     checkedInToday,
+    weighIn,
   };
 }
 

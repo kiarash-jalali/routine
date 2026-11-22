@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { Link } from "next-view-transitions";
+import { Icon } from "@/components/Icon";
 import { AnimatedList, AnimatedListItem } from "@/components/Motion";
 import {
   Button,
@@ -156,6 +158,18 @@ export function HealthClient({
               {t("schedule.more")}
             </Button>
           )}
+          <Link
+            href="/body"
+            className="card mt-9 flex items-center justify-between gap-4 bg-surface-soft"
+          >
+            <span className="min-w-0">
+              <span className="block font-semibold">{t("health.bodyLink")}</span>
+              <span className="mt-1 block text-sm text-muted">
+                {t("health.bodyLinkBody")}
+              </span>
+            </span>
+            <Icon name="chevron" size={18} className="shrink-0 text-primary" />
+          </Link>
           <div className="mt-9">
             <SectionHeading title={t("health.plans")} />
             <div className="mt-4 space-y-3">
