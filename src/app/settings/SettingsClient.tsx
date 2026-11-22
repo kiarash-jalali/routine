@@ -54,7 +54,7 @@ function SettingsDisclosure({
         <Icon
           name="chevron"
           size={17}
-          className="shrink-0 transition-transform group-open:rotate-90"
+          className="shrink-0 transition-transform group-open:rotate-90 rtl:group-open:-rotate-90"
         />
       </summary>
       <div className="border-t border-border px-4 pb-5 pt-4">{children}</div>

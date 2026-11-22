@@ -1001,6 +1001,11 @@
   .icon-button:hover > svg {
     transform: translateY(-1px) rotate(-5deg);
   }
+  /* Mirrored arrows tilt the other way so the hover "lift" matches LTR. */
+  [dir="rtl"] .btn:hover > .icon-directional,
+  [dir="rtl"] .icon-button:hover > .icon-directional {
+    transform: translateY(-1px) rotate(5deg);
+  }
   .nav-tab[aria-current] > svg {
     transform: scale(1.1);
   }
@@ -1362,7 +1367,9 @@ html:active-view-transition .card {
   }
   .theme-toggle:hover,
   .btn:hover > svg,
-  .icon-button:hover > svg {
+  .icon-button:hover > svg,
+  [dir="rtl"] .btn:hover > .icon-directional,
+  [dir="rtl"] .icon-button:hover > .icon-directional {
     transform: none;
   }
 }

@@ -43,3 +43,17 @@ test("shared form primitives replace one-off select and textarea styling", () =>
     assert.doesNotMatch(form, /<textarea/);
   }
 });
+
+test("directional icons mirror in RTL without touching other icons", () => {
+  const icon = source("src/components/Icon.tsx");
+  const css = source("src/app/foundations.css");
+  const settings = source("src/app/settings/SettingsClient.tsx");
+
+  const directional = icon.match(/const directional = new Set<IconName>\(\[([^\]]*)\]\)/);
+  assert.ok(directional, "Icon.tsx declares its directional icon set");
+  for (const name of ["arrow", "chevron", "logout"]) {
+    assert.match(directional[1], new RegExp(`["']${name}["']`));
+  }
+  assert.match(css, /\[dir="rtl"\] \.icon-directional > path[\s\S]*scaleX\(-1\)/);
+  assert.match(settings, /rtl:group-open:-rotate-90/);
+});
