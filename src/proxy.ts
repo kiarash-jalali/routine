@@ -10,6 +10,7 @@ const protectedRoutes = [
   "/feedback",
   "/health",
   "/workouts",
+  "/food",
   "/guide",
   "/onboarding",
 ] as const;

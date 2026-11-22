@@ -1038,6 +1038,10 @@ export type Database = {
         Args: { p_exercises: Json; p_plan_id: string }
         Returns: undefined
       }
+      save_recipe: {
+        Args: { p_ingredients: Json; p_recipe: Json; p_recipe_id: string | null }
+        Returns: string
+      }
       set_daily_item_completion: {
         Args: {
           p_completed: boolean

@@ -13,6 +13,7 @@ const navItems = [
   { href: "/routines", label: "nav.routines", icon: "routines" },
   { href: "/checkin", label: "nav.checkin", icon: "checkin" },
   { href: "/history", label: "nav.history", icon: "history" },
+  { href: "/food", label: "nav.food", icon: "food" },
   { href: "/health", label: "nav.health", icon: "health" },
   { href: "/workouts", label: "nav.workouts", icon: "sport" },
 ] as const;
@@ -26,7 +27,9 @@ function NavPending() {
 export function AppNav() {
   const { t } = useLanguage();
   const pathname = usePathname();
-  const activeIndex = navItems.findIndex((item) => pathname === item.href);
+  // Sub-routes (such as /food/recipes/…) keep their section's tab active.
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const activeIndex = navItems.findIndex((item) => isActive(item.href));
 
   return (
     <aside className="app-navigation">
@@ -34,10 +37,10 @@ export function AppNav() {
         <BrandMark />
         <span>rootine<span className="brand-caption">{t("nav.tagline")}</span></span>
       </Link>
-      <nav aria-label={t("nav.main")} className="nav-tabs" style={activeIndex >= 0 ? ({ "--active-tab": activeIndex } as CSSProperties) : undefined}>
+      <nav aria-label={t("nav.main")} className="nav-tabs" style={{ "--nav-count": navItems.length, ...(activeIndex >= 0 ? { "--active-tab": activeIndex } : {}) } as CSSProperties}>
         {activeIndex >= 0 && <span className="nav-indicator" aria-hidden="true" />}
         {navItems.map((item) => (
-          <Link key={item.href} href={item.href} className="nav-tab" aria-current={pathname === item.href ? "page" : undefined}>
+          <Link key={item.href} href={item.href} className="nav-tab" aria-current={isActive(item.href) ? "page" : undefined}>
             <Icon name={item.icon} size={21} />
             <span>{t(item.label)}</span>
             <NavPending />

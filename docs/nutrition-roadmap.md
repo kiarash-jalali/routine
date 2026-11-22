@@ -319,6 +319,8 @@ Acceptance:
 
 ### S3 — Recipes UI
 
+Status: built (`/food`, `/food/recipes/[id]`, editor, Foods tab).
+
 Screens:
 - `/food` hub with tabs: Plan (S4), Recipes, Groceries (S4), Foods. Until S4
   ships, Plan and Groceries tabs are hidden.
@@ -333,9 +335,15 @@ Screens:
   text), free-text staples, steps reorderable, live per-serving nutrition.
 - Foods tab: search the catalog, view a food's per-100 g and per-serving
   values, create/edit own foods.
-- Navigation: add a "Food" nav tab. The nav already has six tabs; in plan mode,
-  check mobile width at 360–390 px and propose either a seventh tab or moving
-  Check-in into Today. Ask the owner before choosing.
+- Navigation: add a "Food" nav tab. Decided (November 2026): a seventh tab
+  between History and Health. At 360 px each tab is 48 px wide and the longest
+  label needs about 41 px; the mobile grid reads the tab count from `--nav-count`.
+- Saving: recipe and ingredients are written in one transaction by the
+  security-invoker `save_recipe(p_recipe_id, p_recipe, p_ingredients)` RPC
+  (`p_recipe_id` null inserts; "Save to my recipes" passes `copied_from`).
+  Lists and search run client-side over the visible catalog (`src/lib/nutrition/search.ts`).
+  Steps are edited as one step per line (reorder by moving lines) rather than
+  drag handles; ingredient rows have up/down buttons.
 
 Acceptance:
 - [ ] Servings stepper rescales amounts and nutrition correctly.
