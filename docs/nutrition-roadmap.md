@@ -475,15 +475,22 @@ Acceptance:
 
 S7a — notification open tracking:
 - Add `opened_at timestamptz null` to `push_deliveries`.
-- Service worker `notificationclick` posts `{eventKey}` to a new
-  `/api/notifications/opened` route, authenticated by the subscription
-  endpoint (hashed) as the existing subscription route does; rate-limited.
+- Service worker `notificationclick` posts `{eventKey, category, endpoint}` to a
+  new `/api/notifications/opened` route. Like `/api/offline/sync` (also called
+  from the service worker) it authenticates with the session cookie and a
+  same-origin check; the endpoint only selects which of the user's own
+  subscriptions the delivery belongs to (endpoints are stored unhashed, as the
+  existing subscription route does). Rate-limited. The push payload carries the
+  event key and category (ids only) so the worker can report the open.
 
 S7b — adaptive reminders:
 - For each user and category, look at the last 5 delivered reminders. If none
   was opened, mark the category "quiet": daily categories send every other day,
   and Today shows a small card: "You haven't opened the last 5 X reminders —
   Pause / Change time / Keep". Opening one reminder clears quiet mode.
+- A null `opened_at` is weak evidence: the service worker reports opens
+  best-effort, so a click while offline is never recorded. Only ever soften
+  frequency on it, and only after the full window of 5.
 - Never disable a category silently. Health (medication) reminders are exempt
   from frequency reduction; only the card is shown.
 

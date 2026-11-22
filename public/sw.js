@@ -1,4 +1,4 @@
-const SW_VERSION = "v5";
+const SW_VERSION = "v6";
 const CACHE_PREFIX = "rootine-";
 const SHELL_CACHE = `${CACHE_PREFIX}shell-${SW_VERSION}`;
 const ASSET_CACHE = `${CACHE_PREFIX}assets-${SW_VERSION}`;
@@ -286,13 +286,43 @@ self.addEventListener("push", (event) => {
       badge: "/pwa/icon-192",
       ...(tag ? { tag } : {}),
       renotify: message.renotify === true,
-      data: { url },
+      data: {
+        url,
+        event:
+          typeof message.event === "string" ? message.event.slice(0, 200) : null,
+        category: ["checkin", "health", "workout"].includes(message.category)
+          ? message.category
+          : null,
+      },
     }),
   );
 });
 
+// Tells the server a reminder was opened (S7a). Best effort: never blocks
+// navigation, and sends only the event key, category and this device's endpoint.
+async function reportNotificationOpened(data) {
+  if (!data?.event || !data?.category) return;
+  try {
+    const subscription = await self.registration.pushManager.getSubscription();
+    if (!subscription) return;
+    await fetch("/api/notifications/opened", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventKey: data.event,
+        category: data.category,
+        endpoint: subscription.endpoint,
+      }),
+    });
+  } catch {
+    /* Offline or signed out: open tracking is optional. */
+  }
+}
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+  event.waitUntil(reportNotificationOpened(event.notification.data));
   const requested = event.notification.data?.url;
   const targetUrl = ["/dashboard", "/checkin", "/health", "/workouts"].includes(
     requested,

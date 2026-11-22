@@ -27,6 +27,7 @@ The bootstrap is **not** a migration to apply retroactively to the existing prod
 | 20260919080029 | fix_daily_progress_conflict_target | 20260919080029_fix_daily_progress_conflict_target.sql |
 | 20261121202409 | nutrition_catalog_schema | 20261121202409_nutrition_catalog_schema.sql |
 | 20261121202753 | structured_workouts | 20261121202753_structured_workouts.sql |
+| 20261121202801 | push_delivery_opened_at | 20261121202801_push_delivery_opened_at.sql |
 | 20261121204046 | seed_food_catalog_foods_ingredients | 20261121204046_seed_food_catalog_foods_ingredients.sql |
 | 20261121204436 | seed_food_catalog_foods_iran | 20261121204436_seed_food_catalog_foods_iran.sql |
 | 20261121204704 | seed_food_catalog_foods_global | 20261121204704_seed_food_catalog_foods_global.sql |

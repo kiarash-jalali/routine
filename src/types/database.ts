@@ -460,6 +460,7 @@ export type Database = {
           category: string
           delivered_at: string | null
           event_key: string
+          opened_at: string | null
           subscription_id: string
         }
         Insert: {
@@ -468,6 +469,7 @@ export type Database = {
           category: string
           delivered_at?: string | null
           event_key: string
+          opened_at?: string | null
           subscription_id: string
         }
         Update: {
@@ -476,6 +478,7 @@ export type Database = {
           category?: string
           delivered_at?: string | null
           event_key?: string
+          opened_at?: string | null
           subscription_id?: string
         }
         Relationships: [

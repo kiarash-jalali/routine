@@ -60,6 +60,7 @@ export async function sendReminderPush(
   eventKey: string,
   label?: string | null,
   notificationTagKey?: string | null,
+  category?: ReminderCategory,
 ) {
   if (!isValidPushEndpoint(target.endpoint)) return 400;
 
@@ -86,6 +87,9 @@ export async function sendReminderPush(
         renotify: kind === "health",
         lang: language,
         dir: language === "fa" ? "rtl" : "ltr",
+        // Ids only, for open tracking (S7a); never names or health data.
+        event: eventKey,
+        ...(category ? { category } : {}),
       }),
       {
         TTL: 300,
