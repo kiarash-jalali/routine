@@ -54,16 +54,34 @@ export function WorkoutsClient({
   const [completion, setCompletion] = useState<WorkoutSession | null>(null);
   const [exerciseEditor, setExerciseEditor] = useState<WorkoutPlan | null>(null);
   const [setLogger, setSetLogger] = useState<WorkoutSession | null>(null);
-  const exercisesFor = (planId: string | null) =>
-    planId ? (data?.exercises ?? []).filter((exercise) => exercise.plan_id === planId) : [];
-  const loggerPlanId = setLogger?.workout_id ?? null;
   const allExercises = data?.exercises;
+  // Active exercises, for the editor.
+  const exercisesFor = (planId: string | null) =>
+    planId
+      ? (allExercises ?? []).filter(
+          (exercise) => exercise.plan_id === planId && !exercise.archived_at,
+        )
+      : [];
+  // Exercises a session can show: active ones plus those archived after it was
+  // scheduled, so sets logged before an exercise was removed stay visible.
+  const sessionExercises = (session: WorkoutSession | null) =>
+    session?.workout_id
+      ? (allExercises ?? []).filter(
+          (exercise) =>
+            exercise.plan_id === session.workout_id &&
+            (!exercise.archived_at || Date.parse(exercise.archived_at) > Date.parse(session.scheduled_at)),
+        )
+      : [];
   const loggerExercises = useMemo(
     () =>
-      loggerPlanId
-        ? (allExercises ?? []).filter((exercise) => exercise.plan_id === loggerPlanId)
+      setLogger?.workout_id
+        ? (allExercises ?? []).filter(
+            (exercise) =>
+              exercise.plan_id === setLogger.workout_id &&
+              (!exercise.archived_at || Date.parse(exercise.archived_at) > Date.parse(setLogger.scheduled_at)),
+          )
         : [],
-    [allExercises, loggerPlanId],
+    [allExercises, setLogger],
   );
   const [duration, setDuration] = useState(30);
   const completionDurationInvalid =
@@ -140,7 +158,7 @@ export function WorkoutsClient({
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                    {exercisesFor(session.workout_id).length > 0 && (
+                    {sessionExercises(session).length > 0 && (
                       <Button
                         disabled={busy}
                         aria-label={`${t("workout.structured.logSets")}: ${session.name}`}
@@ -393,12 +411,7 @@ export function WorkoutsClient({
             onCancel={() => setExerciseEditor(null)}
             onSave={async (rows) => {
               await act(async () => {
-                await savePlanExercises(
-                  userId,
-                  exerciseEditor.id,
-                  exercisesFor(exerciseEditor.id),
-                  rows,
-                );
+                await savePlanExercises(exerciseEditor.id, rows);
                 setExerciseEditor(null);
               });
             }}
