@@ -1,7 +1,7 @@
 {
  "version": 1,
  "generated": "2026-11-21",
- "notes": "Starter recipes (Persian). steps_en/tip_en are null: translate before showing in English. per_portion_incl_side is per 1 serving plus suggested_side.",
+ "notes": "Starter recipes (Persian, with English translations of steps and tips). per_portion_incl_side is per 1 serving plus suggested_side.",
  "recipes": [
   {
    "slug": "starter-b01",
@@ -68,9 +68,14 @@
     "سبزی را بشویید و با گوجه و خیار کنار نان بچینید.",
     "چای را بدون قند یا با یک خرما میل کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Weigh the bread or cut off the stated amount.",
+    "Cut the cheese to about the size of a matchbox.",
+    "Wash the herbs and arrange them with the tomato and cucumber next to the bread.",
+    "Have your tea without sugar, or with one date."
+   ],
    "tip_fa": "پنیر کم‌چرب و کم‌نمک بخرید. گردو را بیشتر از ۲ مغز نکنید؛ کالری بالایی دارد.",
-   "tip_en": null,
+   "tip_en": "Buy low-fat, low-salt cheese. Keep walnuts to 2 halves at most; they are high in calories.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 404,
@@ -135,7 +140,8 @@
      "name_fa": "نمک، فلفل، زردچوبه",
      "grams": 0,
      "amount_fa": "به مقدار کم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Salt, pepper, turmeric"
     }
    ],
    "steps_fa": [
@@ -144,9 +150,14 @@
     "ادویه را بزنید، تخم‌مرغ‌ها را بشکنید و هم بزنید تا ببندد.",
     "با نان و سبزی سرو کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Finely chop the onion and sauté it in a non-stick pan with the oil for 2 minutes.",
+    "Peel and chop the tomatoes, add them and cook until most of the liquid is gone (about 8 minutes).",
+    "Add the spices, crack in the eggs and stir until set.",
+    "Serve with bread and herbs."
+   ],
    "tip_fa": "با تابه نچسب، یک قاشق چای‌خوری روغن کافی است.",
-   "tip_en": null,
+   "tip_en": "In a non-stick pan, one teaspoon of oil is enough.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 391,
@@ -203,7 +214,8 @@
      "name_fa": "دارچین",
      "grams": 0,
      "amount_fa": "یک قاشق چای‌خوری",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Cinnamon"
     }
    ],
    "steps_fa": [
@@ -212,9 +224,14 @@
     "سیب و دارچین را اضافه کنید و ۱ دقیقه دیگر بپزید.",
     "گردوی خرد شده را روی آن بریزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Put the oats and milk in a small pot over low heat.",
+    "Stir constantly for 5 minutes until thick.",
+    "Add the apple and cinnamon and cook for 1 more minute.",
+    "Sprinkle the chopped walnuts on top."
+   ],
    "tip_fa": "شکر یا عسل اضافه نکنید؛ شیرینی سیب کافی است.",
-   "tip_en": null,
+   "tip_en": "Don't add sugar or honey; the apple is sweet enough.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 427,
@@ -287,9 +304,13 @@
     "تخم‌مرغ‌ها را بشکنید، درِ تابه را بگذارید تا روی آن ببندد.",
     "با نان، گوجه، خیار و سبزی سرو کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Heat a non-stick pan with a little oil.",
+    "Crack in the eggs and cover the pan so the tops set.",
+    "Serve with bread, tomato, cucumber and herbs."
+   ],
    "tip_fa": "زرده را می‌توان کامل پخت؛ تفاوتی در کالری ندارد.",
-   "tip_en": null,
+   "tip_en": "You can cook the yolk through; it makes no difference to the calories.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 395,
@@ -354,9 +375,13 @@
     "جو دوسر (خام یا کمی تفت‌داده در تابه خشک) را روی آن بریزید.",
     "انار، گردو و عسل را اضافه کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Put the yogurt in a bowl.",
+    "Add the oats on top (raw, or lightly toasted in a dry pan).",
+    "Add the pomegranate, walnuts and honey."
+   ],
    "tip_fa": "در فصل‌های دیگر به جای انار سیب یا توت‌فرنگی بگذارید.",
-   "tip_en": null,
+   "tip_en": "Out of season, use apple or strawberries instead of pomegranate.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 363,
@@ -414,7 +439,8 @@
      "name_fa": "زردچوبه، نمک کم، گلپر، آبلیمو",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Turmeric, a little salt, golpar, lemon juice"
     }
    ],
    "steps_fa": [
@@ -424,9 +450,15 @@
     "با حرارت ملایم ۴۰ دقیقه بپزید تا لعاب بیندازد.",
     "در پایان نمک کم و گلپر بزنید. با آبلیمو سرو کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Soak the lentils overnight and drain them in the morning.",
+    "Chop the onion, fry it in the oil until golden and add the turmeric.",
+    "Add the lentils, diced potato and 4 cups of water.",
+    "Simmer on low heat for 40 minutes until thick.",
+    "Finish with a little salt and golpar. Serve with lemon juice."
+   ],
    "tip_fa": "حبوبات: فقط اگر پزشک اجازه داد. یک سهم = یک کاسه (یک چهارم قابلمه).",
-   "tip_en": null,
+   "tip_en": "Legumes: only if your doctor allows them. One portion = one bowl (a quarter of the pot).",
    "suggested_side": {
     "food_slug": "ing-sangak",
     "grams": 50,
@@ -501,7 +533,8 @@
      "name_fa": "دارچین",
      "grams": 0,
      "amount_fa": "کمی",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Cinnamon"
     }
    ],
    "steps_fa": [
@@ -510,9 +543,14 @@
     "تابه نچسب را با کمی روغن چرب کنید و برای هر پنکیک ۲ قاشق مایه بریزید.",
     "هر طرف ۲ دقیقه بپزید. با یک قاشق چای‌خوری عسل سرو کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Grind the oats to a powder in a blender.",
+    "Add the banana, egg, milk and cinnamon and blend.",
+    "Grease a non-stick pan with a little oil and pour 2 spoonfuls of batter per pancake.",
+    "Cook for 2 minutes on each side. Serve with one teaspoon of honey."
+   ],
    "tip_fa": "برای روزهای تعطیل؛ حدود ۴ پنکیک کوچک می‌شود.",
-   "tip_en": null,
+   "tip_en": "A weekend breakfast; makes about 4 small pancakes.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 368,
@@ -577,7 +615,8 @@
      "name_fa": "زعفران دم‌کرده",
      "grams": 0,
      "amount_fa": "2 قاشق غذاخوری",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Brewed saffron"
     },
     {
      "position": 6,
@@ -585,18 +624,24 @@
      "name_fa": "نمک، فلفل، زردچوبه",
      "grams": 0,
      "amount_fa": "به مقدار کم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Salt, pepper, turmeric"
     }
    ],
    "steps_fa": [
     "مرغ را با پیاز حلقه شده، زردچوبه، نمک کم و نصف لیوان آب در قابلمه بگذارید.",
     "با حرارت ملایم ۴۰ دقیقه بپزید. رب و نصف زعفران را اضافه کنید و ۱۰ دقیقه دیگر بپزید تا سس غلیظ شود.",
     "زرشک را بشویید و با یک قاشق چای‌خوری روغن و کمی زعفران فقط ۳۰ ثانیه تفت دهید (زود می‌سوزد).",
-    "برنج را جدا بپزید. سهم کیارش را وزن کنید، زرشک را رویش بریزید و مرغ را کنارش بگذارید."
+    "برنج را جدا بپزید. سهم خود را وزن کنید، زرشک را رویش بریزید و مرغ را کنارش بگذارید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Put the chicken in a pot with the sliced onion, turmeric, a little salt and half a cup of water.",
+    "Simmer on low heat for 40 minutes. Add the tomato paste and half the saffron and cook 10 more minutes until the sauce thickens.",
+    "Wash the barberries and sauté them with one teaspoon of oil and a little saffron for just 30 seconds (they burn quickly).",
+    "Cook the rice separately. Weigh your portion, top it with the barberries and put the chicken beside it."
+   ],
    "tip_fa": "شکر به زرشک اضافه نکنید. پوست مرغ را حتماً جدا کنید.",
-   "tip_en": null,
+   "tip_en": "Don't add sugar to the barberries. Always remove the chicken skin.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 180,
@@ -667,7 +712,8 @@
      "name_fa": "لیمو عمانی",
      "grams": 0,
      "amount_fa": "4 عدد",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Dried lime"
     },
     {
      "position": 6,
@@ -675,7 +721,8 @@
      "name_fa": "نمک، زردچوبه",
      "grams": 0,
      "amount_fa": "به مقدار کم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Salt, turmeric"
     }
    ],
    "steps_fa": [
@@ -685,9 +732,15 @@
     "سبزی را با یک قاشق روغن در تابه نچسب سرخ کنید (کم روغن، با حرارت ملایم و صبر).",
     "سبزی و لیموعمانی سوراخ‌شده را اضافه کنید و ۱ ساعت دیگر بپزید. نمک را آخر بزنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Soak the beans overnight, changing the water a few times.",
+    "Sauté the onion in one spoon of oil, then add the meat and turmeric until the meat changes colour.",
+    "Add the beans and 4 cups of water and simmer for 1 hour.",
+    "Fry the herbs in one spoon of oil in a non-stick pan (little oil, low heat and patience).",
+    "Add the herbs and the pierced dried limes and cook 1 more hour. Add salt at the end."
+   ],
    "tip_fa": "سبزی را می‌شود یکجا سرخ و فریز کرد. روغن سطح خورش را پیش از سرو با قاشق بگیرید.",
-   "tip_en": null,
+   "tip_en": "You can fry a big batch of herbs and freeze it. Skim the oil off the top of the stew before serving.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 180,
@@ -774,7 +827,8 @@
      "name_fa": "لیمو عمانی",
      "grams": 0,
      "amount_fa": "3 عدد",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Dried lime"
     },
     {
      "position": 8,
@@ -782,7 +836,8 @@
      "name_fa": "نمک، زردچوبه، دارچین",
      "grams": 0,
      "amount_fa": "به مقدار کم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Salt, turmeric, cinnamon"
     }
    ],
    "steps_fa": [
@@ -792,9 +847,15 @@
     "۱ ساعت و نیم با حرارت ملایم بپزید تا لپه نرم شود ولی له نشود.",
     "سیب‌زمینی را خلالی کنید، با یک قاشق چای‌خوری روغن و نمک کم هم بزنید و در فر ۲۰۰ درجه ۲۵ دقیقه بپزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Soak the split peas for 2 hours.",
+    "Sauté the onion in the oil, then add the meat and turmeric.",
+    "Add the tomato paste and fry for 2 minutes. Add the split peas, 3 cups of water and the dried limes.",
+    "Simmer for 1½ hours until the split peas are soft but not mushy.",
+    "Cut the potato into thin sticks, toss with one teaspoon of oil and a little salt, and bake at 200 °C for 25 minutes."
+   ],
    "tip_fa": "سیب‌زمینی سرخ‌کرده در روغن زیاد کالری خورش را دو برابر می‌کند؛ فر یا سرخ‌کن بدون روغن بهتر است.",
-   "tip_en": null,
+   "tip_en": "Deep-fried potatoes double the calories of the stew; the oven or an air fryer is better.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 180,
@@ -871,7 +932,8 @@
      "name_fa": "نمک، زردچوبه، زعفران",
      "grams": 0,
      "amount_fa": "به مقدار کم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Salt, turmeric, saffron"
     }
    ],
    "steps_fa": [
@@ -880,9 +942,14 @@
     "کرفس را با بقیه روغن ۵ دقیقه تفت دهید، سپس جعفری و نعناع را اضافه کنید و ۵ دقیقه دیگر تفت دهید.",
     "کرفس و سبزی را به مرغ اضافه کنید و ۴۵ دقیقه بپزید. آبلیمو، زعفران و نمک را در ۱۰ دقیقه آخر بزنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Sauté the onion in half the oil, then add the chicken and turmeric.",
+    "Add 2 cups of water and cook for 30 minutes.",
+    "Sauté the celery in the rest of the oil for 5 minutes, then add the parsley and mint and sauté 5 more minutes.",
+    "Add the celery and herbs to the chicken and cook for 45 minutes. Add the lemon juice, saffron and salt in the last 10 minutes."
+   ],
    "tip_fa": "به جای ران می‌توان از سینه مرغ استفاده کرد؛ زمان پخت را ۱۵ دقیقه کم کنید.",
-   "tip_en": null,
+   "tip_en": "You can use chicken breast instead of thigh; cut the cooking time by 15 minutes.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 180,
@@ -951,7 +1018,8 @@
      "name_fa": "نمک، زردچوبه، آبغوره یا آبلیمو",
      "grams": 0,
      "amount_fa": "به مقدار کم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Salt, turmeric, verjuice or lemon juice"
     }
    ],
    "steps_fa": [
@@ -960,9 +1028,14 @@
     "اسفناج خرد شده را در تابه خشک (بدون روغن) بریزید تا آبش کشیده شود.",
     "اسفناج و آلوها را به خورش اضافه کنید و ۳۰ دقیقه دیگر بپزید. ترشی و نمک را آخر تنظیم کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Sauté the onion in the oil, then add the chicken and turmeric.",
+    "Add 2 cups of water and cook for 30 minutes.",
+    "Put the chopped spinach in a dry pan (no oil) until its water cooks off.",
+    "Add the spinach and prunes to the stew and cook 30 more minutes. Adjust sourness and salt at the end."
+   ],
    "tip_fa": "اسفناج یخ‌زده هم خوب است.",
-   "tip_en": null,
+   "tip_en": "Frozen spinach works well too.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 180,
@@ -1039,7 +1112,8 @@
      "name_fa": "نمک، زردچوبه، غوره یا آبغوره",
      "grams": 0,
      "amount_fa": "به مقدار کم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Salt, turmeric, sour grapes or verjuice"
     }
    ],
    "steps_fa": [
@@ -1048,9 +1122,14 @@
     "پیاز را با بقیه روغن تفت دهید، مرغ، زردچوبه و رب را اضافه کنید، سپس ۲ لیوان آب بریزید و ۳۰ دقیقه بپزید.",
     "بادمجان و گوجه‌های حلقه شده را روی مرغ بچینید، آبغوره بریزید و ۳۰ دقیقه با حرارت ملایم بپزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Peel the eggplants, slice them lengthwise, salt lightly and leave for 20 minutes to draw out the bitterness.",
+    "Pat the eggplants dry, brush them with one tablespoon of oil and bake at 200 °C for 25 minutes.",
+    "Sauté the onion in the rest of the oil, add the chicken, turmeric and tomato paste, then pour in 2 cups of water and cook for 30 minutes.",
+    "Arrange the eggplant and tomato slices over the chicken, add the verjuice and simmer for 30 minutes."
+   ],
    "tip_fa": "بادمجان سرخ‌کرده تا ۴ برابر روغن جذب می‌کند؛ فر را جایگزین کنید.",
-   "tip_en": null,
+   "tip_en": "Fried eggplant soaks up to 4 times more oil; use the oven instead.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 180,
@@ -1119,7 +1198,8 @@
      "name_fa": "نمک، دارچین، زعفران",
      "grams": 0,
      "amount_fa": "به مقدار کم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Salt, cinnamon, saffron"
     }
    ],
    "steps_fa": [
@@ -1128,9 +1208,14 @@
     "مرغ و رب انار را به گردو اضافه کنید و ۴۵ دقیقه دیگر بپزید.",
     "مزه را با کمی دارچین و نمک تنظیم کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Toast the walnuts in a dry pan for 3 minutes, put them in a pot with 3 cups of water and cook for 1 hour until they release their oil.",
+    "Sauté the onion in the oil and add the chicken pieces until they change colour.",
+    "Add the chicken and pomegranate molasses to the walnuts and cook 45 more minutes.",
+    "Adjust the taste with a little cinnamon and salt."
+   ],
    "tip_fa": "پرکالری‌ترین غذای این کتاب است؛ حداکثر ماهی دو بار و با برنج کمتر.",
-   "tip_en": null,
+   "tip_en": "The highest-calorie dish in this collection; twice a month at most, with less rice.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 150,
@@ -1208,7 +1293,8 @@
      "name_fa": "ادویه پلویی، دارچین، زعفران، نمک کم",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Rice spice mix, cinnamon, saffron, a little salt"
     }
    ],
    "steps_fa": [
@@ -1217,9 +1303,14 @@
     "نصف لیوان آب بریزید و ۱۵ دقیقه بپزید تا لوبیا نیم‌پز شود.",
     "برنج را آبکش کنید، لایه‌لایه با مواد در قابلمه بریزید و ۴۵ دقیقه با حرارت ملایم دم کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Sauté the onion in the oil and add the chicken until it changes colour.",
+    "Add the green beans and sauté for 5 minutes. Add the tomato paste and spices.",
+    "Pour in half a cup of water and cook for 15 minutes until the beans are half done.",
+    "Drain the parboiled rice, layer it with the mixture in the pot and steam on low heat for 45 minutes."
+   ],
    "tip_fa": "یک سهم = یک چهارم قابلمه (حدود ۳۵۰ گرم). ته‌دیگ را حذف کنید یا با نان لواش نازک درست کنید.",
-   "tip_en": null,
+   "tip_en": "One portion = a quarter of the pot (about 350 g). Skip the tahdig, or make it with thin lavash bread.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 417,
@@ -1287,7 +1378,8 @@
      "name_fa": "زعفران، دارچین، نمک کم",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Saffron, cinnamon, a little salt"
     }
    ],
    "steps_fa": [
@@ -1297,9 +1389,15 @@
     "کشمش را ۳۰ ثانیه با پیاز تفت دهید.",
     "برنج و عدس را دم کنید و پیاز داغ و کشمش را رویش بریزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Cook the lentils for 20 minutes until half done.",
+    "Parboil the rice and drain it together with the lentils.",
+    "Slice the onion thinly and fry it until golden in one spoon of oil over low heat.",
+    "Sauté the raisins with the onion for 30 seconds.",
+    "Steam the rice and lentils and top with the fried onion and raisins."
+   ],
    "tip_fa": "بدون گوشت است؛ برای روزهایی که پروتئین بیشتری خورده‌اید مناسب است. حبوبات فقط با اجازه پزشک.",
-   "tip_en": null,
+   "tip_en": "Meat-free; good for days when you have already had more protein. Legumes only with your doctor's approval.",
    "suggested_side": {
     "food_slug": "ing-yogurt-low",
     "grams": 150,
@@ -1377,7 +1475,8 @@
      "name_fa": "زردچوبه، زیره، نمک کم",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Turmeric, cumin, a little salt"
     }
    ],
    "steps_fa": [
@@ -1386,9 +1485,14 @@
     "بقیه پیاز را خرد کنید و با کلم خرد شده و بقیه روغن ۱۰ دقیقه تفت دهید. سبزی را اضافه کنید.",
     "برنج نیم‌پز را با کلم و قلقلی لایه‌لایه در قابلمه بریزید و ۴۵ دقیقه دم کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Knead the minced chicken with half the onion (grated and squeezed dry) and a little salt, and shape small meatballs.",
+    "Brown the meatballs in a non-stick pan with one teaspoon of oil.",
+    "Chop the rest of the onion and sauté it with the shredded cabbage and the rest of the oil for 10 minutes. Add the herbs.",
+    "Layer the parboiled rice with the cabbage and meatballs in the pot and steam for 45 minutes."
+   ],
    "tip_fa": "سبزی خشک هم می‌شود (یک چهارم مقدار).",
-   "tip_en": null,
+   "tip_en": "Dried herbs work too (use a quarter of the amount).",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 420,
@@ -1470,7 +1574,8 @@
      "name_fa": "زردچوبه، فلفل، نمک کم",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Turmeric, pepper, a little salt"
     }
    ],
    "steps_fa": [
@@ -1479,9 +1584,14 @@
     "برنج خیس‌خورده و ۲ لیوان آب را اضافه کنید.",
     "وقتی آب کشیده شد، درِ قابلمه را دم‌کنی بگذارید و ۴۰ دقیقه با حرارت ملایم بپزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Sauté the onion in the oil and add the diced chicken.",
+    "Add the potato, tomato paste and grated tomato and cook for 10 minutes.",
+    "Add the soaked rice and 2 cups of water.",
+    "When the water is absorbed, cover the pot with a steaming lid and cook on low heat for 40 minutes."
+   ],
    "tip_fa": "یک سهم = یک چهارم قابلمه. با سالاد شیرازی عالی است.",
-   "tip_en": null,
+   "tip_en": "One portion = a quarter of the pot. Great with Shirazi salad.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 462,
@@ -1555,7 +1665,8 @@
      "name_fa": "زعفران، دارچین، نمک کم",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Saffron, cinnamon, a little salt"
     }
    ],
    "steps_fa": [
@@ -1563,9 +1674,13 @@
     "به را بدون پوست قاچ کنید و با بقیه روغن ۵ دقیقه تفت دهید.",
     "به، آلو، زعفران و آبلیمو را به مرغ اضافه کنید و ۴۵ دقیقه بپزید تا به نرم و صورتی شود."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Sauté the onion in half the oil, add the chicken, pour in 2 cups of water and cook for 30 minutes.",
+    "Cut the quince into wedges without peeling and sauté in the rest of the oil for 5 minutes.",
+    "Add the quince, prunes, saffron and lemon juice to the chicken and cook for 45 minutes until the quince is soft and pink."
+   ],
    "tip_fa": "غذای فصل پاییز و زمستان. شکر اضافه نکنید.",
-   "tip_en": null,
+   "tip_en": "An autumn and winter dish. Don't add sugar.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 180,
@@ -1650,7 +1765,8 @@
      "name_fa": "زعفران دم‌کرده",
      "grams": 0,
      "amount_fa": "2 قاشق غذاخوری",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Brewed saffron"
     }
    ],
    "steps_fa": [
@@ -1659,9 +1775,14 @@
     "در فر ۲۲۰ درجه ۲۰ تا ۲۵ دقیقه یا روی منقل بپزید.",
     "گوجه و فلفل را کنارش کباب کنید."
    ],
-   "steps_en": null,
-   "tip_fa": "سهم کیارش ۹۰ گرم مرغ خام است (حدود ۵ تکه).",
-   "tip_en": null,
+   "steps_en": [
+    "Cube the chicken and marinate it in the fridge with grated onion, yogurt, lemon juice, oil, saffron and a little salt for at least 4 hours (overnight is better).",
+    "Thread onto skewers or spread on an oven tray.",
+    "Cook in the oven at 220 °C for 20–25 minutes, or over a grill.",
+    "Grill the tomatoes and peppers alongside."
+   ],
+   "tip_fa": "هر سهم ۹۰ گرم مرغ خام است (حدود ۵ تکه).",
+   "tip_en": "One portion is 90 g of raw chicken (about 5 pieces).",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 150,
@@ -1722,7 +1843,8 @@
      "name_fa": "زردچوبه، فلفل، نمک کم، سماق",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Turmeric, pepper, a little salt, sumac"
     }
    ],
    "steps_fa": [
@@ -1731,9 +1853,14 @@
     "درب را بگذارید و ۱۰ دقیقه با حرارت متوسط بپزید؛ آب اضافه را خالی کنید.",
     "برش بزنید، برگردانید و ۵ دقیقه دیگر بپزید. گوجه‌ها را در همان تابه بپزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Knead the meat, squeezed onion, turmeric and pepper for 10 minutes until sticky.",
+    "Spread it in a greased non-stick pan and score lines with the back of a spoon.",
+    "Cover and cook on medium heat for 10 minutes; pour off any extra liquid.",
+    "Cut into pieces, turn over and cook 5 more minutes. Cook the tomatoes in the same pan."
+   ],
    "tip_fa": "گوشت قرمز: حداکثر هفته‌ای دو بار.",
-   "tip_en": null,
+   "tip_en": "Red meat: twice a week at most.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 150,
@@ -1818,7 +1945,8 @@
      "name_fa": "نمک کم، فلفل، آبلیمو",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "A little salt, pepper, lemon juice"
     }
    ],
    "steps_fa": [
@@ -1827,9 +1955,14 @@
     "شکم ماهی را با مواد پر کنید و با خلال دندان ببندید.",
     "روی سینی فر با کاغذ روغنی بگذارید، روی ماهی بقیه روغن را با برس بزنید و در فر ۲۰۰ درجه ۲۵ دقیقه بپزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Wash the fish and season it inside and out with a little salt, pepper and lemon juice.",
+    "Sauté the onion in half the oil, add the herbs, barberries, walnuts and pomegranate molasses and sauté for 5 minutes.",
+    "Stuff the fish with the filling and close it with toothpicks.",
+    "Place it on a lined oven tray, brush with the rest of the oil and bake at 200 °C for 25 minutes."
+   ],
    "tip_fa": "ماهی: هفته‌ای یک بار کافی است. از کیلکا، ساردین و ماهی دودی پرهیز کنید.",
-   "tip_en": null,
+   "tip_en": "Fish once a week is enough. Avoid kilka, sardines and smoked fish.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 150,
@@ -1906,7 +2039,8 @@
      "name_fa": "زردچوبه، نمک کم، فلفل",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Turmeric, a little salt, pepper"
     }
    ],
    "steps_fa": [
@@ -1915,9 +2049,14 @@
     "قالب فر را با روغن چرب کنید، مایه را بریزید و روی آن کمی روغن بزنید.",
     "در فر ۱۸۰ درجه ۳۵ دقیقه بپزید. به ۴ قسمت برش بزنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Chop the herbs and dry them thoroughly.",
+    "Beat the eggs with the spices and flour, then add the herbs, walnuts and barberries.",
+    "Grease an oven dish with oil, pour in the mixture and brush a little oil on top.",
+    "Bake at 180 °C for 35 minutes. Cut into 4 pieces."
+   ],
    "tip_fa": "کوکو در فر نصف روغن تابه را می‌خواهد و یکدست‌تر می‌پزد. سرد هم خوشمزه است.",
-   "tip_en": null,
+   "tip_en": "Oven kuku needs half the oil of a pan and cooks more evenly. It is tasty cold too.",
    "suggested_side": {
     "food_slug": "ing-sangak",
     "grams": 70,
@@ -1979,7 +2118,8 @@
      "name_fa": "زردچوبه، زعفران، نمک کم، فلفل",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Turmeric, saffron, a little salt, pepper"
     }
    ],
    "steps_fa": [
@@ -1988,9 +2128,14 @@
     "در سینی فر چرب‌شده پهن کنید یا با دست کتلت‌های کوچک شکل دهید و روی کاغذ روغنی بچینید.",
     "در فر ۲۰۰ درجه ۳۰ دقیقه بپزید؛ وسط پخت برگردانید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Boil, peel and grate the potatoes.",
+    "Mix with the eggs, squeezed onion and spices.",
+    "Spread in a greased oven tray, or shape small patties by hand and arrange them on baking paper.",
+    "Bake at 200 °C for 30 minutes, turning halfway."
+   ],
    "tip_fa": "با سالاد شیرازی و خیارشور سرو کنید.",
-   "tip_en": null,
+   "tip_en": "Serve with Shirazi salad and pickles.",
    "suggested_side": {
     "food_slug": "ing-sangak",
     "grams": 60,
@@ -2059,7 +2204,8 @@
      "name_fa": "زردچوبه، نمک کم، فلفل",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Turmeric, a little salt, pepper"
     }
    ],
    "steps_fa": [
@@ -2068,9 +2214,14 @@
     "گوجه رنده‌شده را اضافه کنید و ۱۰ دقیقه بپزید تا آبش کشیده شود.",
     "تخم‌مرغ‌ها را اضافه کنید و هم بزنید تا ببندد."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Roast the eggplants over a gas flame or in the oven, peel and chop finely.",
+    "Sauté the garlic in the oil for 30 seconds, add the turmeric and eggplant and sauté for 5 minutes.",
+    "Add the grated tomato and cook for 10 minutes until the liquid is gone.",
+    "Add the eggs and stir until set."
+   ],
    "tip_fa": "شام سبک و پرحجم؛ برای شب‌ها عالی است.",
-   "tip_en": null,
+   "tip_en": "A light, filling dinner; great for evenings.",
    "suggested_side": {
     "food_slug": "ing-sangak",
     "grams": 80,
@@ -2147,7 +2298,8 @@
      "name_fa": "نعناع خشک، زردچوبه",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Dried mint, turmeric"
     }
    ],
    "steps_fa": [
@@ -2156,9 +2308,14 @@
     "بادمجان را له کنید، با نصف پیاز داغ و نصف لیوان آب ۱۰ دقیقه بپزید.",
     "کشک را اضافه کنید و ۵ دقیقه هم بزنید. با بقیه پیاز داغ، نعناع داغ و گردو تزئین کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Peel the eggplants, brush with a little oil and bake at 200 °C for 30 minutes.",
+    "Fry the onion in one spoon of oil, adding the garlic and turmeric at the end.",
+    "Mash the eggplant and cook it with half the fried onion and half a cup of water for 10 minutes.",
+    "Add the kashk and stir for 5 minutes. Garnish with the rest of the fried onion, mint oil and walnuts."
+   ],
    "tip_fa": "کشک شور است؛ به این غذا نمک اضافه نکنید.",
-   "tip_en": null,
+   "tip_en": "Kashk is salty; don't add salt to this dish.",
    "suggested_side": {
     "food_slug": "ing-sangak",
     "grams": 80,
@@ -2243,7 +2400,8 @@
      "name_fa": "آبلیمو، زردچوبه، نمک کم",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Lemon juice, turmeric, a little salt"
     }
    ],
    "steps_fa": [
@@ -2253,9 +2411,15 @@
     "سر فلفل‌ها را ببرید، تخمه‌ها را خالی کنید و پر کنید.",
     "در قابلمه بچینید، بقیه رب را با یک لیوان آب و آبلیمو مخلوط کنید و رویشان بریزید. ۴۵ دقیقه با حرارت ملایم بپزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Parboil the rice for 10 minutes.",
+    "Sauté the onion in the oil, add the minced chicken and turmeric until it changes colour.",
+    "Add the rice, herbs and half the tomato paste.",
+    "Cut the tops off the peppers, remove the seeds and fill them.",
+    "Stand them in a pot, mix the rest of the paste with a cup of water and the lemon juice, and pour over. Simmer for 45 minutes."
+   ],
    "tip_fa": "یک سهم = یک فلفل. اگر سیر نشدید، نصف فلفل دیگر هم اشکالی ندارد.",
-   "tip_en": null,
+   "tip_en": "One portion = one pepper. If you're still hungry, another half pepper is fine.",
    "suggested_side": {
     "food_slug": "ing-yogurt-low",
     "grams": 100,
@@ -2332,7 +2496,8 @@
      "name_fa": "زعفران دم‌کرده",
      "grams": 0,
      "amount_fa": "3 قاشق غذاخوری",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Brewed saffron"
     }
    ],
    "steps_fa": [
@@ -2341,9 +2506,14 @@
     "ته قابلمه نچسب را با روغن چرب کنید، نصف برنج ماستی را بریزید، مرغ را بچینید، بقیه برنج را رویش بریزید.",
     "۱ ساعت با حرارت ملایم یا ۱ ساعت و نیم در فر ۱۸۰ درجه بپزید. زرشک را رویش بریزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Parboil and drain the rice.",
+    "Beat the yogurt, egg, saffron and a little salt, and mix with half the rice.",
+    "Grease the bottom of a non-stick pot, add half the yogurt rice, lay the chicken on it and cover with the rest of the rice.",
+    "Cook on low heat for 1 hour, or in the oven at 180 °C for 1½ hours. Sprinkle the barberries on top."
+   ],
    "tip_fa": "یک سهم = یک چهارم قالب.",
-   "tip_en": null,
+   "tip_en": "One portion = a quarter of the dish.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 446,
@@ -2417,7 +2587,8 @@
      "name_fa": "زردچوبه، نمک کم، فلفل",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Turmeric, a little salt, pepper"
     }
    ],
    "steps_fa": [
@@ -2426,9 +2597,14 @@
     "روی سینی فر با کاغذ روغنی بچینید و با برس روغن بزنید.",
     "در فر ۲۰۰ درجه ۲۵ دقیقه بپزید؛ وسط پخت برگردانید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Knead all the ingredients except the breadcrumbs and oil.",
+    "Shape oval patties (about 12) and coat them lightly in breadcrumbs.",
+    "Arrange on a lined oven tray and brush with oil.",
+    "Bake at 200 °C for 25 minutes, turning halfway."
+   ],
    "tip_fa": "یک سهم = ۳ کتلت. سرد هم برای ناهار دانشگاه خوب است.",
-   "tip_en": null,
+   "tip_en": "One portion = 3 patties. Good cold for a packed lunch too.",
    "suggested_side": {
     "food_slug": "ing-lavash",
     "grams": 50,
@@ -2505,7 +2681,8 @@
      "name_fa": "زردچوبه، نمک کم، فلفل",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Turmeric, a little salt, pepper"
     }
    ],
    "steps_fa": [
@@ -2514,9 +2691,14 @@
     "گوجه‌های مکعبی را اضافه کنید و ۱۰ دقیقه بپزید.",
     "بادمجان را اضافه کنید و ۲۰ دقیقه با حرارت ملایم بپزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Cube the eggplants, brush with oil and bake at 200 °C for 20 minutes.",
+    "Sauté the onion in a little oil, then add the garlic, turmeric and tomato paste.",
+    "Add the diced tomatoes and cook for 10 minutes.",
+    "Add the eggplant and simmer for 20 minutes."
+   ],
    "tip_fa": "بدون گوشت؛ برای روزهای کم‌پروتئین. با کته یا نان سرو کنید.",
-   "tip_en": null,
+   "tip_en": "Meat-free; for low-protein days. Serve with kateh rice or bread.",
    "suggested_side": {
     "food_slug": "ing-chelo",
     "grams": 150,
@@ -2610,7 +2792,8 @@
      "name_fa": "آبلیمو، پاپریکا، آویشن، نمک کم",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Lemon juice, paprika, thyme, a little salt"
     }
    ],
    "steps_fa": [
@@ -2619,9 +2802,14 @@
     "در سینی فر پهن کنید (روی هم نباشند).",
     "در فر ۲۰۰ درجه ۴۰ دقیقه بپزید؛ یک بار هم بزنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Cut all the vegetables into large pieces.",
+    "Mix the chicken and vegetables with the oil, garlic, lemon juice and spices in a large bowl.",
+    "Spread on an oven tray (not on top of each other).",
+    "Bake at 200 °C for 40 minutes, stirring once."
+   ],
    "tip_fa": "یک غذای کامل در یک سینی؛ برای روزهای شلوغ عالی است.",
-   "tip_en": null,
+   "tip_en": "A complete meal on one tray; great for busy days.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 306,
@@ -2710,7 +2898,8 @@
      "name_fa": "آبلیمو، خردل، نمک کم، فلفل",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Lemon juice, mustard, a little salt, pepper"
     }
    ],
    "steps_fa": [
@@ -2719,9 +2908,14 @@
     "ماست را با روغن زیتون، آبلیمو، یک قاشق چای‌خوری خردل، نمک و فلفل هم بزنید.",
     "سس را با مواد مخلوط کنید و ۱ ساعت در یخچال بگذارید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Boil the chicken, potatoes, eggs and carrot.",
+    "Grate or finely chop everything, then add the pickles and peas.",
+    "Mix the yogurt with the olive oil, lemon juice, one teaspoon of mustard, salt and pepper.",
+    "Combine the dressing with the rest and chill for 1 hour."
+   ],
    "tip_fa": "سس ماستی به جای مایونز کالری را بیش از نصف کم می‌کند. یک سهم = یک چهارم ظرف، با کاهو یا یک نان لواش.",
-   "tip_en": null,
+   "tip_en": "A yogurt dressing instead of mayonnaise cuts the calories by more than half. One portion = a quarter of the bowl, with lettuce or one lavash bread.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 317,
@@ -2802,7 +2996,8 @@
      "name_fa": "آبلیمو، نمک کم، فلفل",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Lemon juice, a little salt, pepper"
     }
    ],
    "steps_fa": [
@@ -2812,9 +3007,15 @@
     "مرغ را ریش‌ریش کنید و برگردانید، هویج رنده را اضافه کنید و ۲۰ دقیقه بپزید.",
     "جعفری و آبلیمو را آخر اضافه کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Soak the barley for 2 hours.",
+    "Sauté the onion in the oil, then add the chicken and tomato paste.",
+    "Add the barley and 6 cups of water and cook for 1 hour.",
+    "Shred the chicken and return it, add the grated carrot and cook for 20 minutes.",
+    "Add the parsley and lemon juice at the end."
+   ],
    "tip_fa": "یک سهم = یک کاسه بزرگ. سوپ قبل از غذا اشتها را کم می‌کند.",
-   "tip_en": null,
+   "tip_en": "One portion = one large bowl. Soup before a meal reduces appetite.",
    "suggested_side": {
     "food_slug": "ing-sangak",
     "grams": 40,
@@ -2916,7 +3117,8 @@
      "name_fa": "نعناع خشک، زردچوبه",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Dried mint, turmeric"
     }
    ],
    "steps_fa": [
@@ -2926,9 +3128,15 @@
     "پیاز داغ و نعناع داغ را با کمترین روغن درست کنید.",
     "با یک قاشق کشک در هر کاسه سرو کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Soak the legumes overnight and cook them in 8 cups of water for 1 hour.",
+    "Add the chopped herbs and spinach and cook for 45 minutes.",
+    "Add the noodles and stir for 15 minutes.",
+    "Make the fried onion and mint oil with as little oil as possible.",
+    "Serve each bowl with one spoon of kashk."
+   ],
    "tip_fa": "حبوبات فقط با اجازه پزشک. کشک شور است؛ به آش نمک نزنید.",
-   "tip_en": null,
+   "tip_en": "Legumes only with your doctor's approval. Kashk is salty; don't add salt to the ash.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 356,
@@ -3018,7 +3226,8 @@
      "name_fa": "جعفری، آبلیمو، نمک کم، فلفل",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Parsley, lemon juice, a little salt, pepper"
     }
    ],
    "steps_fa": [
@@ -3027,9 +3236,14 @@
     "۶ لیوان آب اضافه کنید و ۴۵ دقیقه بپزید.",
     "جعفری و آبلیمو را آخر اضافه کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Sauté the onion in the oil and add the diced chicken.",
+    "Add all the diced vegetables and the grated tomato.",
+    "Add 6 cups of water and cook for 45 minutes.",
+    "Add the parsley and lemon juice at the end."
+   ],
    "tip_fa": "کم‌کالری‌ترین غذای کتاب؛ برای شب‌های گرسنگی یا قبل از غذای اصلی.",
-   "tip_en": null,
+   "tip_en": "The lowest-calorie dish in the collection; for hungry evenings or before a main meal.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 158,
@@ -3094,7 +3308,8 @@
      "name_fa": "نعناع خشک، زردچوبه، نمک کم",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Dried mint, turmeric, a little salt"
     }
    ],
    "steps_fa": [
@@ -3103,9 +3318,14 @@
     "سیب‌زمینی مکعبی و ۵ لیوان آب را اضافه کنید و ۳۰ دقیقه بپزید.",
     "تخم‌مرغ‌ها را یکی‌یکی داخل آش بشکنید و بدون هم زدن بگذارید ببندد."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Slice the onion thinly and fry it in the oil over low heat until golden.",
+    "Add the flour, turmeric and mint and fry for 1 minute.",
+    "Add the diced potato and 5 cups of water and cook for 30 minutes.",
+    "Crack the eggs into the soup one at a time and let them set without stirring."
+   ],
    "tip_fa": "غذای سنتی و ارزان برای شب‌های سرد.",
-   "tip_en": null,
+   "tip_en": "A traditional, inexpensive dish for cold nights.",
    "suggested_side": {
     "food_slug": "ing-sangak",
     "grams": 60,
@@ -3174,7 +3394,8 @@
      "name_fa": "نعناع خشک، نمک کم",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Dried mint, a little salt"
     }
    ],
    "steps_fa": [
@@ -3182,9 +3403,13 @@
     "آبلیمو، روغن زیتون، نعناع و کمی نمک را اضافه کنید.",
     "قبل از سرو هم بزنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Finely dice the cucumber, tomato and onion.",
+    "Add the lemon juice, olive oil, mint and a little salt.",
+    "Toss just before serving."
+   ],
    "tip_fa": "کنار هر ناهار و شام؛ حجم می‌دهد و تقریباً کالری ندارد.",
-   "tip_en": null,
+   "tip_en": "Alongside any lunch or dinner; adds volume with almost no calories.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 67,
@@ -3241,7 +3466,8 @@
      "name_fa": "نعناع خشک، گل‌محمدی",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Dried mint, dried rose petals"
     }
    ],
    "steps_fa": [
@@ -3249,9 +3475,13 @@
     "با ماست، نعناع و گل‌محمدی مخلوط کنید.",
     "گردو و کشمش را رویش بریزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Finely dice the cucumber.",
+    "Mix with the yogurt, mint and dried rose petals.",
+    "Top with the walnuts and raisins."
+   ],
    "tip_fa": "لبنیات کم‌چرب برای اسید اوریک مفید است.",
-   "tip_en": null,
+   "tip_en": "Low-fat dairy is a good choice for people watching uric acid.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 125,
@@ -3316,7 +3546,8 @@
      "name_fa": "نمک کم، فلفل",
      "grams": 0,
      "amount_fa": "به مقدار لازم",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "A little salt, pepper"
     }
    ],
    "steps_fa": [
@@ -3324,9 +3555,13 @@
     "پیاز و سیر را با روغن تفت دهید.",
     "اسفناج، پیاز داغ و ماست را مخلوط کنید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Cook the spinach in a dry pan until its water is gone, then let it cool.",
+    "Sauté the onion and garlic in the oil.",
+    "Mix the spinach, fried onion and yogurt."
+   ],
    "tip_fa": "کنار کوکو یا کباب.",
-   "tip_en": null,
+   "tip_en": "Serve alongside kuku or kebab.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 121,
@@ -3376,16 +3611,20 @@
      "name_fa": "دارچین",
      "grams": 0,
      "amount_fa": "کمی",
-     "is_staple": true
+     "is_staple": true,
+     "name_en": "Cinnamon"
     }
    ],
    "steps_fa": [
     "سیب را خرد کنید.",
     "با ماست و دارچین مخلوط کنید و گردو را رویش بریزید."
    ],
-   "steps_en": null,
+   "steps_en": [
+    "Chop the apple.",
+    "Mix with the yogurt and cinnamon and top with the walnuts."
+   ],
    "tip_fa": "جایگزین کیک و بیسکویت آخر شب. اگر بعد از این هم گرسنه بودید: سوپ سبزیجات.",
-   "tip_en": null,
+   "tip_en": "Instead of late-night cake and biscuits. If you are still hungry afterwards: vegetable soup.",
    "suggested_side": null,
    "per_portion_incl_side": {
     "kcal": 179,
