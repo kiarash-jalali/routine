@@ -25,6 +25,12 @@ The bootstrap is **not** a migration to apply retroactively to the existing prod
 | 20260918194849 | p1_scaling_foundation | 20260918194849_p1_scaling_foundation.sql |
 | 20260919075812 | daily_progress_completion | 20260919075812_daily_progress_completion.sql |
 | 20260919080029 | fix_daily_progress_conflict_target | 20260919080029_fix_daily_progress_conflict_target.sql |
+| 20261121202409 | nutrition_catalog_schema | 20261121202409_nutrition_catalog_schema.sql |
+| 20261121204046 | seed_food_catalog_foods_ingredients | 20261121204046_seed_food_catalog_foods_ingredients.sql |
+| 20261121204436 | seed_food_catalog_foods_iran | 20261121204436_seed_food_catalog_foods_iran.sql |
+| 20261121204704 | seed_food_catalog_foods_global | 20261121204704_seed_food_catalog_foods_global.sql |
+| 20261121204915 | seed_food_catalog_recipes | 20261121204915_seed_food_catalog_recipes.sql |
+| 20261121210723 | remove_personal_name_from_starter_recipes | 20261121210723_remove_personal_name_from_starter_recipes.sql |
 
 The older points, profiles, and notification-reminder SQL files are also historical repository sources but are not represented as standalone entries in the current production migration history.
 
@@ -33,3 +39,5 @@ The older points, profiles, and notification-reminder SQL files are also histori
 From 20260918184226 onward, add new migrations instead of editing old ones, and keep the repository filename aligned with the version recorded by production whenever the migration is applied through the connected Supabase tooling.
 
 If the project later switches to the Supabase CLI migration workflow, reconcile the older history deliberately with Supabase's migration-repair workflow before running a blanket `db push`.
+
+`20261121205000_seed_food_catalog_ingredients.sql` (starter recipe ingredients) was run by hand in the Supabase SQL editor on 2026-11-22, so it has no entry in the production migration history. It is idempotent; replaying it is safe.

@@ -133,6 +133,87 @@ export type Database = {
         }
         Relationships: []
       }
+      foods: {
+        Row: {
+          carbs_100g: number
+          category: string | null
+          count_unit_grams: number | null
+          created_at: string
+          fat_100g: number
+          fiber_100g: number
+          grocery_section: string | null
+          id: string
+          is_staple: boolean
+          kcal_100g: number
+          kind: string
+          name_en: string | null
+          name_fa: string | null
+          owner_id: string | null
+          protein_100g: number
+          region: string | null
+          serving_grams: number | null
+          serving_label_en: string | null
+          serving_label_fa: string | null
+          serving_unit: string | null
+          slug: string | null
+          source: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          carbs_100g?: number
+          category?: string | null
+          count_unit_grams?: number | null
+          created_at?: string
+          fat_100g?: number
+          fiber_100g?: number
+          grocery_section?: string | null
+          id?: string
+          is_staple?: boolean
+          kcal_100g?: number
+          kind: string
+          name_en?: string | null
+          name_fa?: string | null
+          owner_id?: string | null
+          protein_100g?: number
+          region?: string | null
+          serving_grams?: number | null
+          serving_label_en?: string | null
+          serving_label_fa?: string | null
+          serving_unit?: string | null
+          slug?: string | null
+          source?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          carbs_100g?: number
+          category?: string | null
+          count_unit_grams?: number | null
+          created_at?: string
+          fat_100g?: number
+          fiber_100g?: number
+          grocery_section?: string | null
+          id?: string
+          is_staple?: boolean
+          kcal_100g?: number
+          kind?: string
+          name_en?: string | null
+          name_fa?: string | null
+          owner_id?: string | null
+          protein_100g?: number
+          region?: string | null
+          serving_grams?: number | null
+          serving_label_en?: string | null
+          serving_label_fa?: string | null
+          serving_unit?: string | null
+          slug?: string | null
+          source?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       medication_plans: {
         Row: {
           created_at: string
@@ -436,6 +517,151 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      recipe_ingredients: {
+        Row: {
+          amount_en: string | null
+          amount_fa: string | null
+          created_at: string
+          food_id: string | null
+          grams: number
+          id: string
+          is_staple: boolean
+          name_en: string | null
+          name_fa: string | null
+          owner_id: string | null
+          position: number
+          recipe_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_en?: string | null
+          amount_fa?: string | null
+          created_at?: string
+          food_id?: string | null
+          grams?: number
+          id?: string
+          is_staple?: boolean
+          name_en?: string | null
+          name_fa?: string | null
+          owner_id?: string | null
+          position?: number
+          recipe_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_en?: string | null
+          amount_fa?: string | null
+          created_at?: string
+          food_id?: string | null
+          grams?: number
+          id?: string
+          is_staple?: boolean
+          name_en?: string | null
+          name_fa?: string | null
+          owner_id?: string | null
+          position?: number
+          recipe_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_ingredients_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_ingredients_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_ingredients_recipe_id_owner_id_fkey"
+            columns: ["recipe_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      recipes: {
+        Row: {
+          category: string
+          copied_from: string | null
+          created_at: string
+          id: string
+          owner_id: string | null
+          servings: number
+          slug: string | null
+          steps_en: string[]
+          steps_fa: string[]
+          suggested_side_food_id: string | null
+          suggested_side_grams: number | null
+          tags: string[]
+          tip_en: string | null
+          tip_fa: string | null
+          title_en: string | null
+          title_fa: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          copied_from?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          servings?: number
+          slug?: string | null
+          steps_en?: string[]
+          steps_fa?: string[]
+          suggested_side_food_id?: string | null
+          suggested_side_grams?: number | null
+          tags?: string[]
+          tip_en?: string | null
+          tip_fa?: string | null
+          title_en?: string | null
+          title_fa?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          copied_from?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          servings?: number
+          slug?: string | null
+          steps_en?: string[]
+          steps_fa?: string[]
+          suggested_side_food_id?: string | null
+          suggested_side_grams?: number | null
+          tags?: string[]
+          tip_en?: string | null
+          tip_fa?: string | null
+          title_en?: string | null
+          title_fa?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipes_copied_from_fkey"
+            columns: ["copied_from"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipes_suggested_side_food_id_fkey"
+            columns: ["suggested_side_food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       routines: {
         Row: {
