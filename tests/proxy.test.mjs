@@ -30,6 +30,7 @@ test("auth proxy protects app routes while leaving public PWA resources reachabl
     "/feedback",
     "/health",
     "/workouts",
+    "/food",
     "/guide",
     "/onboarding",
   ]) {
