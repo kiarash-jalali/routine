@@ -15,6 +15,7 @@ const appPaths = [
   "/health",
   "/workouts",
   "/body",
+  "/food",
   "/guide",
   "/design-lab",
 ];

@@ -11,6 +11,7 @@ const protectedRoutes = [
   "/health",
   "/workouts",
   "/body",
+  "/food",
   "/guide",
   "/onboarding",
 ] as const;
