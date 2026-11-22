@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatedList, AnimatedListItem } from "@/components/Motion";
 import {
   Button,
@@ -16,6 +16,8 @@ import {
 import { Sheet } from "@/components/Sheet";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { WorkoutForm } from "@/components/workouts/WorkoutForm";
+import { ExerciseEditor } from "@/components/workouts/ExerciseEditor";
+import { SetLogger } from "@/components/workouts/SetLogger";
 import { useOwnedData } from "@/components/life/useOwnedData";
 import {
   completeWorkout,
@@ -24,6 +26,7 @@ import {
   saveWorkout,
   setWorkoutActive,
 } from "@/lib/db/workouts";
+import { savePlanExercises } from "@/lib/db/workoutExercises";
 import { localClock } from "@/lib/schedule";
 import type { WorkoutPlan, WorkoutSession } from "@/types/workout";
 type WorkoutData = Awaited<ReturnType<typeof loadWorkouts>>;
@@ -49,6 +52,19 @@ export function WorkoutsClient({
   );
   const [tab, setTab] = useState<"today" | "history">("today");
   const [completion, setCompletion] = useState<WorkoutSession | null>(null);
+  const [exerciseEditor, setExerciseEditor] = useState<WorkoutPlan | null>(null);
+  const [setLogger, setSetLogger] = useState<WorkoutSession | null>(null);
+  const exercisesFor = (planId: string | null) =>
+    planId ? (data?.exercises ?? []).filter((exercise) => exercise.plan_id === planId) : [];
+  const loggerPlanId = setLogger?.workout_id ?? null;
+  const allExercises = data?.exercises;
+  const loggerExercises = useMemo(
+    () =>
+      loggerPlanId
+        ? (allExercises ?? []).filter((exercise) => exercise.plan_id === loggerPlanId)
+        : [],
+    [allExercises, loggerPlanId],
+  );
   const [duration, setDuration] = useState(30);
   const completionDurationInvalid =
     !Number.isFinite(duration) || duration < 1 || duration > 1440;
@@ -123,6 +139,16 @@ export function WorkoutsClient({
                         </Pill>
                       </div>
                     </div>
+                    <div className="flex flex-wrap gap-2">
+                    {exercisesFor(session.workout_id).length > 0 && (
+                      <Button
+                        disabled={busy}
+                        aria-label={`${t("workout.structured.logSets")}: ${session.name}`}
+                        onClick={() => setSetLogger(session)}
+                      >
+                        {t("workout.structured.logSets")}
+                      </Button>
+                    )}
                     <Button
                       disabled={busy}
                       aria-label={`${t(
@@ -152,6 +178,7 @@ export function WorkoutsClient({
                           : "workout.complete",
                       )}
                     </Button>
+                    </div>
                   </div>
                   {session.exercises && (
                     <p className="mt-4 whitespace-pre-wrap text-sm text-muted">
@@ -211,6 +238,13 @@ export function WorkoutsClient({
                         onClick={() => setEditor(plan)}
                       >
                         {t("common.edit")}
+                      </Button>
+                      <Button
+                        disabled={busy || data?.exercisesFailed}
+                        aria-label={`${t("workout.structured.exercises")}: ${plan.name}`}
+                        onClick={() => setExerciseEditor(plan)}
+                      >
+                        {t("workout.structured.exercises")}
                       </Button>
                       <Button
                         disabled={busy}
@@ -340,6 +374,51 @@ export function WorkoutsClient({
             {t("workout.complete")}
           </Button>
         </form>
+      </Sheet>
+      <Sheet
+        open={!!exerciseEditor}
+        busy={busy}
+        keyboardAssist
+        onClose={() => setExerciseEditor(null)}
+        title={t("workout.structured.editTitle")}
+        description={t("workout.structured.editBody")}
+      >
+        {error && <ErrorNotice>{t("common.error")}</ErrorNotice>}
+        {exerciseEditor && (
+          <ExerciseEditor
+            key={exerciseEditor.id}
+            plan={exerciseEditor}
+            exercises={exercisesFor(exerciseEditor.id)}
+            busy={busy}
+            onCancel={() => setExerciseEditor(null)}
+            onSave={async (rows) => {
+              await act(async () => {
+                await savePlanExercises(
+                  userId,
+                  exerciseEditor.id,
+                  exercisesFor(exerciseEditor.id),
+                  rows,
+                );
+                setExerciseEditor(null);
+              });
+            }}
+          />
+        )}
+      </Sheet>
+      <Sheet
+        open={!!setLogger}
+        onClose={() => setSetLogger(null)}
+        title={t("workout.structured.logTitle")}
+        description={t("workout.structured.logBody")}
+      >
+        {setLogger && (
+          <SetLogger
+            key={setLogger.id}
+            userId={userId}
+            session={setLogger}
+            exercises={loggerExercises}
+          />
+        )}
       </Sheet>
     </PageShell>
   );

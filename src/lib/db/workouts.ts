@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import type { SessionInput, WorkoutInput } from "@/types/workout";
+import { listUserExercises } from "@/lib/db/workoutExercises";
 const planColumns =
   "id,user_id,name,activity_type,duration_minutes,exercises,days_of_week,preferred_time,timezone,is_active,reminders_enabled,created_at,updated_at";
 const sessionColumns =
@@ -12,7 +13,7 @@ export async function loadWorkouts(
   client?: SupabaseClient<Database>,
 ) {
   const db = client ?? supabaseBrowser();
-  const [plans, sessions] = await Promise.all([
+  const [plans, sessions, exercises] = await Promise.all([
     db
       .from("workout_plans")
       .select(planColumns)
@@ -24,11 +25,16 @@ export async function loadWorkouts(
       .eq("user_id", userId)
       .order("scheduled_at", { ascending: false })
       .limit(limit),
+    // Structured exercises are additive: free-text plans keep working without them.
+    // A failure is reported so the editor can't open empty and duplicate rows.
+    listUserExercises(userId, db).catch(() => null),
   ]);
   if (plans.error || sessions.error) throw new Error("workout_load_failed");
   return {
     plans: plans.data ?? [],
     sessions: sessions.data ?? [],
+    exercises: exercises ?? [],
+    exercisesFailed: exercises === null,
   };
 }
 export async function listWorkoutSessionsForDay(

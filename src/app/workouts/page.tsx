@@ -13,7 +13,7 @@ type WorkoutData = Awaited<ReturnType<typeof loadWorkouts>>;
 
 export default async function WorkoutsPage() {
   const { supabase, userId } = await requireServerUser();
-  let data: WorkoutData = { plans: [], sessions: [] };
+  let data: WorkoutData = { plans: [], sessions: [], exercises: [], exercisesFailed: false };
   let initialLoadError = false;
 
   try {

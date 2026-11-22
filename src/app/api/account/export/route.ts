@@ -89,6 +89,8 @@ export async function GET(request: Request) {
       foods,
       recipes,
       recipeIngredients,
+      workoutPlanExercises,
+      workoutSetLogs,
     ] = await Promise.all([
       collectAll<Tables<"profiles">>(async (from, to) => {
         const { data, error } = await userDb
@@ -234,6 +236,24 @@ export async function GET(request: Request) {
           .range(from, to);
         return { data, error };
       }),
+      collectAll<Tables<"workout_plan_exercises">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("workout_plan_exercises")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
+      collectAll<Tables<"workout_set_logs">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("workout_set_logs")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
     ]);
 
     const exportedAt = new Date().toISOString();
@@ -264,6 +284,8 @@ export async function GET(request: Request) {
           foods,
           recipes,
           recipe_ingredients: recipeIngredients,
+          workout_plan_exercises: workoutPlanExercises,
+          workout_set_logs: workoutSetLogs,
         },
       },
       null,
