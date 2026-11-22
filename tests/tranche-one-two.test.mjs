@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { todaySource } from "./today-source.mjs";
 
 function source(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -43,7 +44,7 @@ test("notification scheduler fails loudly and maintains an alert issue", () => {
 
 test("Dashboard initial owned data now starts on the server", () => {
   const page = source("src/app/dashboard/page.tsx");
-  const client = source("src/app/dashboard/DashboardClient.tsx");
+  const client = todaySource();
   const server = source("src/lib/supabase/server.ts");
 
   assert.doesNotMatch(page, /^"use client"/);
@@ -55,7 +56,7 @@ test("Dashboard initial owned data now starts on the server", () => {
 });
 
 test("task creation no longer refetches the complete task list", () => {
-  const client = source("src/app/dashboard/DashboardClient.tsx");
+  const client = todaySource();
   const tasks = source("src/lib/db/tasks.ts");
 
   assert.match(tasks, /insert\(input\)[\s\S]*select\(TASK_COLUMNS\)[\s\S]*single\(\)/);

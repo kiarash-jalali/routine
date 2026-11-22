@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { todaySource } from "./today-source.mjs";
 
 function source(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -51,12 +52,12 @@ test("first-run flow reaches Today without notification permission", () => {
   assert.doesNotMatch(onboarding, /step === "ready"/);
   assert.doesNotMatch(onboarding, /ReminderSetup|ReminderPrompt|requestPermission/);
 
-  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
+  const dashboard = todaySource();
   assert.doesNotMatch(dashboard, /ReminderSetup|ReminderPrompt|requestPermission/);
 });
 
 test("Today supports routine completion and Guide stays discoverable", () => {
-  const dashboard = source("src/app/dashboard/DashboardClient.tsx");
+  const dashboard = todaySource();
   assert.match(dashboard, /async function toggleRoutine/);
   assert.match(dashboard, /setDailyItemCompletion/);
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { todaySource } from "./today-source.mjs";
 import { runInNewContext } from "node:vm";
 import { loadTypeScriptModule } from "./load-typescript.mjs";
 
@@ -88,10 +89,7 @@ test("date-only tasks remain non-notifying while explicit times are persisted", 
     new URL("../src/components/tasks/TaskScheduleFields.tsx", import.meta.url),
     "utf8",
   );
-  const dashboard = readFileSync(
-    new URL("../src/app/dashboard/DashboardClient.tsx", import.meta.url),
-    "utf8",
-  );
+  const dashboard = todaySource();
   const tasks = readFileSync(
     new URL("../src/lib/db/tasks.ts", import.meta.url),
     "utf8",
