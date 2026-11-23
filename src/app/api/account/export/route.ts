@@ -94,6 +94,7 @@ export async function GET(request: Request) {
       bodyProfiles,
       bodyMeasurements,
       targetAdjustments,
+      foodLogEntries,
     ] = await Promise.all([
       collectAll<Tables<"profiles">>(async (from, to) => {
         const { data, error } = await userDb
@@ -283,6 +284,16 @@ export async function GET(request: Request) {
           .range(from, to);
         return { data, error };
       }),
+      collectAll<Tables<"food_log_entries">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("food_log_entries")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("eaten_on", { ascending: true })
+          .order("created_at", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
     ]);
 
     const exportedAt = new Date().toISOString();
@@ -318,6 +329,7 @@ export async function GET(request: Request) {
           body_profiles: bodyProfiles,
           body_measurements: bodyMeasurements,
           target_adjustments: targetAdjustments,
+          food_log_entries: foodLogEntries,
         },
       },
       null,

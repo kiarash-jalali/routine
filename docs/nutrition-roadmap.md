@@ -457,6 +457,23 @@ Screens:
 - `/food` → Log: day view with entries by slot, edit/delete, day totals, a
   7-day chart of kcal and protein.
 
+Built decisions (S5):
+- Pure logic in `src/lib/nutrition/log.ts`; reads/writes in `src/lib/db/foodLog.ts`.
+  The Today card (`MealsSection`) shows totals and "Log food"; `/food?tab=log&day=` is the Log tab.
+- `recipe_id` / `food_id` are `on delete set null` (the snapshot stays). Because foods and
+  recipes mix catalog and user rows, a security-invoker trigger instead of a composite FK
+  checks that a linked item is visible to the writer.
+- Editing an entry's portions or grams rescales its stored snapshot; it never re-reads
+  the food or recipe. Re-logging a Recent item copies its snapshot.
+- Targets: accepted `target_adjustments` (effective on or before the day) change only the
+  calculated calorie target, never below the floor; a user-set target always wins.
+- Undo for 5 seconds is shown after every log from Today.
+- The Today card shows only to people with a body profile or at least one log entry,
+  so people who don't track food get no new prompt. Others start from `/food` → Log.
+- Not built yet (waits for S4): the planned-meals list with "Ate as planned" and the
+  portion adjuster on Today, and the composite FK
+  `food_log_entries(meal_plan_entry_id, user_id) → meal_plan_entries(id, user_id)`.
+
 Acceptance:
 - [ ] Logging a planned meal is one tap; undo is available for 5 seconds.
 - [ ] Editing a recipe afterwards does not change past log entries (snapshot test).

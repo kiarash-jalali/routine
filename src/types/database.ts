@@ -220,6 +220,84 @@ export type Database = {
         }
         Relationships: []
       }
+      food_log_entries: {
+        Row: {
+          carbs: number
+          created_at: string
+          eaten_on: string
+          fat: number
+          food_id: string | null
+          grams: number | null
+          id: string
+          kcal: number
+          label: string
+          meal_plan_entry_id: string | null
+          note: string | null
+          portions: number | null
+          protein: number
+          recipe_id: string | null
+          slot: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carbs?: number
+          created_at?: string
+          eaten_on: string
+          fat?: number
+          food_id?: string | null
+          grams?: number | null
+          id?: string
+          kcal: number
+          label: string
+          meal_plan_entry_id?: string | null
+          note?: string | null
+          portions?: number | null
+          protein?: number
+          recipe_id?: string | null
+          slot: string
+          source: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          carbs?: number
+          created_at?: string
+          eaten_on?: string
+          fat?: number
+          food_id?: string | null
+          grams?: number | null
+          id?: string
+          kcal?: number
+          label?: string
+          meal_plan_entry_id?: string | null
+          note?: string | null
+          portions?: number | null
+          protein?: number
+          recipe_id?: string | null
+          slot?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_log_entries_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "food_log_entries_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       foods: {
         Row: {
           carbs_100g: number

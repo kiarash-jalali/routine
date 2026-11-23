@@ -7,6 +7,7 @@ import { getNotificationPreference } from "@/lib/db/notifications";
 import { listMedicationRemindersForDay } from "@/lib/db/health";
 import { listWorkoutSessionsForDay } from "@/lib/db/workouts";
 import { getWeighInState } from "@/lib/db/body";
+import { loadFoodDay } from "@/lib/db/foodLog";
 import { listTasks } from "@/lib/db/tasks";
 import { listActiveRoutines } from "@/lib/db/today";
 import { getServerLocalDay } from "@/lib/server/localDay";
@@ -31,6 +32,7 @@ export default async function DashboardPage() {
     healthResult,
     workoutsResult,
     weighInResult,
+    foodResult,
   ] = await Promise.allSettled([
     listTasks(supabase),
     listActiveRoutines(supabase),
@@ -49,6 +51,9 @@ export default async function DashboardPage() {
       : Promise.resolve([]),
     initialDayKey
       ? getWeighInState(userId, initialDayKey, supabase)
+      : Promise.resolve(null),
+    initialDayKey
+      ? loadFoodDay(userId, initialDayKey, supabase)
       : Promise.resolve(null),
   ]);
 
@@ -73,6 +78,8 @@ export default async function DashboardPage() {
   // Optional card: a failed load just hides it, so it is not a partial error.
   const initialWeighIn =
     weighInResult.status === "fulfilled" ? weighInResult.value : null;
+  const initialFoodDay =
+    foodResult.status === "fulfilled" ? foodResult.value : null;
 
   return (
     <DashboardClient
@@ -86,6 +93,7 @@ export default async function DashboardPage() {
       initialMedicationReminders={initialMedicationReminders}
       initialWorkoutSessions={initialWorkoutSessions}
       initialWeighIn={initialWeighIn}
+      initialFoodDay={initialFoodDay}
       initialPartialError={[
         tasksResult,
         routinesResult,
