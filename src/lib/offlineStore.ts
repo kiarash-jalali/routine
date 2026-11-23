@@ -6,6 +6,9 @@ const DATABASE_VERSION = 1;
 const STATE_STORE = "state";
 const MUTATION_STORE = "mutations";
 const SNAPSHOT_KEY = "snapshot";
+// The grocery list (S4) is kept apart from the Today snapshot so either can be
+// saved without the other. Item labels are pre-formatted names and amounts only.
+const GROCERY_KEY = "groceries";
 
 export const OFFLINE_QUEUE_EVENT = "rootine:offline-queue";
 
@@ -26,7 +29,39 @@ export type OfflineSnapshot = {
   tasks: OfflineSnapshotItem[];
 };
 
+export type OfflineGroceryItem = {
+  id: string;
+  label: string;
+  amount: string;
+  section: string;
+  have: boolean;
+  bought: boolean;
+};
+
+export type OfflineGrocerySnapshot = {
+  version: 1;
+  userId: string;
+  language: Language;
+  savedAt: string;
+  weekStart: string;
+  title: string;
+  items: OfflineGroceryItem[];
+};
+
+export type GroceryFlagField = "have" | "bought";
+
 export type OfflineMutation =
+  | {
+      id: string;
+      kind: "grocery_item_flag";
+      userId: string;
+      queuedAt: string;
+      /** The list's week start (the sync route requires a day on every change). */
+      day: string;
+      itemId: string;
+      field: GroceryFlagField;
+      value: boolean;
+    }
   | {
       id: string;
       kind: "daily_item_completion";
@@ -135,11 +170,22 @@ export function isOfflineLikeError(error: unknown) {
   );
 }
 
-export async function saveOfflineSnapshot(snapshot: OfflineSnapshot) {
-  const current = await getOfflineSnapshot().catch(() => null);
-  if (current && current.userId !== snapshot.userId) {
+/** Clears everything saved for another account before saving for this one. */
+async function clearIfOtherUser(userId: string) {
+  const [today, groceries] = await Promise.all([
+    getOfflineSnapshot().catch(() => null),
+    getGrocerySnapshot().catch(() => null),
+  ]);
+  if (
+    (today && today.userId !== userId) ||
+    (groceries && groceries.userId !== userId)
+  ) {
     await clearOfflineData();
   }
+}
+
+export async function saveOfflineSnapshot(snapshot: OfflineSnapshot) {
+  await clearIfOtherUser(snapshot.userId);
 
   const database = await openDatabase();
   const transaction = database.transaction(STATE_STORE, "readwrite");
@@ -157,6 +203,74 @@ export async function getOfflineSnapshot(): Promise<OfflineSnapshot | null> {
   );
   database.close();
   return (value as OfflineSnapshot | undefined) ?? null;
+}
+
+export async function saveGrocerySnapshot(snapshot: OfflineGrocerySnapshot) {
+  await clearIfOtherUser(snapshot.userId);
+  const database = await openDatabase();
+  const transaction = database.transaction(STATE_STORE, "readwrite");
+  const done = transactionDone(transaction);
+  transaction.objectStore(STATE_STORE).put(snapshot, GROCERY_KEY);
+  await done;
+  database.close();
+}
+
+export async function getGrocerySnapshot(): Promise<OfflineGrocerySnapshot | null> {
+  const database = await openDatabase();
+  const transaction = database.transaction(STATE_STORE, "readonly");
+  const value = await requestResult(
+    transaction.objectStore(STATE_STORE).get(GROCERY_KEY),
+  );
+  database.close();
+  return (value as OfflineGrocerySnapshot | undefined) ?? null;
+}
+
+/** Queues a grocery tick; a later tick of the same item and field replaces it. */
+export async function queueGroceryFlag(
+  userId: string,
+  weekStart: string,
+  itemId: string,
+  field: GroceryFlagField,
+  value: boolean,
+) {
+  const mutation: OfflineMutation = {
+    id: `grocery:${userId}:${itemId}:${field}`,
+    kind: "grocery_item_flag",
+    userId,
+    queuedAt: new Date().toISOString(),
+    day: weekStart,
+    itemId,
+    field,
+    value,
+  };
+
+  const database = await openDatabase();
+  const transaction = database.transaction(MUTATION_STORE, "readwrite");
+  const done = transactionDone(transaction);
+  transaction.objectStore(MUTATION_STORE).put(mutation);
+  await done;
+  database.close();
+  await setGrocerySnapshotFlag(userId, itemId, field, value).catch(() => undefined);
+  emitQueueChanged();
+  requestBackgroundSync();
+}
+
+/** Keeps the offline page's copy of one item in step with what the user sees. */
+export async function setGrocerySnapshotFlag(
+  userId: string,
+  itemId: string,
+  field: GroceryFlagField,
+  value: boolean,
+) {
+  const snapshot = await getGrocerySnapshot().catch(() => null);
+  if (snapshot && snapshot.userId === userId) {
+    const item = snapshot.items.find((entry) => entry.id === itemId);
+    if (item) {
+      item[field] = value;
+      snapshot.savedAt = new Date().toISOString();
+      await saveGrocerySnapshot(snapshot);
+    }
+  }
 }
 
 export async function queueDailyItemCompletion(

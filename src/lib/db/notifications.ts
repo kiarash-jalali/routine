@@ -9,6 +9,15 @@ export type NotificationCategoryField =
   | "workout_enabled"
   | "checkin_enabled";
 
+/** Weekly reminders (S4): a day of week (0 = Sunday) and a local time each. */
+export type WeeklyReminderFields =
+  | "meal_plan_enabled"
+  | "meal_plan_dow"
+  | "meal_plan_time"
+  | "grocery_enabled"
+  | "grocery_dow"
+  | "grocery_time";
+
 export type NotificationPreference = Pick<
   Tables<"notification_preferences">,
   | "user_id"
@@ -18,6 +27,7 @@ export type NotificationPreference = Pick<
   | "last_sent_on"
   | "prompt_seen"
   | NotificationCategoryField
+  | WeeklyReminderFields
 >;
 
 export type NotificationPreferenceUpdate = Partial<
@@ -28,11 +38,12 @@ export type NotificationPreferenceUpdate = Partial<
     | "timezone"
     | "prompt_seen"
     | NotificationCategoryField
+    | WeeklyReminderFields
   >
 >;
 
 export const notificationPreferenceColumns =
-  "user_id,enabled,reminder_time,timezone,last_sent_on,prompt_seen,task_enabled,routine_enabled,health_enabled,workout_enabled,checkin_enabled";
+  "user_id,enabled,reminder_time,timezone,last_sent_on,prompt_seen,task_enabled,routine_enabled,health_enabled,workout_enabled,checkin_enabled,meal_plan_enabled,meal_plan_dow,meal_plan_time,grocery_enabled,grocery_dow,grocery_time";
 
 export const allNotificationCategoriesEnabled = {
   task_enabled: true,

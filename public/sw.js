@@ -1,4 +1,4 @@
-const SW_VERSION = "v6";
+const SW_VERSION = "v7";
 const CACHE_PREFIX = "rootine-";
 const SHELL_CACHE = `${CACHE_PREFIX}shell-${SW_VERSION}`;
 const ASSET_CACHE = `${CACHE_PREFIX}assets-${SW_VERSION}`;
@@ -9,6 +9,14 @@ const DATABASE_VERSION = 1;
 const STATE_STORE = "state";
 const MUTATION_STORE = "mutations";
 const SYNC_TAG = "rootine-offline-sync";
+const ALLOWED_URLS = [
+  "/dashboard",
+  "/checkin",
+  "/health",
+  "/workouts",
+  "/food?tab=plan&week=next",
+  "/food?tab=groceries&week=next",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -114,13 +122,18 @@ async function readOfflineQueue() {
     [STATE_STORE, MUTATION_STORE],
     "readonly",
   );
-  const snapshot = await idbRequest(
+  const today = await idbRequest(
     transaction.objectStore(STATE_STORE).get("snapshot"),
+  );
+  // The grocery list (S4) is saved on its own; either snapshot names the owner.
+  const groceries = await idbRequest(
+    transaction.objectStore(STATE_STORE).get("groceries"),
   );
   const mutations = await idbRequest(
     transaction.objectStore(MUTATION_STORE).getAll(),
   );
   database.close();
+  const snapshot = today?.userId ? today : groceries?.userId ? groceries : null;
 
   const ownedMutations =
     snapshot?.userId && Array.isArray(mutations)
@@ -266,7 +279,7 @@ self.addEventListener("push", (event) => {
   } catch {
     /* Older empty pushes use the check-in fallback. */
   }
-  const allowedUrls = ["/dashboard", "/checkin", "/health", "/workouts"];
+  const allowedUrls = ALLOWED_URLS;
   const url = allowedUrls.includes(message.url) ? message.url : "/dashboard";
   const tag =
     typeof message.tag === "string" ? message.tag.slice(0, 128) : undefined;
@@ -290,7 +303,9 @@ self.addEventListener("push", (event) => {
         url,
         event:
           typeof message.event === "string" ? message.event.slice(0, 200) : null,
-        category: ["checkin", "health", "workout"].includes(message.category)
+        category: ["checkin", "health", "workout", "meal_plan", "grocery"].includes(
+          message.category,
+        )
           ? message.category
           : null,
       },
@@ -324,11 +339,7 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   event.waitUntil(reportNotificationOpened(event.notification.data));
   const requested = event.notification.data?.url;
-  const targetUrl = ["/dashboard", "/checkin", "/health", "/workouts"].includes(
-    requested,
-  )
-    ? requested
-    : "/dashboard";
+  const targetUrl = ALLOWED_URLS.includes(requested) ? requested : "/dashboard";
 
   event.waitUntil(
     clients

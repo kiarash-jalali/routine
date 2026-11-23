@@ -361,6 +361,8 @@ Acceptance:
 
 ### S4 — Weekly meal plan, grocery list and reminders
 
+Status: built (`/food` Plan and Groceries tabs, `/food/groceries/print`).
+
 Tables:
 
 `meal_plan_entries`
@@ -424,6 +426,36 @@ Reminders (extend the existing notification system):
   window and TTL rules as health/workout reminders. Grocery reminder is skipped
   if next week's plan is empty (send the plan reminder copy instead).
 - Settings: two new rows in reminder settings with day and time pickers.
+
+Built decisions (S4):
+- Migration `20261122180000_meal_plan_and_groceries.sql`. `meal_plan_entries` has
+  `unique (id, user_id)` for S5's composite FK; deleting a recipe or food deletes
+  its plan entries. Insert/update policies also require the planned recipe or
+  food to be visible to the caller (catalog or own).
+- Pure code: `src/lib/nutrition/plan.ts` (weeks, entry/day nutrition, copy last
+  week) and `src/lib/nutrition/grocery.ts` (generation, amounts, merge).
+  Food entries use `serving_grams × eaten_portions`, 100 g when a food has no
+  serving. Foods with no section, and manual items, show under "Other" (stored
+  as a null section).
+- The Groceries tab regenerates on open and whenever the plan changes, merges
+  with the saved list and writes only when something changed, through the
+  security-invoker `save_grocery_list(week, include_staples, items)` RPC. Item
+  ids stay stable and stored have/bought flags are never overwritten by a
+  regeneration, so ticks from another device or the offline queue survive.
+  Manual items use `add_grocery_item`, which creates the list if needed.
+- Day totals use the S2 targets, computed on the server; only the kcal and
+  protein numbers reach the page.
+- Offline: the list for this week or next week (whichever the user last opened)
+  is saved under its own `groceries` key with pre-formatted labels; ticks queue
+  `grocery_item_flag` mutations that `/api/offline/sync` applies with the user's
+  own client. The offline page shows the list even without a Today snapshot.
+- Reminders: a weekly day (0 = Sunday) and time per category; defaults when first
+  turned on are the day before the week starts at 18:00 (plan) and 19:00
+  (groceries). Event keys `meal-plan:<next week start>` and
+  `grocery:<next week start>`. Week start comes from the body profile, else the
+  profile language. Payloads never carry names (`tests/meal-reminder-push.test.mjs`).
+- Drag between slots is not built: entries move with day and meal selects in the
+  edit sheet.
 
 Acceptance:
 - [ ] Grocery generation unit tests: scaling by cook servings, staples on/off,

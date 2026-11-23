@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "next-view-transitions";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/Icon";
@@ -23,6 +23,8 @@ import { useOwnedData } from "@/components/life/useOwnedData";
 import { FoodForm } from "@/components/food/FoodForm";
 import { LogTab } from "@/components/food/LogTab";
 import type { FoodDay } from "@/lib/db/foodLog";
+import { GroceriesTab } from "@/components/food/GroceriesTab";
+import { PlanTab, type PlanLookup } from "@/components/food/PlanTab";
 import {
   ConfirmDelete,
   NutritionGrid,
@@ -39,11 +41,13 @@ import {
   type FoodRow,
   type RecipeSummary,
 } from "@/lib/db/food";
+import { loadPlanEntries, type PlanEntry, type PlanTargets } from "@/lib/db/mealPlan";
+import { startOfWeek } from "@/lib/nutrition/plan";
 import { foodNutrition } from "@/lib/nutrition/food";
 import { RECIPE_CATEGORIES, perServing } from "@/lib/nutrition/recipe";
 import { matchesSearch } from "@/lib/nutrition/search";
 
-export type FoodTab = "recipes" | "foods" | "log";
+export type FoodTab = "plan" | "recipes" | "groceries" | "foods" | "log";
 const PAGE = 60;
 // The hub shows everything visible to the user; RLS does the scoping.
 const reloadFoodHub = () => loadFoodHub();
@@ -56,6 +60,12 @@ export function FoodClient({
   serverDay,
   explicitDay,
   initialFoodDay,
+  today,
+  weekStartsOn,
+  initialWeekStart,
+  initialEntries,
+  targets,
+  planLoadError,
 }: {
   userId: string;
   initialTab: FoodTab;
@@ -64,6 +74,12 @@ export function FoodClient({
   serverDay: string;
   explicitDay: boolean;
   initialFoodDay: FoodDay | null;
+  today: string;
+  weekStartsOn: number;
+  initialWeekStart: string;
+  initialEntries: PlanEntry[];
+  targets: PlanTargets;
+  planLoadError: boolean;
 }) {
   const { t } = useLanguage();
   const router = useRouter();
@@ -74,11 +90,87 @@ export function FoodClient({
     initialLoadError,
   );
   const [tab, setTab] = useState<FoodTab>(initialTab);
+  const currentWeekStart = startOfWeek(today, weekStartsOn);
+  const [weekStart, setWeekStart] = useState(initialWeekStart);
+  const [entries, setEntries] = useState(initialEntries);
+  const [planError, setPlanError] = useState(planLoadError);
+  const [planBusy, setPlanBusy] = useState(false);
+  // Only the latest plan request may update state (quick week changes).
+  const planRequest = useRef(0);
+
+  const lookup = useMemo<PlanLookup>(
+    () => ({
+      recipes: new Map(
+        data.recipes.map((recipe) => [
+          recipe.id,
+          {
+            title_en: recipe.title_en,
+            title_fa: recipe.title_fa,
+            servings: recipe.servings,
+            ingredients: recipe.ingredients.map((item) => ({
+              grams: Number(item.grams),
+              food: per100(item.food),
+            })),
+          },
+        ]),
+      ),
+      foods: new Map(
+        data.foods.flatMap((food) => {
+          const values = per100(food);
+          return values
+            ? [
+                [
+                  food.id,
+                  {
+                    name_en: food.name_en,
+                    name_fa: food.name_fa,
+                    per100: values,
+                    serving_grams: food.serving_grams === null ? null : Number(food.serving_grams),
+                  },
+                ] as const,
+              ]
+            : [];
+        }),
+      ),
+    }),
+    [data],
+  );
+
+  function url(nextTab: FoodTab, nextWeek: string) {
+    const params = new URLSearchParams();
+    if (nextTab !== "recipes") params.set("tab", nextTab);
+    if ((nextTab === "plan" || nextTab === "groceries") && nextWeek !== currentWeekStart) {
+      params.set("week", nextWeek);
+    }
+    const query = params.toString();
+    return query ? `/food?${query}` : "/food";
+  }
 
   function changeTab(next: FoodTab) {
     setTab(next);
     // Keep the tab in the URL so back/forward and reloads land on it.
-    router.replace(next === "recipes" ? "/food" : `/food?tab=${next}`, { scroll: false });
+    router.replace(url(next, weekStart), { scroll: false });
+  }
+
+  async function reloadPlan(nextWeek = weekStart) {
+    const request = ++planRequest.current;
+    setPlanBusy(true);
+    try {
+      const value = await loadPlanEntries(nextWeek);
+      if (request !== planRequest.current) return;
+      setEntries(value);
+      setPlanError(false);
+    } catch {
+      if (request === planRequest.current) setPlanError(true);
+    } finally {
+      if (request === planRequest.current) setPlanBusy(false);
+    }
+  }
+
+  function changeWeek(next: string) {
+    setWeekStart(next);
+    router.replace(url(tab, next), { scroll: false });
+    void reloadPlan(next);
   }
 
   return (
@@ -101,14 +193,43 @@ export function FoodClient({
           value={tab}
           onChange={changeTab}
           options={[
+            { value: "plan", label: t("food.tab.plan") },
             { value: "recipes", label: t("food.tab.recipes") },
+            { value: "groceries", label: t("food.tab.groceries") },
             { value: "foods", label: t("food.tab.foods") },
             { value: "log", label: t("food.tab.log") },
           ]}
         />
       </div>
       {error && <ErrorNotice className="mb-5">{t("food.loadError")}</ErrorNotice>}
-      {tab === "log" ? (
+      {planError && tab === "plan" && (
+        <ErrorNotice className="mb-5">{t("food.plan.loadError")}</ErrorNotice>
+      )}
+      {tab === "plan" ? (
+        <PlanTab
+          key={weekStart}
+          userId={userId}
+          weekStart={weekStart}
+          currentWeekStart={currentWeekStart}
+          today={today}
+          entries={entries}
+          lookup={lookup}
+          targets={targets}
+          busy={planBusy}
+          onChangeWeek={changeWeek}
+          onChanged={() => reloadPlan()}
+          onOpenGroceries={() => changeTab("groceries")}
+        />
+      ) : tab === "groceries" ? (
+        <GroceriesTab
+          key={weekStart}
+          userId={userId}
+          weekStart={weekStart}
+          currentWeekStart={currentWeekStart}
+          onChangeWeek={changeWeek}
+          onOpenPlan={() => changeTab("plan")}
+        />
+      ) : tab === "log" ? (
         <LogTab
           userId={userId}
           serverDay={serverDay}

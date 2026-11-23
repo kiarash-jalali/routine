@@ -3,14 +3,19 @@ import { sendNotification } from "web-push";
 import { isValidPushEndpoint } from "@/lib/pushEndpoint";
 import { translate, type Language } from "@/lib/i18n";
 
-export type ReminderCategory = "checkin" | "health" | "workout";
+export type ReminderCategory = "checkin" | "health" | "workout" | "meal_plan" | "grocery";
 export type PushKind =
   | "checkin"
   | "checkin_missed"
   | "task"
   | "routine"
   | "health"
-  | "workout";
+  | "workout"
+  | "meal_plan"
+  | "grocery";
+
+/** Meal plan and grocery pushes carry generic copy only, never food or recipe names. */
+const GENERIC_ONLY: ReadonlySet<PushKind> = new Set(["meal_plan", "grocery"]);
 
 export type PushTarget = {
   id: string;
@@ -24,6 +29,8 @@ function notificationTitle(kind: PushKind, language: Language) {
   if (kind === "routine") return translate(language, "reminder.routineTitle");
   if (kind === "health") return translate(language, "reminder.medicationTitle");
   if (kind === "workout") return translate(language, "reminder.sportTitle");
+  if (kind === "meal_plan") return translate(language, "reminder.mealPlanTitle");
+  if (kind === "grocery") return translate(language, "reminder.groceryTitle");
   if (kind === "checkin_missed")
     return translate(language, "reminder.missedCheckinTitle");
   return translate(language, "reminder.checkinTitle");
@@ -37,7 +44,9 @@ function notificationBody(
   // Health pushes always use the generic body: medication names, doses and
   // notes are health data and must never reach a push payload.
   if (kind === "health") return translate(language, "reminder.genericHealth");
-  const itemLabel = label?.trim().slice(0, 160);
+  if (kind === "meal_plan") return translate(language, "reminder.mealPlanBody");
+  if (kind === "grocery") return translate(language, "reminder.groceryBody");
+  const itemLabel = GENERIC_ONLY.has(kind) ? null : label?.trim().slice(0, 160);
   if (itemLabel && ["task", "routine", "workout"].includes(kind)) {
     return itemLabel;
   }
@@ -48,11 +57,36 @@ function notificationBody(
   return translate(language, "reminder.generic");
 }
 
-function notificationUrl(kind: PushKind) {
+export function notificationUrl(kind: PushKind) {
+  if (kind === "meal_plan") return "/food?tab=plan&week=next";
+  if (kind === "grocery") return "/food?tab=groceries&week=next";
   if (kind === "health") return "/health";
   if (kind === "workout") return "/workouts";
   if (kind === "checkin" || kind === "checkin_missed") return "/checkin";
   return "/dashboard";
+}
+
+/** The JSON a reminder push carries; exported for the payload privacy test. */
+export function reminderPayload(
+  kind: PushKind,
+  language: Language,
+  eventKey: string,
+  label?: string | null,
+  notificationTagKey?: string | null,
+  category?: ReminderCategory,
+) {
+  return {
+    title: notificationTitle(kind, language),
+    body: notificationBody(kind, language, label),
+    url: notificationUrl(kind),
+    tag: `rootine-${kind}-${notificationTagKey ?? eventKey}`.slice(0, 128),
+    renotify: kind === "health",
+    lang: language,
+    dir: language === "fa" ? "rtl" : "ltr",
+    // Ids only, for open tracking (S7a); never names or health data.
+    event: eventKey,
+    ...(category ? { category } : {}),
+  };
 }
 
 export async function sendReminderPush(
@@ -78,21 +112,9 @@ export async function sendReminderPush(
         endpoint: target.endpoint,
         keys: { p256dh: target.p256dh, auth: target.auth },
       },
-      JSON.stringify({
-        title: notificationTitle(kind, language),
-        body: notificationBody(kind, language, label),
-        url: notificationUrl(kind),
-        tag: `rootine-${kind}-${notificationTagKey ?? eventKey}`.slice(
-          0,
-          128,
-        ),
-        renotify: kind === "health",
-        lang: language,
-        dir: language === "fa" ? "rtl" : "ltr",
-        // Ids only, for open tracking (S7a); never names or health data.
-        event: eventKey,
-        ...(category ? { category } : {}),
-      }),
+      JSON.stringify(
+        reminderPayload(kind, language, eventKey, label, notificationTagKey, category),
+      ),
       {
         TTL: 300,
         urgency: kind === "health" ? "high" : "normal",

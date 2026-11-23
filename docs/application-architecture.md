@@ -36,9 +36,10 @@ browser-only API genuinely requires it.
 ## Offline/PWA boundary
 
 The service worker and `public/offline.js` provide a bounded offline workflow.
-Only routine/task titles and today's completion state are cached. Routine/task
-completion and final daily check-in can be queued in IndexedDB and are replayed
-through the authenticated `/api/offline/sync` boundary.
+Only routine/task titles, today's completion state and the grocery list being
+shopped for (S4: item names, amounts and ticks) are cached. Routine/task
+completion, final daily check-in and grocery ticks can be queued in IndexedDB and
+are replayed through the authenticated `/api/offline/sync` boundary.
 
 Health and medication data are deliberately excluded from offline snapshots.
 Routine/task create, edit, and delete still require connectivity. A stale-day

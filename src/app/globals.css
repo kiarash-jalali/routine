@@ -2100,3 +2100,11 @@ html:active-view-transition .card {
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* Grocery print view (S4): only the list goes on paper. */
+@media print {
+  .app-navigation,
+  .no-print {
+    display: none !important;
+  }
+}
