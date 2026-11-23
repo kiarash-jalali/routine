@@ -340,7 +340,7 @@ async function sendNotifications(request: Request) {
     const { data: healthRows, error: healthError } = await admin
       .from("medication_reminders")
       .select(
-        "id,user_id,name,scheduled_day,notified_at,medication_plans!inner(is_active)",
+        "id,user_id,scheduled_day,notified_at,medication_plans!inner(is_active)",
       )
       .in("user_id", userIds)
       .is("taken_at", null)
@@ -368,7 +368,8 @@ async function sendNotifications(request: Request) {
           "health",
           "health",
           `health:${reminder.id}:${eventBucket}`,
-          reminder.name,
+          // Health data never goes into push payloads (CLAUDE.md rule 4).
+          null,
           `health:${reminder.id}`,
         );
 
