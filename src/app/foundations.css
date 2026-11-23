@@ -46,6 +46,12 @@ body,
 [dir="rtl"] .segmented-indicator {
   transform: translateX(calc(var(--segment-index) * -100%));
 }
+/* Mirror the path, not the <svg>, so hover/rotate transforms on the icon still compose. */
+[dir="rtl"] .icon-directional > path {
+  transform: scaleX(-1);
+  transform-box: view-box;
+  transform-origin: center;
+}
 [dir="rtl"] .switch[aria-checked="true"]::after {
   transform: translateX(-18px);
 }

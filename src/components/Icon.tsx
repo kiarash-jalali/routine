@@ -40,11 +40,22 @@ const paths = {
 } as const;
 
 export type IconName = keyof typeof paths;
+
+// Icons that point along the reading direction. They are drawn for LTR and
+// mirrored in RTL by the `.icon-directional` rule in foundations.css.
+const directional = new Set<IconName>(["arrow", "chevron", "logout"]);
+
 export function Icon({
   name,
   size = 20,
+  className,
   ...props
 }: SVGProps<SVGSVGElement> & { name: IconName; size?: number }) {
+  const classes = directional.has(name)
+    ? className
+      ? `icon-directional ${className}`
+      : "icon-directional"
+    : className;
   return (
     <svg
       width={size}
@@ -56,6 +67,7 @@ export function Icon({
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className={classes}
       {...props}
     >
       <path d={paths[name]} />
