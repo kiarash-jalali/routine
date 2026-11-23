@@ -21,6 +21,8 @@ import {
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { useOwnedData } from "@/components/life/useOwnedData";
 import { FoodForm } from "@/components/food/FoodForm";
+import { LogTab } from "@/components/food/LogTab";
+import type { FoodDay } from "@/lib/db/foodLog";
 import {
   ConfirmDelete,
   NutritionGrid,
@@ -41,7 +43,7 @@ import { foodNutrition } from "@/lib/nutrition/food";
 import { RECIPE_CATEGORIES, perServing } from "@/lib/nutrition/recipe";
 import { matchesSearch } from "@/lib/nutrition/search";
 
-export type FoodTab = "recipes" | "foods";
+export type FoodTab = "recipes" | "foods" | "log";
 const PAGE = 60;
 // The hub shows everything visible to the user; RLS does the scoping.
 const reloadFoodHub = () => loadFoodHub();
@@ -51,11 +53,17 @@ export function FoodClient({
   initialTab,
   initialData,
   initialLoadError,
+  serverDay,
+  explicitDay,
+  initialFoodDay,
 }: {
   userId: string;
   initialTab: FoodTab;
   initialData: FoodHubData;
   initialLoadError: boolean;
+  serverDay: string;
+  explicitDay: boolean;
+  initialFoodDay: FoodDay | null;
 }) {
   const { t } = useLanguage();
   const router = useRouter();
@@ -70,7 +78,7 @@ export function FoodClient({
   function changeTab(next: FoodTab) {
     setTab(next);
     // Keep the tab in the URL so back/forward and reloads land on it.
-    router.replace(next === "recipes" ? "/food" : "/food?tab=foods", { scroll: false });
+    router.replace(next === "recipes" ? "/food" : `/food?tab=${next}`, { scroll: false });
   }
 
   return (
@@ -95,11 +103,20 @@ export function FoodClient({
           options={[
             { value: "recipes", label: t("food.tab.recipes") },
             { value: "foods", label: t("food.tab.foods") },
+            { value: "log", label: t("food.tab.log") },
           ]}
         />
       </div>
       {error && <ErrorNotice className="mb-5">{t("food.loadError")}</ErrorNotice>}
-      {tab === "recipes" ? (
+      {tab === "log" ? (
+        <LogTab
+          userId={userId}
+          serverDay={serverDay}
+          explicitDay={explicitDay}
+          initialDay={initialFoodDay}
+          catalog={data}
+        />
+      ) : tab === "recipes" ? (
         <RecipesTab recipes={data.recipes} />
       ) : (
         <FoodsTab

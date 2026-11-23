@@ -2,6 +2,7 @@
 import type { ComponentType } from "react";
 import { CheckinCard } from "./CheckinCard";
 import { HealthSection } from "./HealthSection";
+import { MealsSection } from "./MealsSection";
 import { RemindersSection } from "./RemindersSection";
 import { RoutinesSection } from "./RoutinesSection";
 import { TasksSection } from "./TasksSection";
@@ -27,6 +28,7 @@ function HealthSportRow() {
 export const mainSections: TodaySection[] = [
   { id: "routines", Component: RoutinesSection },
   { id: "weigh-in", Component: WeighInSection },
+  { id: "meals", Component: MealsSection },
   { id: "health-sport", Component: HealthSportRow },
   { id: "tasks", Component: TasksSection },
 ];
