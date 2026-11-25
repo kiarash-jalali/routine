@@ -6,7 +6,7 @@ import type { Database, Json } from "@/types/database";
 
 export const runtime = "nodejs";
 
-const MAX_MUTATIONS = 100;
+const MAX_MUTATIONS = 100; // clients send larger queues in batches
 const MAX_ITEMS_PER_CHECKIN = 200;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -38,7 +38,19 @@ type FinishCheckinMutation = {
   }>;
 };
 
-type OfflineMutation = DailyItemMutation | FinishCheckinMutation;
+/** A grocery tick made offline (S4); `day` is the list's week start. */
+type GroceryFlagMutation = {
+  id: string;
+  kind: "grocery_item_flag";
+  userId: string;
+  queuedAt: string;
+  day: string;
+  itemId: string;
+  field: "have" | "bought";
+  value: boolean;
+};
+
+type OfflineMutation = DailyItemMutation | FinishCheckinMutation | GroceryFlagMutation;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -99,6 +111,26 @@ function parseMutation(value: unknown): OfflineMutation | null {
       itemType: value.itemType,
       itemId: value.itemId,
       completed: value.completed,
+    };
+  }
+
+  if (kind === "grocery_item_flag") {
+    if (
+      !isUuid(value.itemId) ||
+      (value.field !== "have" && value.field !== "bought") ||
+      typeof value.value !== "boolean"
+    ) {
+      return null;
+    }
+    return {
+      id,
+      kind,
+      userId,
+      queuedAt,
+      day,
+      itemId: value.itemId,
+      field: value.field,
+      value: value.value,
     };
   }
 
@@ -216,6 +248,22 @@ export async function POST(request: Request) {
 
   for (const mutation of mutations) {
     try {
+      if (mutation.kind === "grocery_item_flag") {
+        // User-scoped client: RLS keeps the update to the caller's own items.
+        const { error, count } = await db
+          .from("grocery_list_items")
+          .update(
+            mutation.field === "have" ? { have: mutation.value } : { bought: mutation.value },
+            { count: "exact" },
+          )
+          .eq("id", mutation.itemId)
+          .eq("user_id", userId);
+        if (error) retryIds.push(mutation.id);
+        else if (count === 0) discardedIds.push(mutation.id); // item removed since
+        else appliedIds.push(mutation.id);
+        continue;
+      }
+
       if (mutation.kind === "daily_item_completion") {
         const { error } = await db.rpc("set_daily_item_completion", {
           p_day: mutation.day,

@@ -379,6 +379,165 @@ export type Database = {
         }
         Relationships: []
       }
+      grocery_list_items: {
+        Row: {
+          bought: boolean
+          count: number | null
+          created_at: string
+          food_id: string | null
+          grams: number | null
+          grocery_section: string | null
+          have: boolean
+          id: string
+          is_manual: boolean
+          list_id: string
+          name_en: string | null
+          name_fa: string | null
+          position: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bought?: boolean
+          count?: number | null
+          created_at?: string
+          food_id?: string | null
+          grams?: number | null
+          grocery_section?: string | null
+          have?: boolean
+          id?: string
+          is_manual?: boolean
+          list_id: string
+          name_en?: string | null
+          name_fa?: string | null
+          position?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bought?: boolean
+          count?: number | null
+          created_at?: string
+          food_id?: string | null
+          grams?: number | null
+          grocery_section?: string | null
+          have?: boolean
+          id?: string
+          is_manual?: boolean
+          list_id?: string
+          name_en?: string | null
+          name_fa?: string | null
+          position?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grocery_list_items_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grocery_list_items_list_fkey"
+            columns: ["list_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "grocery_lists"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      grocery_lists: {
+        Row: {
+          created_at: string
+          generated_at: string
+          id: string
+          include_staples: boolean
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          generated_at?: string
+          id?: string
+          include_staples?: boolean
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          generated_at?: string
+          id?: string
+          include_staples?: boolean
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      meal_plan_entries: {
+        Row: {
+          cook_servings: number | null
+          created_at: string
+          eaten_portions: number
+          food_id: string | null
+          id: string
+          note: string | null
+          plan_date: string
+          position: number
+          recipe_id: string | null
+          slot: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cook_servings?: number | null
+          created_at?: string
+          eaten_portions?: number
+          food_id?: string | null
+          id?: string
+          note?: string | null
+          plan_date: string
+          position?: number
+          recipe_id?: string | null
+          slot: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cook_servings?: number | null
+          created_at?: string
+          eaten_portions?: number
+          food_id?: string | null
+          id?: string
+          note?: string | null
+          plan_date?: string
+          position?: number
+          recipe_id?: string | null
+          slot?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_entries_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_plan_entries_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medication_plans: {
         Row: {
           created_at: string
@@ -497,8 +656,14 @@ export type Database = {
           checkin_enabled: boolean
           created_at: string
           enabled: boolean
+          grocery_dow: number | null
+          grocery_enabled: boolean
+          grocery_time: string | null
           health_enabled: boolean
           last_sent_on: string | null
+          meal_plan_dow: number | null
+          meal_plan_enabled: boolean
+          meal_plan_time: string | null
           prompt_seen: boolean
           reminder_time: string
           routine_enabled: boolean
@@ -512,8 +677,14 @@ export type Database = {
           checkin_enabled?: boolean
           created_at?: string
           enabled?: boolean
+          grocery_dow?: number | null
+          grocery_enabled?: boolean
+          grocery_time?: string | null
           health_enabled?: boolean
           last_sent_on?: string | null
+          meal_plan_dow?: number | null
+          meal_plan_enabled?: boolean
+          meal_plan_time?: string | null
           prompt_seen?: boolean
           reminder_time?: string
           routine_enabled?: boolean
@@ -527,8 +698,14 @@ export type Database = {
           checkin_enabled?: boolean
           created_at?: string
           enabled?: boolean
+          grocery_dow?: number | null
+          grocery_enabled?: boolean
+          grocery_time?: string | null
           health_enabled?: boolean
           last_sent_on?: string | null
+          meal_plan_dow?: number | null
+          meal_plan_enabled?: boolean
+          meal_plan_time?: string | null
           prompt_seen?: boolean
           reminder_time?: string
           routine_enabled?: boolean
@@ -1188,6 +1365,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_grocery_item: {
+        Args: { p_name_en: string; p_name_fa: string; p_week_start: string }
+        Returns: string
+      }
       claim_push_delivery: {
         Args: { p_category: string; p_event: string; p_subscription: string }
         Returns: boolean
@@ -1229,6 +1410,14 @@ export type Database = {
         }[]
       }
       repair_streak_day: { Args: { target_day: string }; Returns: number }
+      save_grocery_list: {
+        Args: {
+          p_include_staples: boolean
+          p_items: Json
+          p_week_start: string
+        }
+        Returns: string
+      }
       save_plan_exercises: {
         Args: { p_exercises: Json; p_plan_id: string }
         Returns: undefined

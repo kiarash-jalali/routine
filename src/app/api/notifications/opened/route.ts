@@ -7,7 +7,7 @@ import type { Database } from "@/types/database";
 
 export const runtime = "nodejs";
 
-const CATEGORIES = new Set(["checkin", "health", "workout"]);
+const CATEGORIES = new Set(["checkin", "health", "workout", "meal_plan", "grocery"]);
 // Event keys are built by the sender from a category and ids, e.g. "health:<uuid>:<bucket>".
 const EVENT_KEY = /^[a-z][a-z-]*:[A-Za-z0-9:_.-]{1,190}$/;
 

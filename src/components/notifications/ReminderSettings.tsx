@@ -5,7 +5,9 @@ import {
   Button,
   Card,
   ErrorNotice,
+  Input,
   LoadingState,
+  Select,
   SectionHeading,
 } from "@/components/ui";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
@@ -15,6 +17,8 @@ import {
   enablePushNotifications,
   notificationsSupported,
 } from "@/lib/notifications";
+import { defaultWeekStart } from "@/lib/nutrition/body";
+import { getWeekStartsOn } from "@/lib/db/mealPlan";
 import {
   allNotificationCategoriesEnabled,
   getNotificationPreference,
@@ -42,11 +46,14 @@ const categories: {
 ];
 
 export function ReminderSettings({ userId }: { userId: string }) {
-  const { t } = useLanguage();
+  const { t, language, weekday } = useLanguage();
   const [preference, setPreference] = useState<NotificationPreference | null>(
     null,
   );
   const [loaded, setLoaded] = useState(false);
+  // The user's week start (body profile, else language) sets the default days.
+  const [weekStartsOn, setWeekStartsOn] = useState<number | null>(null);
+  const [timeDrafts, setTimeDrafts] = useState<Record<string, string>>({});
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
   const [clientReady, setClientReady] = useState(false);
@@ -78,10 +85,15 @@ export function ReminderSettings({ userId }: { userId: string }) {
           setLoaded(true);
         }
       });
+    getWeekStartsOn(userId, language)
+      .then((value) => {
+        if (!cancelled) setWeekStartsOn(value);
+      })
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, language]);
 
   async function setMaster(enabled: boolean) {
     if (busy) return;
@@ -134,6 +146,40 @@ export function ReminderSettings({ userId }: { userId: string }) {
     }
   }
 
+  async function setWeekly(kind: "meal_plan" | "grocery", values: {
+    enabled?: boolean;
+    dow?: number;
+    time?: string;
+  }) {
+    if (busy) return;
+    setBusy(true);
+    setError(false);
+    setStatus(null);
+    // Defaults: plan the day before the week starts at 18:00, shop the same day at 19:00.
+    const planDay = defaultReminderDay;
+    const current = {
+      enabled: preference?.[`${kind}_enabled`] ?? false,
+      dow: preference?.[`${kind}_dow`] ?? planDay,
+      time: preference?.[`${kind}_time`]?.slice(0, 5) ?? (kind === "meal_plan" ? "18:00" : "19:00"),
+    };
+    const next = { ...current, ...values };
+    try {
+      await saveNotificationPreference(userId, {
+        prompt_seen: true,
+        timezone,
+        ...(preference ? {} : allNotificationCategoriesEnabled),
+        ...(kind === "meal_plan"
+          ? { meal_plan_enabled: next.enabled, meal_plan_dow: next.dow, meal_plan_time: next.time }
+          : { grocery_enabled: next.enabled, grocery_dow: next.dow, grocery_time: next.time }),
+      });
+      await refresh();
+    } catch {
+      setError(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function disableDevice() {
     if (busy) return;
     setBusy(true);
@@ -151,6 +197,8 @@ export function ReminderSettings({ userId }: { userId: string }) {
     }
   }
 
+  // Defaults: plan the day before the week starts.
+  const defaultReminderDay = ((weekStartsOn ?? defaultWeekStart(language)) + 6) % 7;
   const available = clientReady && notificationsSupported();
   const blocked =
     clientReady && currentNotificationPermission() === "denied";
@@ -217,6 +265,74 @@ export function ReminderSettings({ userId }: { userId: string }) {
                       void setCategory(category.field, event.target.checked)
                     }
                   />
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="space-y-2">
+            {(["meal_plan", "grocery"] as const).map((kind) => {
+              const inputId = `notification-${kind}`;
+              const enabled = preference?.[`${kind}_enabled`] ?? false;
+              const dow = preference?.[`${kind}_dow`] ?? defaultReminderDay;
+              const savedTime =
+                preference?.[`${kind}_time`]?.slice(0, 5) ?? (kind === "meal_plan" ? "18:00" : "19:00");
+              const time = timeDrafts[kind] ?? savedTime;
+              return (
+                <div key={kind} className="space-y-3 rounded-2xl border border-border px-4 py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <label htmlFor={inputId} className="font-medium">
+                      {t(kind === "meal_plan" ? "reminder.mealPlan" : "reminder.grocery")}
+                    </label>
+                    <input
+                      id={inputId}
+                      type="checkbox"
+                      checked={enabled}
+                      disabled={busy}
+                      onChange={(event) => void setWeekly(kind, { enabled: event.target.checked })}
+                    />
+                  </div>
+                  {enabled && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="block space-y-1 text-sm">
+                        <span>{t("reminder.weeklyDay")}</span>
+                        <Select
+                          value={String(dow)}
+                          disabled={busy}
+                          onChange={(event) => void setWeekly(kind, { dow: Number(event.target.value) })}
+                        >
+                          {[0, 1, 2, 3, 4, 5, 6].map((value) => (
+                            <option key={value} value={value}>
+                              {weekday(value, "long")}
+                            </option>
+                          ))}
+                        </Select>
+                      </label>
+                      <label className="block space-y-1 text-sm">
+                        <span>{t("reminder.weeklyTime")}</span>
+                        <Input
+                          type="time"
+                          value={time}
+                          disabled={busy}
+                          onChange={(event) =>
+                            setTimeDrafts((drafts) => ({ ...drafts, [kind]: event.target.value }))
+                          }
+                          // Saved when the field is left, not on every keystroke.
+                          onBlur={() => {
+                            if (busy) return; // keep the draft until it can be saved
+                            setTimeDrafts((drafts) => {
+                              const rest = { ...drafts };
+                              delete rest[kind];
+                              return rest;
+                            });
+                            if (/^\d{2}:\d{2}$/.test(time) && time !== savedTime) {
+                              void setWeekly(kind, { time });
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  )}
                 </div>
               );
             })}

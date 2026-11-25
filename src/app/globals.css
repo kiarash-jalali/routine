@@ -2100,3 +2100,31 @@ html:active-view-transition .card {
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* Grocery print view (S4): only the list goes on paper. */
+@media print {
+  .app-navigation,
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Food hub tabs: five labels need more than the shared 310px switcher, and
+   their widths differ, so the pressed tab is filled instead of the indicator. */
+.food-tabs .segmented {
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.food-tabs .segmented-indicator {
+  display: none;
+}
+.food-tabs .segmented button {
+  flex: 1 0 auto;
+  padding-inline: 11px;
+}
+.food-tabs .segmented button[aria-pressed="true"] {
+  background: var(--primary-soft);
+  border-radius: 12px;
+}

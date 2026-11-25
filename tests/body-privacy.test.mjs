@@ -40,8 +40,18 @@ test("body data never reaches push payloads or the service worker", () => {
     "public/sw.js",
     "public/offline.js",
   ]) {
-    assert.doesNotMatch(source(path), BODY, path);
+    // The weekly meal-plan/grocery reminders (S4) read only the week-start
+    // preference; no body value is selected.
+    const text = source(path).replace(
+      '.from("body_profiles").select("user_id,week_starts_on")',
+      "",
+    );
+    assert.doesNotMatch(text, BODY, path);
   }
+  assert.match(
+    source("src/app/api/notifications/send/route.ts"),
+    /\.from\("body_profiles"\)\.select\("user_id,week_starts_on"\)/,
+  );
 });
 
 test("body data never reaches the planning-agent snapshot", () => {

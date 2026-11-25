@@ -95,6 +95,9 @@ export async function GET(request: Request) {
       bodyMeasurements,
       targetAdjustments,
       foodLogEntries,
+      mealPlanEntries,
+      groceryLists,
+      groceryListItems,
     ] = await Promise.all([
       collectAll<Tables<"profiles">>(async (from, to) => {
         const { data, error } = await userDb
@@ -294,6 +297,35 @@ export async function GET(request: Request) {
           .range(from, to);
         return { data, error };
       }),
+      collectAll<Tables<"meal_plan_entries">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("meal_plan_entries")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("plan_date", { ascending: true })
+          .order("id", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
+      collectAll<Tables<"grocery_lists">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("grocery_lists")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("week_start", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
+      collectAll<Tables<"grocery_list_items">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("grocery_list_items")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
     ]);
 
     const exportedAt = new Date().toISOString();
@@ -330,6 +362,9 @@ export async function GET(request: Request) {
           body_measurements: bodyMeasurements,
           target_adjustments: targetAdjustments,
           food_log_entries: foodLogEntries,
+          meal_plan_entries: mealPlanEntries,
+          grocery_lists: groceryLists,
+          grocery_list_items: groceryListItems,
         },
       },
       null,

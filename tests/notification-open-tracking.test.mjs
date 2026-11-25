@@ -6,7 +6,10 @@ const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "u
 
 test("push payload adds only the event key and category for open tracking", () => {
   const push = source("src/lib/server/webPush.ts");
-  const payload = push.slice(push.indexOf("JSON.stringify({"), push.indexOf("}),", push.indexOf("JSON.stringify({")));
+  const start = push.indexOf("export function reminderPayload(");
+  const payload = push.slice(start, push.indexOf("\n}", start));
+  assert.ok(start > 0, "reminderPayload not found");
+  assert.match(push, /JSON\.stringify\(\s*reminderPayload\(/);
   assert.match(payload, /event: eventKey/);
   assert.match(payload, /category/);
   assert.doesNotMatch(payload, /dose|medication|note|endpoint/i);
@@ -16,7 +19,14 @@ test("service worker reports opens best-effort and keeps the URL allowlist", () 
   const worker = source("public/sw.js");
   assert.match(worker, /\/api\/notifications\/opened/);
   assert.match(worker, /event\.waitUntil\(reportNotificationOpened\(event\.notification\.data\)\)/);
-  assert.match(worker, /\["\/dashboard", "\/checkin", "\/health", "\/workouts"\]\.includes/);
+  const allowed = worker.match(/const ALLOWED_URLS = \[([^\]]+)\]/);
+  assert.ok(allowed, "URL allowlist not found");
+  assert.deepEqual(
+    [...allowed[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]),
+    ["/dashboard", "/checkin", "/health", "/workouts", "/food?tab=plan&week=next", "/food?tab=groceries&week=next"],
+  );
+  assert.match(worker, /ALLOWED_URLS\.includes\(requested\)/);
+  assert.match(worker, /ALLOWED_URLS\.includes\(message\.url\)|allowedUrls = ALLOWED_URLS/);
 });
 
 test("opened route authenticates, rate-limits and only updates the user's own delivery", () => {
@@ -46,6 +56,8 @@ test("opened route accepts every event key the sender builds", () => {
     `health:${id}:2026-11-22T08:05:00.000Z`,
     `health:${id}`,
     `workout:${id}`,
+    "meal-plan:2026-11-28",
+    "grocery:2026-11-28",
   ];
   for (const key of keys) assert.ok(eventKey.test(key), `rejected ${key}`);
   for (const bad of ["", "CHECKIN:x", "task:", "task:<script>", `task:${"a".repeat(191)}`]) {

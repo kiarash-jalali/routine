@@ -1,7 +1,18 @@
+import { cookies } from "next/headers";
 import { pageMetadata } from "@/lib/server/pageMetadata";
+import { getServerLocalDay } from "@/lib/server/localDay";
 import { loadFoodHub, type FoodHubData } from "@/lib/db/food";
 import { loadFoodDay, type FoodDay } from "@/lib/db/foodLog";
-import { getServerLocalDay } from "@/lib/server/localDay";
+import {
+  getWeekStartsOn,
+  loadPlanEntries,
+  loadPlanTargets,
+  type PlanEntry,
+  type PlanTargets,
+} from "@/lib/db/mealPlan";
+import { isLanguage, languageCookieKey } from "@/lib/i18n";
+import { defaultWeekStart } from "@/lib/nutrition/body";
+import { resolveWeekStart } from "@/lib/nutrition/plan";
 import { requireServerUser } from "@/lib/supabase/requireUser";
 import { FoodClient, type FoodTab } from "./FoodClient";
 
@@ -23,23 +34,34 @@ export function generateMetadata() {
   return pageMetadata("nav.food");
 }
 
+const TABS: FoodTab[] = ["plan", "recipes", "groceries", "foods", "log"];
+
 export default async function FoodPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string | string[]; day?: string | string[] }>;
+  searchParams: Promise<{
+    tab?: string | string[];
+    day?: string | string[];
+    week?: string | string[];
+  }>;
 }) {
   const { supabase, userId } = await requireServerUser();
-  const { tab, day } = await searchParams;
-  // Plan and Groceries arrive with S4; until then any other value shows Recipes.
-  const initialTab: FoodTab = tab === "foods" || tab === "log" ? tab : "recipes";
+  const { tab, day, week } = await searchParams;
+  const initialTab: FoodTab = TABS.find((value) => value === tab) ?? "recipes";
   const serverDay = (await getServerLocalDay()) ?? new Date().toISOString().slice(0, 10);
   // A day in the URL is only used when it is a real date that isn't in the future.
   // The device may already be a day ahead of the server's fallback (UTC) day.
   const explicitDay = typeof day === "string" && isDayKey(day) && day <= nextDay(serverDay);
   const logDay = explicitDay ? (day as string) : serverDay;
+  const saved = (await cookies()).get(languageCookieKey)?.value;
+  const language = isLanguage(saved) ? saved : "en";
   let data: FoodHubData = { recipes: [], foods: [] };
   let foodDay: FoodDay | null = null;
+  let weekStartsOn = defaultWeekStart(language);
+  let entries: PlanEntry[] = [];
+  let targets: PlanTargets = null;
   let initialLoadError = false;
+  let planLoadError = false;
 
   const [hub, log] = await Promise.allSettled([
     loadFoodHub(supabase),
@@ -50,6 +72,21 @@ export default async function FoodPage({
   // The Log tab refetches on the client when its server load failed.
   if (log.status === "fulfilled") foodDay = log.value;
 
+  try {
+    weekStartsOn = await getWeekStartsOn(userId, language, supabase);
+  } catch {
+    // Fall back to the language default.
+  }
+  const weekStart = resolveWeekStart(typeof week === "string" ? week : null, serverDay, weekStartsOn);
+  // Targets are optional: a failure only hides the comparison, never the plan.
+  const [entryResult, targetResult] = await Promise.allSettled([
+    loadPlanEntries(weekStart, supabase),
+    loadPlanTargets(userId, serverDay, supabase),
+  ]);
+  if (entryResult.status === "fulfilled") entries = entryResult.value;
+  else planLoadError = true;
+  if (targetResult.status === "fulfilled") targets = targetResult.value;
+
   return (
     <FoodClient
       userId={userId}
@@ -59,6 +96,12 @@ export default async function FoodPage({
       serverDay={logDay}
       explicitDay={explicitDay}
       initialFoodDay={foodDay}
+      today={serverDay}
+      weekStartsOn={weekStartsOn}
+      initialWeekStart={weekStart}
+      initialEntries={entries}
+      targets={targets}
+      planLoadError={planLoadError}
     />
   );
 }

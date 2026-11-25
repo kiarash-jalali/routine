@@ -4,6 +4,7 @@
   const STATE_STORE = "state";
   const MUTATION_STORE = "mutations";
   const SNAPSHOT_KEY = "snapshot";
+  const GROCERY_KEY = "groceries";
   const SYNC_TAG = "rootine-offline-sync";
 
   const copy = {
@@ -28,7 +29,9 @@
       retry: "Some changes still need to sync. Rootine will try again.",
       signIn: "Your session needs to be refreshed before these changes can sync.",
       open: "Open Rootine",
-      localOnly: "Only routine and task titles plus today’s completion state are stored for offline use. Health and medication data are not cached here.",
+      localOnly: "Only routine and task titles, today’s completion state and your grocery list are stored for offline use. Health and medication data are not cached here.",
+      have: "I have it",
+      bought: "Bought",
     },
     fa: {
       title: "امروز هنوز همین‌جاست.",
@@ -50,7 +53,9 @@
       retry: "بعضی تغییرها هنوز همگام نشده‌اند. روتین دوباره تلاش می‌کند.",
       signIn: "برای همگام‌سازی این تغییرها باید نشست ورودت تازه شود.",
       open: "باز کردن روتین",
-      localOnly: "برای استفاده آفلاین فقط عنوان روتین‌ها و کارها و وضعیت انجام امروز روی دستگاه ذخیره می‌شود. اطلاعات سلامت و دارو اینجا کش نمی‌شوند.",
+      localOnly: "برای استفاده آفلاین فقط عنوان روتین‌ها و کارها، وضعیت انجام امروز و فهرست خریدت روی دستگاه ذخیره می‌شود. اطلاعات سلامت و دارو اینجا کش نمی‌شوند.",
+      have: "دارم",
+      bought: "خریدم",
     },
   };
 
@@ -95,16 +100,24 @@
     const snapshot = await requestResult(
       transaction.objectStore(STATE_STORE).get(SNAPSHOT_KEY),
     );
+    const groceries = await requestResult(
+      transaction.objectStore(STATE_STORE).get(GROCERY_KEY),
+    );
     const mutations = await requestResult(
       transaction.objectStore(MUTATION_STORE).getAll(),
     );
     database.close();
-    const ownedMutations = Array.isArray(mutations) && snapshot?.userId
+    const owner = snapshot?.userId || groceries?.userId || null;
+    const ownedMutations = Array.isArray(mutations) && owner
       ? mutations
-          .filter((mutation) => mutation.userId === snapshot.userId)
+          .filter((mutation) => mutation.userId === owner)
           .sort((left, right) => left.queuedAt.localeCompare(right.queuedAt))
       : [];
-    return { snapshot: snapshot || null, mutations: ownedMutations };
+    return {
+      snapshot: snapshot || null,
+      groceries: groceries && groceries.userId === owner && Array.isArray(groceries.items) ? groceries : null,
+      mutations: ownedMutations,
+    };
   }
 
   async function writeSnapshot(snapshot) {
@@ -112,6 +125,15 @@
     const transaction = database.transaction(STATE_STORE, "readwrite");
     const done = transactionDone(transaction);
     transaction.objectStore(STATE_STORE).put(snapshot, SNAPSHOT_KEY);
+    await done;
+    database.close();
+  }
+
+  async function writeGroceries(groceries) {
+    const database = await openDatabase();
+    const transaction = database.transaction(STATE_STORE, "readwrite");
+    const done = transactionDone(transaction);
+    transaction.objectStore(STATE_STORE).put(groceries, GROCERY_KEY);
     await done;
     database.close();
   }
@@ -126,13 +148,23 @@
     await registerBackgroundSync();
   }
 
-  async function removeMutations(ids) {
+  const SYNC_BATCH = 100;
+
+  // Deletes synced changes, keeping any queued again under the same id meanwhile.
+  async function removeMutations(sent, ids) {
     if (!ids.length) return;
+    const finished = new Set(ids);
     const database = await openDatabase();
     const transaction = database.transaction(MUTATION_STORE, "readwrite");
     const done = transactionDone(transaction);
     const store = transaction.objectStore(MUTATION_STORE);
-    for (const id of new Set(ids)) store.delete(id);
+    for (const mutation of sent) {
+      if (!finished.has(mutation.id)) continue;
+      const request = store.get(mutation.id);
+      request.onsuccess = () => {
+        if (request.result?.queuedAt === mutation.queuedAt) store.delete(mutation.id);
+      };
+    }
     await done;
     database.close();
   }
@@ -245,6 +277,66 @@
     container.append(section);
   }
 
+  // The grocery list (S4): labels and amounts were formatted when it was saved.
+  function renderGroceries(container) {
+    const groceries = state.groceries;
+    if (!groceries || !groceries.items.length) return;
+    const c = copy[state.language];
+    const section = el("section", { className: "offline-section" });
+    section.append(el("h2", {}, String(groceries.title || "")));
+    const list = el("div", { className: "offline-list" });
+    let lastSection = null;
+
+    for (const item of groceries.items) {
+      if (item.section !== lastSection) {
+        lastSection = item.section;
+        list.append(el("p", { className: "offline-day" }, String(item.section || "")));
+      }
+      const row = el("div", { className: "offline-item" });
+      const label = el(
+        "span",
+        { className: "offline-item-title" },
+        item.amount ? `${item.label} · ${item.amount}` : String(item.label || ""),
+      );
+      label.style.flex = "1";
+      row.append(label);
+      for (const field of ["have", "bought"]) {
+        const button = el("button", {
+          type: "button",
+          className: "action",
+          "aria-pressed": item[field] ? "true" : "false",
+        });
+        const paint = () => {
+          button.setAttribute("aria-pressed", item[field] ? "true" : "false");
+          button.textContent = `${item[field] ? "✓ " : ""}${c[field]}`;
+        };
+        paint();
+        button.addEventListener("click", async () => {
+          item[field] = !item[field];
+          groceries.savedAt = new Date().toISOString();
+          paint();
+          await writeGroceries(groceries);
+          await putMutation({
+            id: `grocery:${groceries.userId}:${item.id}:${field}`,
+            kind: "grocery_item_flag",
+            userId: groceries.userId,
+            queuedAt: new Date().toISOString(),
+            day: groceries.weekStart,
+            itemId: item.id,
+            field,
+            value: item[field],
+          });
+          await refreshPending();
+        });
+        row.append(button);
+      }
+      list.append(row);
+    }
+
+    section.append(list);
+    container.append(section);
+  }
+
   function render() {
     const c = copy[state.language];
     document.documentElement.lang = state.language;
@@ -265,10 +357,14 @@
 
     content.replaceChildren();
     if (!state.snapshot) {
-      content.append(el("section", { className: "offline-section" }, ""));
-      content.lastElementChild.append(
-        el("p", { className: "muted" }, c.empty),
-      );
+      if (state.groceries) {
+        renderGroceries(content);
+      } else {
+        content.append(el("section", { className: "offline-section" }, ""));
+        content.lastElementChild.append(
+          el("p", { className: "muted" }, c.empty),
+        );
+      }
       meta.textContent = "";
       document.getElementById("offline-finish").hidden = true;
       return;
@@ -289,6 +385,7 @@
       "task",
       Array.isArray(state.snapshot.tasks) ? state.snapshot.tasks : [],
     );
+    renderGroceries(content);
 
     meta.textContent = c.saved(formatSavedAt(state.snapshot.savedAt));
     const finish = document.getElementById("offline-finish");
@@ -353,7 +450,7 @@
   }
 
   async function syncNow() {
-    if (!navigator.onLine || !state.snapshot || state.syncing) return;
+    if (!navigator.onLine || (!state.snapshot && !state.groceries) || state.syncing) return;
     const { mutations } = await readState();
     if (!mutations.length) {
       await refreshPending();
@@ -366,28 +463,27 @@
     let finalStatus;
 
     try {
-      const response = await fetch("/api/offline/sync", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mutations }),
-      });
+      for (let start = 0; start < mutations.length; start += SYNC_BATCH) {
+        const batch = mutations.slice(start, start + SYNC_BATCH);
+        const response = await fetch("/api/offline/sync", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mutations: batch }),
+        });
 
-      if (response.status === 401) {
-        finalStatus = c.signIn;
-      } else {
+        if (response.status === 401) {
+          finalStatus = c.signIn;
+          break;
+        }
         if (!response.ok) throw new Error("offline_sync_failed");
 
         const result = await response.json();
-        const removable = [
+        await removeMutations(batch, [
           ...(Array.isArray(result.appliedIds) ? result.appliedIds : []),
           ...(Array.isArray(result.discardedIds) ? result.discardedIds : []),
-        ];
-        await removeMutations(removable);
-        const retryCount = Array.isArray(result.retryIds)
-          ? result.retryIds.length
-          : 0;
-        if (retryCount > 0) finalStatus = c.retry;
+        ]);
+        if (Array.isArray(result.retryIds) && result.retryIds.length > 0) finalStatus = c.retry;
       }
     } catch {
       finalStatus = c.retry;
@@ -399,6 +495,7 @@
 
   const state = {
     snapshot: null,
+    groceries: null,
     mutations: [],
     language: "en",
     syncing: false,
@@ -409,8 +506,10 @@
     try {
       const loaded = await readState();
       state.snapshot = loaded.snapshot;
+      state.groceries = loaded.groceries;
       state.mutations = loaded.mutations;
-      state.language = loaded.snapshot?.language === "fa" ? "fa" : "en";
+      state.language =
+        (loaded.snapshot?.language || loaded.groceries?.language) === "fa" ? "fa" : "en";
       state.staleDay = Boolean(
         loaded.snapshot?.day && loaded.snapshot.day !== localDateKey(),
       );

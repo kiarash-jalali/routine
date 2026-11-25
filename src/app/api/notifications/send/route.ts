@@ -11,6 +11,8 @@ import {
   previousDateKey,
   routineOccursOnDay,
 } from "@/lib/schedule";
+import { defaultWeekStart } from "@/lib/nutrition/body";
+import { addDays, startOfWeek, weekdayOf } from "@/lib/nutrition/plan";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -27,6 +29,12 @@ type PreferenceRow = Pick<
   | "health_enabled"
   | "workout_enabled"
   | "checkin_enabled"
+  | "meal_plan_enabled"
+  | "meal_plan_dow"
+  | "meal_plan_time"
+  | "grocery_enabled"
+  | "grocery_dow"
+  | "grocery_time"
 >;
 
 async function runInChunks<T>(
@@ -103,7 +111,7 @@ async function sendNotifications(request: Request) {
   const { data: preferenceRows, error: preferenceError } = await admin
     .from("notification_preferences")
     .select(
-      "user_id,timezone,task_enabled,routine_enabled,health_enabled,workout_enabled,checkin_enabled",
+      "user_id,timezone,task_enabled,routine_enabled,health_enabled,workout_enabled,checkin_enabled,meal_plan_enabled,meal_plan_dow,meal_plan_time,grocery_enabled,grocery_dow,grocery_time",
     )
     .eq("enabled", true);
 
@@ -138,6 +146,8 @@ async function sendNotifications(request: Request) {
   let dueCheckins = 0;
   let dueMissedCheckins = 0;
   let skippedCheckedIn = 0;
+  let dueMealPlans = 0;
+  let dueGroceries = 0;
 
   if (userIds.length > 0) {
     const currentDays = [
@@ -434,10 +444,100 @@ async function sendNotifications(request: Request) {
       });
     }
 
+    // Weekly meal-plan and grocery reminders (S4). Generic copy only: the sender
+    // reads plan dates to know whether next week is planned, never names.
+    const weeklyDue = (enabled: boolean, dow: number | null, time: string | null, userId: string) => {
+      const clock = clocks.get(userId);
+      return Boolean(
+        enabled &&
+          clock &&
+          dow !== null &&
+          time &&
+          weekdayOf(clock.day) === dow &&
+          isLocalTimeDue(clock.time, time.slice(0, 5), SCHEDULE_CATCHUP_MINUTES),
+      );
+    };
+    const mealPlanUsers = preferences.filter((preference) =>
+      weeklyDue(preference.meal_plan_enabled, preference.meal_plan_dow, preference.meal_plan_time, preference.user_id),
+    );
+    const groceryUsers = preferences.filter((preference) =>
+      weeklyDue(preference.grocery_enabled, preference.grocery_dow, preference.grocery_time, preference.user_id),
+    );
+    const weeklyUserIds = [
+      ...new Set([...mealPlanUsers, ...groceryUsers].map((preference) => preference.user_id)),
+    ];
+
+    if (weeklyUserIds.length > 0) {
+      const [weekStarts, locales] = await Promise.all([
+        admin.from("body_profiles").select("user_id,week_starts_on").in("user_id", weeklyUserIds),
+        admin.from("profiles").select("user_id,locale").in("user_id", weeklyUserIds),
+      ]);
+      if (weekStarts.error || locales.error) counts.failed++;
+      const weekStartByUser = new Map(
+        (weekStarts.data ?? []).map((row) => [row.user_id, row.week_starts_on]),
+      );
+      const localeByUser = new Map((locales.data ?? []).map((row) => [row.user_id, row.locale]));
+      const nextWeekStart = (userId: string) => {
+        const clock = clocks.get(userId);
+        const startsOn =
+          weekStartByUser.get(userId) ?? defaultWeekStart(localeByUser.get(userId) ?? "en");
+        return clock ? addDays(startOfWeek(clock.day, startsOn), 7) : null;
+      };
+
+      const plannedUsers = new Set<string>();
+      if (groceryUsers.length > 0) {
+        const starts = groceryUsers
+          .map((preference) => nextWeekStart(preference.user_id))
+          .filter((day): day is string => Boolean(day))
+          .sort();
+        if (starts.length > 0) {
+          const { data: planRows, error: planError } = await admin
+            .from("meal_plan_entries")
+            .select("user_id,plan_date")
+            .in("user_id", groceryUsers.map((preference) => preference.user_id))
+            .gte("plan_date", starts[0]!)
+            .lte("plan_date", addDays(starts[starts.length - 1]!, 6))
+            .limit(5000);
+          if (planError) counts.failed++;
+          for (const row of planRows ?? []) {
+            const start = nextWeekStart(row.user_id);
+            if (start && row.plan_date >= start && row.plan_date <= addDays(start, 6)) {
+              plannedUsers.add(row.user_id);
+            }
+          }
+        }
+      }
+
+      const mealPlanDue = new Set(mealPlanUsers.map((preference) => preference.user_id));
+      await runInChunks(mealPlanUsers, 25, async (preference) => {
+        const week = nextWeekStart(preference.user_id);
+        if (!week) return;
+        dueMealPlans++;
+        await deliver(preference.user_id, "meal_plan", "meal_plan", `meal-plan:${week}`);
+      });
+      await runInChunks(groceryUsers, 25, async (preference) => {
+        const week = nextWeekStart(preference.user_id);
+        if (!week) return;
+        const planned = plannedUsers.has(preference.user_id);
+        // One "plan" nudge is enough when both reminders fall due together.
+        if (!planned && mealPlanDue.has(preference.user_id)) return;
+        dueGroceries++;
+        // Nothing planned for next week yet: nudge to plan instead.
+        await deliver(
+          preference.user_id,
+          "grocery",
+          planned ? "grocery" : "meal_plan",
+          `grocery:${week}`,
+        );
+      });
+    }
+
     const result = {
       ok: counts.failed === 0,
       ...counts,
       skippedCheckedIn,
+      dueMealPlans,
+      dueGroceries,
       dueTasks,
       dueRoutines,
       dueCheckins,
@@ -470,6 +570,8 @@ async function sendNotifications(request: Request) {
     dueRoutines,
     dueCheckins,
     dueMissedCheckins,
+    dueMealPlans,
+    dueGroceries,
     dueMedication: 0,
     dueWorkouts: 0,
     durationMs: Date.now() - startedAt,
