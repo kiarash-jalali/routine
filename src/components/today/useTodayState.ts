@@ -31,6 +31,7 @@ import type { WorkoutSession } from "@/types/workout";
 import type { WeighInState } from "@/types/body";
 import type { FoodDay } from "@/lib/db/foodLog";
 import type { PlannedDay } from "@/lib/db/mealPlan";
+import type { AdaptiveCategory } from "@/lib/adaptiveReminders";
 import { useMoment } from "./useMoment";
 import { useWeighIn } from "./useWeighIn";
 import { useFoodToday } from "./useFoodToday";
@@ -47,6 +48,7 @@ export type TodayInitialData = {
   initialWeighIn: WeighInState | null;
   initialFoodDay: FoodDay | null;
   initialPlannedDay: PlannedDay | null;
+  initialQuietReminders: AdaptiveCategory[];
   initialPartialError: boolean;
 };
 
@@ -62,6 +64,7 @@ export function useTodayState({
   initialWeighIn,
   initialFoodDay,
   initialPlannedDay,
+  initialQuietReminders,
   initialPartialError,
 }: TodayInitialData) {
   const { t, language } = useLanguage();
@@ -82,6 +85,7 @@ export function useTodayState({
   const [taskFilter, setTaskFilter] = useState<"today" | "all" | "done">("today");
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
+  const [quietReminders, setQuietReminders] = useState(initialQuietReminders);
   const { moment, setMoment, showMoment } = useMoment();
   const pending = useRef(new Set<string>());
   const today = useToday();
@@ -415,6 +419,9 @@ export function useTodayState({
     checkedInToday,
     weighIn,
     food,
+    quietReminders,
+    dismissQuietReminder: (category: AdaptiveCategory) =>
+      setQuietReminders((current) => current.filter((item) => item !== category)),
   };
 }
 

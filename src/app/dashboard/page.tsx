@@ -12,6 +12,7 @@ import { loadPlannedMeals } from "@/lib/db/mealPlan";
 import { listTasks } from "@/lib/db/tasks";
 import { listActiveRoutines } from "@/lib/db/today";
 import { getServerLocalDay } from "@/lib/server/localDay";
+import { quietCategoriesForUser } from "@/lib/server/reminderActivity";
 import { requireServerUser } from "@/lib/supabase/requireUser";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ export default async function DashboardPage() {
     weighInResult,
     foodResult,
     plannedResult,
+    quietResult,
   ] = await Promise.allSettled([
     listTasks(supabase),
     listActiveRoutines(supabase),
@@ -60,6 +62,7 @@ export default async function DashboardPage() {
     initialDayKey
       ? loadPlannedMeals(userId, initialDayKey, supabase)
       : Promise.resolve(null),
+    quietCategoriesForUser(userId),
   ]);
 
   const initialTasks =
@@ -87,6 +90,13 @@ export default async function DashboardPage() {
     foodResult.status === "fulfilled" ? foodResult.value : null;
   const initialPlannedDay =
     plannedResult.status === "fulfilled" ? plannedResult.value : null;
+  // Only categories that are still switched on are worth asking about.
+  const initialQuietReminders =
+    quietResult.status === "fulfilled" && initialNotificationPreference?.enabled
+      ? quietResult.value.filter(
+          (category) => initialNotificationPreference[`${category}_enabled`],
+        )
+      : [];
 
   return (
     <DashboardClient
@@ -102,6 +112,7 @@ export default async function DashboardPage() {
       initialWeighIn={initialWeighIn}
       initialFoodDay={initialFoodDay}
       initialPlannedDay={initialPlannedDay}
+      initialQuietReminders={initialQuietReminders}
       initialPartialError={[
         tasksResult,
         routinesResult,

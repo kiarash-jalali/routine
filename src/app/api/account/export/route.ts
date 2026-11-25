@@ -98,6 +98,7 @@ export async function GET(request: Request) {
       mealPlanEntries,
       groceryLists,
       groceryListItems,
+      reminderAdaptations,
     ] = await Promise.all([
       collectAll<Tables<"profiles">>(async (from, to) => {
         const { data, error } = await userDb
@@ -326,6 +327,15 @@ export async function GET(request: Request) {
           .range(from, to);
         return { data, error };
       }),
+      collectAll<Tables<"reminder_adaptations">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("reminder_adaptations")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("category", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
     ]);
 
     const exportedAt = new Date().toISOString();
@@ -365,6 +375,7 @@ export async function GET(request: Request) {
           meal_plan_entries: mealPlanEntries,
           grocery_lists: groceryLists,
           grocery_list_items: groceryListItems,
+          reminder_adaptations: reminderAdaptations,
         },
       },
       null,

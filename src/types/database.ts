@@ -1015,6 +1015,24 @@ export type Database = {
           },
         ]
       }
+      reminder_adaptations: {
+        Row: {
+          category: string
+          counted_from: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          counted_from?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          counted_from?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       routines: {
         Row: {
           created_at: string
@@ -1414,6 +1432,14 @@ export type Database = {
           current_days: number
           recent_checkin_days: string[]
           recent_repaired_days: string[]
+        }[]
+      }
+      reminder_recent_days: {
+        Args: { p_since: string; p_users: string[] }
+        Returns: {
+          category: string
+          opened: boolean[]
+          user_id: string
         }[]
       }
       repair_streak_day: { Args: { target_day: string }; Returns: number }
