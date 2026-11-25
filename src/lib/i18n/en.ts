@@ -919,7 +919,7 @@ export const en = {
   "food.plan.days": "Days of the week",
   "food.plan.copyLastWeek": "Copy last week",
   "food.plan.copyEmpty": "Last week has nothing planned to copy.",
-  "food.plan.copied": "Copied {count} meals from last week.",
+  "food.plan.copied": "Meals copied from last week: {count}",
   "food.plan.clearWeek": "Clear week",
   "food.plan.confirmClear": "Remove every meal planned for this week?",
   "food.plan.addTo": "Add to {slot}",

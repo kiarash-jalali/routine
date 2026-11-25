@@ -262,15 +262,29 @@ export async function setGrocerySnapshotFlag(
   field: GroceryFlagField,
   value: boolean,
 ) {
-  const snapshot = await getGrocerySnapshot().catch(() => null);
-  if (snapshot && snapshot.userId === userId) {
-    const item = snapshot.items.find((entry) => entry.id === itemId);
-    if (item) {
-      item[field] = value;
-      snapshot.savedAt = new Date().toISOString();
-      await saveGrocerySnapshot(snapshot);
-    }
-  }
+  const database = await openDatabase();
+  // One transaction, so two quick ticks cannot overwrite each other.
+  const transaction = database.transaction(STATE_STORE, "readwrite");
+  const done = transactionDone(transaction);
+  const store = transaction.objectStore(STATE_STORE);
+  const request = store.get(GROCERY_KEY);
+  request.onsuccess = () => {
+    const snapshot = request.result as OfflineGrocerySnapshot | undefined;
+    const item = snapshot?.items.find((entry) => entry.id === itemId);
+    if (!snapshot || snapshot.userId !== userId || !item) return;
+    item[field] = value;
+    snapshot.savedAt = new Date().toISOString();
+    store.put(snapshot, GROCERY_KEY);
+  };
+  await done;
+  database.close();
+}
+
+/** Grocery ticks still waiting to sync, oldest first. */
+export async function pendingGroceryFlags(userId: string) {
+  return (await listOfflineMutations(userId)).flatMap((mutation) =>
+    mutation.kind === "grocery_item_flag" ? [mutation] : [],
+  );
 }
 
 export async function queueDailyItemCompletion(
@@ -354,46 +368,96 @@ export async function removeOfflineMutations(ids: string[]) {
   emitQueueChanged();
 }
 
-export async function syncOfflineMutations(
+/** Changes sent per request; the rest follow in the next one. */
+const SYNC_BATCH = 100;
+
+/**
+ * Deletes synced changes, keeping any that were queued again under the same id
+ * while the request was in flight (a newer tick must not be lost).
+ */
+async function removeSentMutations(sent: OfflineMutation[], ids: string[]) {
+  const finished = new Set(ids);
+  const targets = sent.filter((mutation) => finished.has(mutation.id));
+  if (targets.length === 0) return;
+  const database = await openDatabase();
+  const transaction = database.transaction(MUTATION_STORE, "readwrite");
+  const done = transactionDone(transaction);
+  const store = transaction.objectStore(MUTATION_STORE);
+  for (const mutation of targets) {
+    const request = store.get(mutation.id);
+    request.onsuccess = () => {
+      const stored = request.result as OfflineMutation | undefined;
+      if (stored?.queuedAt === mutation.queuedAt) store.delete(mutation.id);
+    };
+  }
+  await done;
+  database.close();
+  emitQueueChanged();
+}
+
+async function runOfflineSync(userId: string): Promise<OfflineSyncResult> {
+  const total: OfflineSyncResult = {
+    ok: true,
+    appliedIds: [],
+    discardedIds: [],
+    retryIds: [],
+  };
+  const mutations = await listOfflineMutations(userId);
+
+  for (let start = 0; start < mutations.length; start += SYNC_BATCH) {
+    const batch = mutations.slice(start, start + SYNC_BATCH);
+    const response = await fetch("/api/offline/sync", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mutations: batch }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`offline_sync_failed_${response.status}`);
+    }
+
+    const payload = (await response.json()) as Partial<OfflineSyncResult>;
+    if (
+      typeof payload.ok !== "boolean" ||
+      !isStringArray(payload.appliedIds) ||
+      !isStringArray(payload.discardedIds) ||
+      !isStringArray(payload.retryIds)
+    ) {
+      throw new Error("offline_sync_invalid_response");
+    }
+
+    await removeSentMutations(batch, [
+      ...payload.appliedIds,
+      ...payload.discardedIds,
+    ]);
+    total.ok = total.ok && payload.ok;
+    total.appliedIds.push(...payload.appliedIds);
+    total.discardedIds.push(...payload.discardedIds);
+    total.retryIds.push(...payload.retryIds);
+  }
+
+  return total;
+}
+
+const syncsInFlight = new Map<string, Promise<OfflineSyncResult>>();
+
+/** One sync per user at a time: callers share the request already running. */
+export function syncOfflineMutations(
   userId: string,
 ): Promise<OfflineSyncResult> {
-  const mutations = await listOfflineMutations(userId);
-  if (mutations.length === 0) {
-    return { ok: true, appliedIds: [], discardedIds: [], retryIds: [] };
-  }
-
-  const response = await fetch("/api/offline/sync", {
-    method: "POST",
-    credentials: "same-origin",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mutations }),
+  const running = syncsInFlight.get(userId);
+  if (running) return running;
+  const sync = runOfflineSync(userId).finally(() => {
+    syncsInFlight.delete(userId);
   });
+  syncsInFlight.set(userId, sync);
+  return sync;
+}
 
-  if (!response.ok) {
-    throw new Error(`offline_sync_failed_${response.status}`);
-  }
-
-  const payload = (await response.json()) as Partial<OfflineSyncResult>;
-  if (
-    typeof payload.ok !== "boolean" ||
-    !isStringArray(payload.appliedIds) ||
-    !isStringArray(payload.discardedIds) ||
-    !isStringArray(payload.retryIds)
-  ) {
-    throw new Error("offline_sync_invalid_response");
-  }
-
-  await removeOfflineMutations([
-    ...payload.appliedIds,
-    ...payload.discardedIds,
-  ]);
-
-  return {
-    ok: payload.ok,
-    appliedIds: payload.appliedIds,
-    discardedIds: payload.discardedIds,
-    retryIds: payload.retryIds,
-  };
+/** Waits for a running sync (if any), so an older queued value cannot land after a newer write. */
+export async function settleOfflineSync(userId: string) {
+  await syncsInFlight.get(userId)?.catch(() => undefined);
 }
 
 export async function clearOfflineData() {

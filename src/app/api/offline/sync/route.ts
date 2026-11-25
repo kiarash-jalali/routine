@@ -6,7 +6,7 @@ import type { Database, Json } from "@/types/database";
 
 export const runtime = "nodejs";
 
-const MAX_MUTATIONS = 500; // a full grocery list can queue many ticks
+const MAX_MUTATIONS = 100; // clients send larger queues in batches
 const MAX_ITEMS_PER_CHECKIN = 200;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

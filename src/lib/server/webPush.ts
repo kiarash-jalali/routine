@@ -14,8 +14,7 @@ export type PushKind =
   | "meal_plan"
   | "grocery";
 
-/** Meal plan and grocery pushes carry generic copy only, never food or recipe names. */
-const GENERIC_ONLY: ReadonlySet<PushKind> = new Set(["meal_plan", "grocery"]);
+
 
 export type PushTarget = {
   id: string;
@@ -44,9 +43,10 @@ function notificationBody(
   // Health pushes always use the generic body: medication names, doses and
   // notes are health data and must never reach a push payload.
   if (kind === "health") return translate(language, "reminder.genericHealth");
+  // Meal plan and grocery pushes carry generic copy only, never food or recipe names.
   if (kind === "meal_plan") return translate(language, "reminder.mealPlanBody");
   if (kind === "grocery") return translate(language, "reminder.groceryBody");
-  const itemLabel = GENERIC_ONLY.has(kind) ? null : label?.trim().slice(0, 160);
+  const itemLabel = label?.trim().slice(0, 160);
   if (itemLabel && ["task", "routine", "workout"].includes(kind)) {
     return itemLabel;
   }

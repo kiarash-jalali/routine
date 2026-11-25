@@ -145,15 +145,23 @@ async function readOfflineQueue() {
   return { snapshot: snapshot || null, mutations: ownedMutations };
 }
 
-async function removeOfflineMutations(ids) {
+const SYNC_BATCH = 100;
+
+// Deletes synced changes, keeping any queued again under the same id meanwhile.
+async function removeOfflineMutations(sent, ids) {
   if (!Array.isArray(ids) || ids.length === 0) return;
+  const finished = new Set(ids);
 
   const database = await openOfflineDatabase();
   const transaction = database.transaction(MUTATION_STORE, "readwrite");
   const done = transactionDone(transaction);
   const store = transaction.objectStore(MUTATION_STORE);
-  for (const id of new Set(ids)) {
-    if (typeof id === "string") store.delete(id);
+  for (const mutation of sent) {
+    if (!finished.has(mutation.id)) continue;
+    const request = store.get(mutation.id);
+    request.onsuccess = () => {
+      if (request.result?.queuedAt === mutation.queuedAt) store.delete(mutation.id);
+    };
   }
   await done;
   database.close();
@@ -179,32 +187,35 @@ async function syncOfflineQueue() {
 
   if (!state.snapshot?.userId || state.mutations.length === 0) return;
 
-  let response;
-  try {
-    response = await fetch("/api/offline/sync", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mutations: state.mutations }),
-    });
-  } catch {
-    throw new Error("offline_sync_network_failed");
-  }
+  let retry = false;
+  for (let start = 0; start < state.mutations.length; start += SYNC_BATCH) {
+    const batch = state.mutations.slice(start, start + SYNC_BATCH);
+    let response;
+    try {
+      response = await fetch("/api/offline/sync", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mutations: batch }),
+      });
+    } catch {
+      throw new Error("offline_sync_network_failed");
+    }
 
-  if (!response.ok) {
-    throw new Error(`offline_sync_failed_${response.status}`);
-  }
+    if (!response.ok) {
+      throw new Error(`offline_sync_failed_${response.status}`);
+    }
 
-  const result = await response.json();
-  await removeOfflineMutations([
-    ...(Array.isArray(result.appliedIds) ? result.appliedIds : []),
-    ...(Array.isArray(result.discardedIds) ? result.discardedIds : []),
-  ]);
+    const result = await response.json();
+    await removeOfflineMutations(batch, [
+      ...(Array.isArray(result.appliedIds) ? result.appliedIds : []),
+      ...(Array.isArray(result.discardedIds) ? result.discardedIds : []),
+    ]);
+    if (Array.isArray(result.retryIds) && result.retryIds.length > 0) retry = true;
+  }
   await tellClientsOfflineSyncChanged();
 
-  if (Array.isArray(result.retryIds) && result.retryIds.length > 0) {
-    throw new Error("offline_sync_retry_required");
-  }
+  if (retry) throw new Error("offline_sync_retry_required");
 }
 
 self.addEventListener("sync", (event) => {

@@ -187,7 +187,7 @@ export function FoodClient({
           ) : undefined
         }
       />
-      <div className="mb-5">
+      <div className="food-tabs mb-5">
         <SegmentedControl
           label={t("food.tabs")}
           value={tab}

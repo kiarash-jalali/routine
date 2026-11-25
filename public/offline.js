@@ -148,13 +148,23 @@
     await registerBackgroundSync();
   }
 
-  async function removeMutations(ids) {
+  const SYNC_BATCH = 100;
+
+  // Deletes synced changes, keeping any queued again under the same id meanwhile.
+  async function removeMutations(sent, ids) {
     if (!ids.length) return;
+    const finished = new Set(ids);
     const database = await openDatabase();
     const transaction = database.transaction(MUTATION_STORE, "readwrite");
     const done = transactionDone(transaction);
     const store = transaction.objectStore(MUTATION_STORE);
-    for (const id of new Set(ids)) store.delete(id);
+    for (const mutation of sent) {
+      if (!finished.has(mutation.id)) continue;
+      const request = store.get(mutation.id);
+      request.onsuccess = () => {
+        if (request.result?.queuedAt === mutation.queuedAt) store.delete(mutation.id);
+      };
+    }
     await done;
     database.close();
   }
@@ -453,28 +463,27 @@
     let finalStatus;
 
     try {
-      const response = await fetch("/api/offline/sync", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mutations }),
-      });
+      for (let start = 0; start < mutations.length; start += SYNC_BATCH) {
+        const batch = mutations.slice(start, start + SYNC_BATCH);
+        const response = await fetch("/api/offline/sync", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mutations: batch }),
+        });
 
-      if (response.status === 401) {
-        finalStatus = c.signIn;
-      } else {
+        if (response.status === 401) {
+          finalStatus = c.signIn;
+          break;
+        }
         if (!response.ok) throw new Error("offline_sync_failed");
 
         const result = await response.json();
-        const removable = [
+        await removeMutations(batch, [
           ...(Array.isArray(result.appliedIds) ? result.appliedIds : []),
           ...(Array.isArray(result.discardedIds) ? result.discardedIds : []),
-        ];
-        await removeMutations(removable);
-        const retryCount = Array.isArray(result.retryIds)
-          ? result.retryIds.length
-          : 0;
-        if (retryCount > 0) finalStatus = c.retry;
+        ]);
+        if (Array.isArray(result.retryIds) && result.retryIds.length > 0) finalStatus = c.retry;
       }
     } catch {
       finalStatus = c.retry;

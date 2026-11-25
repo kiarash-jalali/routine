@@ -303,6 +303,7 @@ export async function GET(request: Request) {
           .select("*")
           .eq("user_id", user.id)
           .order("plan_date", { ascending: true })
+          .order("id", { ascending: true })
           .range(from, to);
         return { data, error };
       }),
@@ -321,6 +322,7 @@ export async function GET(request: Request) {
           .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
           .range(from, to);
         return { data, error };
       }),

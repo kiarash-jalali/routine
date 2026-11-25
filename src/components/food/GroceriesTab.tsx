@@ -29,12 +29,30 @@ import {
 import { addDays } from "@/lib/nutrition/plan";
 import {
   isOfflineLikeError,
+  pendingGroceryFlags,
   queueGroceryFlag,
   removeOfflineMutations,
   saveGrocerySnapshot,
   setGrocerySnapshotFlag,
+  settleOfflineSync,
   syncOfflineMutations,
 } from "@/lib/offlineStore";
+
+/** The saved list with ticks still waiting to sync applied on top. */
+async function loadListWithPending(userId: string, weekStart: string): Promise<GroceryList> {
+  const list = await loadGroceryList(weekStart);
+  if (!list) return list;
+  const pending = await pendingGroceryFlags(userId).catch(() => []);
+  if (pending.length === 0) return list;
+  return {
+    ...list,
+    items: list.items.map((item) =>
+      pending
+        .filter((mutation) => mutation.itemId === item.id)
+        .reduce((current, mutation) => ({ ...current, [mutation.field]: mutation.value }), item),
+    ),
+  };
+}
 
 /**
  * Builds the list from this week's plan (read fresh, so a plan changed on
@@ -48,7 +66,10 @@ async function syncList(
 ): Promise<GroceryList> {
   // Ticks queued offline land first, so the loaded list already shows them.
   await syncOfflineMutations(userId).catch(() => undefined);
-  const [saved, planned] = await Promise.all([loadGroceryList(weekStart), loadPlanEntries(weekStart)]);
+  const [saved, planned] = await Promise.all([
+    loadListWithPending(userId, weekStart),
+    loadPlanEntries(weekStart),
+  ]);
   const entries = planned.filter((entry) => entry.plan_date >= weekStart);
   const staples = includeStaples ?? saved?.include_staples ?? false;
   const recipeIds = [...new Set(entries.flatMap((entry) => (entry.recipe_id ? [entry.recipe_id] : [])))];
@@ -60,7 +81,7 @@ async function syncList(
   const staplesChanged = saved ? saved.include_staples !== staples : staples;
   if (!groceriesChanged(savedItems, merged) && !staplesChanged) return saved;
   await saveGroceryList(weekStart, staples, merged);
-  return loadGroceryList(weekStart);
+  return loadListWithPending(userId, weekStart);
 }
 
 const bySection = (a: SavedGroceryItem, b: SavedGroceryItem) =>
@@ -149,8 +170,10 @@ export function GroceriesTab({
 
   async function tick(item: SavedGroceryItem, field: GroceryFlag, value: boolean) {
     setActionError(false);
+    setQueued(false);
     setFlag(item.id, field, value);
     try {
+      await settleOfflineSync(userId);
       await setGroceryFlag(userId, item.id, field, value);
       // A tick queued earlier while offline must not undo this one when it syncs.
       await removeOfflineMutations([`grocery:${userId}:${item.id}:${field}`]).catch(() => undefined);
@@ -176,7 +199,7 @@ export function GroceriesTab({
     setActionError(false);
     try {
       await action();
-      const value = await loadGroceryList(weekStart);
+      const value = await loadListWithPending(userId, weekStart);
       setList(value);
       saveSnapshot(value);
     } catch {
@@ -206,7 +229,7 @@ export function GroceriesTab({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-1">
         <Button
           size="sm"
           variant="ghost"
@@ -214,9 +237,9 @@ export function GroceriesTab({
           disabled={locked}
           onClick={() => onChangeWeek(addDays(weekStart, -7))}
         >
-          <Icon name="chevron" size={16} className="rotate-180 rtl:rotate-0" />
+          <Icon name="chevron" size={16} className="rotate-180" />
         </Button>
-        <h2 className="font-semibold">
+        <h2 className="min-w-0 font-semibold">
           <bdi>{t("food.grocery.week", { date: date(weekStart) })}</bdi>
         </h2>
         <Button
@@ -226,7 +249,7 @@ export function GroceriesTab({
           disabled={locked}
           onClick={() => onChangeWeek(addDays(weekStart, 7))}
         >
-          <Icon name="chevron" size={16} className="rtl:rotate-180" />
+          <Icon name="chevron" size={16} />
         </Button>
       </div>
 

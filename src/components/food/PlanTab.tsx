@@ -140,7 +140,7 @@ export function PlanTab({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <Button
             size="sm"
             variant="ghost"
@@ -148,7 +148,7 @@ export function PlanTab({
             disabled={busy}
             onClick={() => onChangeWeek(addDays(weekStart, -7))}
           >
-            <Icon name="chevron" size={16} className="rotate-180 rtl:rotate-0" />
+            <Icon name="chevron" size={16} className="rotate-180" />
           </Button>
           <h2 className="font-semibold">
             <bdi>{t("food.plan.week", { date: date(weekStart) })}</bdi>
@@ -160,7 +160,7 @@ export function PlanTab({
             disabled={busy}
             onClick={() => onChangeWeek(addDays(weekStart, 7))}
           >
-            <Icon name="chevron" size={16} className="rtl:rotate-180" />
+            <Icon name="chevron" size={16} />
           </Button>
           {weekStart !== currentWeekStart && (
             <Button size="sm" variant="ghost" disabled={busy} onClick={() => onChangeWeek(currentWeekStart)}>
@@ -219,11 +219,12 @@ export function PlanTab({
           <button
             key={day}
             type="button"
-            className="chip-toggle shrink-0"
+            className="chip-toggle flex shrink-0 gap-1"
             aria-pressed={day === selectedDay}
             onClick={() => setSelected(day)}
           >
-            {weekday(weekdayOf(day))} <bdi>{number(Number(day.slice(8)))}</bdi>
+            <span>{weekday(weekdayOf(day))}</span>
+            <bdi>{date(day, { day: "numeric" })}</bdi>
           </button>
         ))}
       </div>
