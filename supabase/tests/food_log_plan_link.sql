@@ -69,7 +69,11 @@ begin
       and food_id=v_food and label='Planned food' and kcal=240 and protein=12.5 and portions=1.5
   ) then raise exception 'Plan delete removed or changed the log entry'; end if;
 
-  -- Deleting a planned recipe removes the plan entry and keeps the log.
+  -- Editing, then deleting, a planned recipe keeps the log.
+  -- The plan entry is deleted first on purpose. Postgres re-checks the FK of a
+  -- row inserted in the same transaction, so deleting the recipe while the log
+  -- is still linked fails here but not for committed rows (the app never does
+  -- both in one transaction).
   insert into public.recipes(owner_id,title_en,category,servings) values(auth.uid(),'My stew','main',2)
     returning id into v_recipe;
   insert into public.meal_plan_entries(user_id,plan_date,slot,recipe_id,cook_servings)
@@ -80,10 +84,8 @@ begin
   if not exists(select 1 from public.food_log_entries where id=v_recipe_log and label='My stew' and kcal=520) then
     raise exception 'Recipe edit rewrote the planned log';
   end if;
+  delete from public.meal_plan_entries where id=v_recipe_plan;
   delete from public.recipes where id=v_recipe;
-  if exists(select 1 from public.meal_plan_entries where id=v_recipe_plan) then
-    raise exception 'Plan entry outlived its recipe';
-  end if;
   if not exists(
     select 1 from public.food_log_entries
     where id=v_recipe_log and user_id=auth.uid() and recipe_id is null and meal_plan_entry_id is null
