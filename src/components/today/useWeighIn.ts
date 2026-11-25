@@ -92,6 +92,7 @@ export function useWeighIn(
 
   return {
     visible,
+    weekStartsOn: state?.hasProfile ? state.weekStartsOn : null,
     askWaist: state !== null && weekday === state.weekStartsOn,
     saving,
     failed,

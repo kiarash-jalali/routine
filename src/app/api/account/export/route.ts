@@ -99,6 +99,7 @@ export async function GET(request: Request) {
       groceryLists,
       groceryListItems,
       reminderAdaptations,
+      reviewDismissals,
     ] = await Promise.all([
       collectAll<Tables<"profiles">>(async (from, to) => {
         const { data, error } = await userDb
@@ -336,6 +337,15 @@ export async function GET(request: Request) {
           .range(from, to);
         return { data, error };
       }),
+      collectAll<Tables<"review_dismissals">>(async (from, to) => {
+        const { data, error } = await userDb
+          .from("review_dismissals")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("week_start", { ascending: true })
+          .range(from, to);
+        return { data, error };
+      }),
     ]);
 
     const exportedAt = new Date().toISOString();
@@ -376,6 +386,7 @@ export async function GET(request: Request) {
           grocery_lists: groceryLists,
           grocery_list_items: groceryListItems,
           reminder_adaptations: reminderAdaptations,
+          review_dismissals: reviewDismissals,
         },
       },
       null,
