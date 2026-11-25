@@ -26,6 +26,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Session worktrees are full repo copies with their own build output.
+    ".claude/worktrees/**",
   ]),
 ]);
 
