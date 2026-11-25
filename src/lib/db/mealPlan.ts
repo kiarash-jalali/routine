@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/types/database";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import { defaultWeekStart } from "@/lib/nutrition/body";
-import { dailyTargets } from "@/lib/nutrition/log";
+import { dailyTargets, type PlannedMeal } from "@/lib/nutrition/log";
 import {
   OTHER_SECTION,
   sectionOf,
@@ -11,7 +11,16 @@ import {
   type MergedGroceryItem,
   type SavedGroceryItem,
 } from "@/lib/nutrition/grocery";
-import { addDays, copyWeekEntries, type MealSlot } from "@/lib/nutrition/plan";
+import {
+  MEAL_SLOTS,
+  addDays,
+  copyWeekEntries,
+  entryNutrition,
+  isMealSlot,
+  type MealSlot,
+  type PlanFood,
+  type PlanRecipe,
+} from "@/lib/nutrition/plan";
 
 // Meal plans and grocery lists are personal data: ids only in logs and errors,
 // generic copy only in push payloads (docs/nutrition-roadmap.md §3).
@@ -75,6 +84,85 @@ export async function loadPlanEntries(weekStart: string, client?: Client) {
     .limit(1000);
   if (error) throw new Error("plan_load_failed");
   return (data ?? []).map(toEntry);
+}
+
+const per100Columns = "kcal_100g,protein_100g,fat_100g,carbs_100g,fiber_100g";
+const plannedColumns = `id,slot,position,recipe_id,food_id,eaten_portions,recipe:recipes!meal_plan_entries_recipe_id_fkey(title_en,title_fa,servings,ingredients:recipe_ingredients!recipe_ingredients_recipe_id_fkey(grams,food:foods(${per100Columns}))),food:foods!meal_plan_entries_food_id_fkey(name_en,name_fa,serving_grams,${per100Columns})` as const;
+
+type Per100Row = {
+  kcal_100g: number;
+  protein_100g: number;
+  fat_100g: number;
+  carbs_100g: number;
+  fiber_100g: number;
+};
+
+function toPer100(row: Per100Row) {
+  return {
+    kcal: Number(row.kcal_100g),
+    protein: Number(row.protein_100g),
+    fat: Number(row.fat_100g),
+    carbs: Number(row.carbs_100g),
+    fiber: Number(row.fiber_100g),
+  };
+}
+
+export type TodayPlannedMeal = PlannedMeal & { name_en: string | null; name_fa: string | null };
+export type PlannedDay = { day: string; meals: TodayPlannedMeal[] };
+
+/** One day's planned meals in slot order, with the nutrition of one portion (Today). */
+export async function loadPlannedMeals(
+  userId: string,
+  day: string,
+  client?: Client,
+): Promise<PlannedDay> {
+  const { data, error } = await (client ?? supabaseBrowser())
+    .from("meal_plan_entries")
+    .select(plannedColumns)
+    .eq("user_id", userId)
+    .eq("plan_date", day)
+    .order("position")
+    .order("created_at")
+    .limit(100);
+  if (error) throw new Error("plan_load_failed");
+  const meals = (data ?? []).flatMap((row): TodayPlannedMeal[] => {
+    const { slot, recipe, food } = row;
+    if (!isMealSlot(slot)) return [];
+    const recipes = new Map<string, PlanRecipe>();
+    if (row.recipe_id && recipe) {
+      recipes.set(row.recipe_id, {
+        servings: recipe.servings,
+        ingredients: recipe.ingredients.map((item) => ({
+          grams: Number(item.grams),
+          food: item.food ? toPer100(item.food) : null,
+        })),
+      });
+    }
+    const foods = new Map<string, PlanFood>();
+    if (row.food_id && food) {
+      foods.set(row.food_id, { per100: toPer100(food), serving_grams: food.serving_grams });
+    }
+    const perPortion = entryNutrition(
+      { recipe_id: row.recipe_id, food_id: row.food_id, eaten_portions: 1 },
+      recipes,
+      foods,
+    );
+    if (!perPortion) return [];
+    return [
+      {
+        id: row.id,
+        slot,
+        recipe_id: row.recipe_id,
+        food_id: row.food_id,
+        portions: Number(row.eaten_portions),
+        perPortion,
+        name_en: recipe?.title_en ?? food?.name_en ?? null,
+        name_fa: recipe?.title_fa ?? food?.name_fa ?? null,
+      },
+    ];
+  });
+  meals.sort((a, b) => MEAL_SLOTS.indexOf(a.slot) - MEAL_SLOTS.indexOf(b.slot));
+  return { day, meals };
 }
 
 /**

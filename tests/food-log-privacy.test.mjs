@@ -11,7 +11,7 @@ const files = (dir) =>
     .filter((name) => /\.(ts|tsx|js|mjs)$/.test(name))
     .map((name) => `${dir}/${name}`);
 
-const FOOD_LOG = /food_log|foodLog|lib\/db\/foodLog|useFoodToday|eaten_on/i;
+const FOOD_LOG = /food_log|foodLog|lib\/db\/foodLog|useFoodToday|eaten_on|loadPlannedMeals|PlannedMeal|PlannedDay/i;
 const MIGRATION = "supabase/migrations/20261122182538_food_log_entries.sql";
 
 test("food log stays out of the offline snapshot and browser storage", () => {
@@ -22,7 +22,7 @@ test("food log stays out of the offline snapshot and browser storage", () => {
   const payload = today.slice(start, today.indexOf("}).catch(", start));
   assert.doesNotMatch(payload, /food|kcal|protein|meal/i);
 
-  for (const path of ["src/components/today/useFoodToday.ts", "src/components/food/LogTab.tsx", "src/components/food/QuickAddSheet.tsx"]) {
+  for (const path of ["src/components/today/useFoodToday.ts", "src/components/today/PlannedMeals.tsx", "src/components/food/LogTab.tsx", "src/components/food/QuickAddSheet.tsx"]) {
     assert.doesNotMatch(source(path), /saveOfflineSnapshot|indexedDB|localStorage|sessionStorage/, path);
   }
 });
@@ -51,6 +51,8 @@ test("food log code never logs and selects explicit columns", () => {
     "src/lib/nutrition/log.ts",
     "src/components/today/useFoodToday.ts",
     "src/components/today/MealsSection.tsx",
+    "src/components/today/PlannedMeals.tsx",
+    "src/lib/db/mealPlan.ts",
     "src/components/food/LogTab.tsx",
     "src/components/food/LogTotals.tsx",
     "src/components/food/QuickAddSheet.tsx",
@@ -75,4 +77,9 @@ test("food log is exported, cascades with the account and has no anon grant", ()
   // Deleting a food or recipe keeps the snapshot entry.
   assert.match(migration, /references public\.recipes\(id\) on delete set null/);
   assert.match(migration, /references public\.foods\(id\) on delete set null/);
+  // So does deleting a planned meal: only the link is nulled, never user_id.
+  assert.match(
+    source("supabase/migrations/20261125104757_food_log_plan_link.sql"),
+    /foreign key \(meal_plan_entry_id, user_id\)\s+references public\.meal_plan_entries\(id, user_id\)\s+on delete set null \(meal_plan_entry_id\)/,
+  );
 });

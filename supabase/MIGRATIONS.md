@@ -35,6 +35,7 @@ The bootstrap is **not** a migration to apply retroactively to the existing prod
 | 20261121210723 | remove_personal_name_from_starter_recipes | 20261121210723_remove_personal_name_from_starter_recipes.sql |
 | 20261122092219 | body_profile_and_log | 20261122092219_body_profile_and_log.sql |
 | 20261122182538 | food_log_entries | 20261122182538_food_log_entries.sql |
+| 20261125104757 | food_log_plan_link | 20261125104757_food_log_plan_link.sql |
 
 The older points, profiles, and notification-reminder SQL files are also historical repository sources but are not represented as standalone entries in the current production migration history.
 
