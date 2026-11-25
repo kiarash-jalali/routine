@@ -13,12 +13,16 @@ import {
 } from "@/lib/schedule";
 import { defaultWeekStart } from "@/lib/nutrition/body";
 import { addDays, startOfWeek, weekdayOf } from "@/lib/nutrition/plan";
+import { sendsToday, type AdaptiveCategory } from "@/lib/adaptiveReminders";
+import { loadQuietCategories } from "@/lib/server/reminderActivity";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const CHECKIN_REMINDER_TIMES = ["18:00", "21:00", "22:00", "23:00", "23:30"];
 const SCHEDULE_CATCHUP_MINUTES = 15;
+// Adaptive reminders look at five deliveries, which is five weeks for weekly ones.
+const DELIVERY_RETENTION_DAYS = 45;
 
 type PreferenceRow = Pick<
   Tables<"notification_preferences">,
@@ -146,10 +150,15 @@ async function sendNotifications(request: Request) {
   let dueCheckins = 0;
   let dueMissedCheckins = 0;
   let skippedCheckedIn = 0;
+  let skippedQuiet = 0;
   let dueMealPlans = 0;
   let dueGroceries = 0;
 
   if (userIds.length > 0) {
+    // Adaptive reminders (S7b): quiet daily categories send every other day.
+    const quiet = await loadQuietCategories(admin, userIds).catch(
+      () => new Map<string, Set<AdaptiveCategory>>(),
+    );
     const currentDays = [
       ...new Set(
         preferences
@@ -211,8 +220,16 @@ async function sendNotifications(request: Request) {
         isLocalTimeDue(clock.time, time, SCHEDULE_CATCHUP_MINUTES),
       );
 
+      const checkinsToday = sendsToday(
+        "checkin",
+        quiet.get(preference.user_id)?.has("checkin") ?? false,
+        clock.day,
+      );
+
       if (finishedCheckins.has(currentKey)) {
         skippedCheckedIn += dueTimes.length;
+      } else if (!checkinsToday) {
+        skippedQuiet += dueTimes.length;
       } else {
         for (const time of dueTimes) {
           dueCheckins++;
@@ -226,6 +243,7 @@ async function sendNotifications(request: Request) {
       }
 
       if (
+        checkinsToday &&
         isLocalTimeDue(clock.time, "00:05", SCHEDULE_CATCHUP_MINUTES)
       ) {
         const missedDay = previousDateKey(clock.day);
@@ -325,6 +343,19 @@ async function sendNotifications(request: Request) {
           checkinId &&
           completedRoutineItems.has(`${checkinId}:${routine.id}`)
         ) {
+          return;
+        }
+
+        // A weekly routine is already rare, so only daily ones are thinned.
+        if (
+          routine.frequency === "daily" &&
+          !sendsToday(
+            "routine",
+            quiet.get(routine.user_id)?.has("routine") ?? false,
+            clock.day,
+          )
+        ) {
+          skippedQuiet++;
           return;
         }
 
@@ -536,6 +567,7 @@ async function sendNotifications(request: Request) {
       ok: counts.failed === 0,
       ...counts,
       skippedCheckedIn,
+      skippedQuiet,
       dueMealPlans,
       dueGroceries,
       dueTasks,
@@ -552,7 +584,7 @@ async function sendNotifications(request: Request) {
       .delete()
       .lt(
         "attempted_at",
-        new Date(now.getTime() - 30 * 86400000).toISOString(),
+        new Date(now.getTime() - DELIVERY_RETENTION_DAYS * 86400000).toISOString(),
       );
 
     const log = JSON.stringify({ kind: "notification_cron", ...result });
@@ -566,6 +598,7 @@ async function sendNotifications(request: Request) {
     ok: counts.failed === 0,
     ...counts,
     skippedCheckedIn,
+    skippedQuiet,
     dueTasks,
     dueRoutines,
     dueCheckins,

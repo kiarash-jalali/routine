@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import { CheckinCard } from "./CheckinCard";
 import { HealthSection } from "./HealthSection";
 import { MealsSection } from "./MealsSection";
+import { QuietRemindersCard } from "./QuietRemindersCard";
 import { RemindersSection } from "./RemindersSection";
 import { RoutinesSection } from "./RoutinesSection";
 import { TasksSection } from "./TasksSection";
@@ -34,6 +35,7 @@ export const mainSections: TodaySection[] = [
 ];
 
 export const sideSections: TodaySection[] = [
+  { id: "quiet-reminders", Component: QuietRemindersCard },
   { id: "reminders", Component: RemindersSection },
   { id: "week", Component: WeekSection },
   { id: "checkin", Component: CheckinCard },
