@@ -4,7 +4,7 @@
  * macros are copied when it is written, so later edits to a food or recipe
  * never change history. Health data (diet): never log these values.
  */
-import { roundForStorage, foodNutrition, type Nutrition, type Per100g } from "./food";
+import { roundForStorage, foodNutrition, scaleNutrition, type Nutrition, type Per100g } from "./food";
 import {
   dayFromNumber,
   dayNumber,
@@ -39,6 +39,8 @@ export type LogDraft = Macros & {
   source: LogSource;
   food_id: string | null;
   recipe_id: string | null;
+  /** Set only when a planned meal is logged from Today. */
+  meal_plan_entry_id: string | null;
   portions: number | null;
   grams: number | null;
   label: string;
@@ -77,6 +79,7 @@ export function entryFromFood(
     source: "food",
     food_id: food.id,
     recipe_id: null,
+    meal_plan_entry_id: null,
     portions: null,
     grams: Math.round(grams * 10) / 10,
     label: cleanLabel(label),
@@ -97,6 +100,7 @@ export function entryFromRecipe(
     source: "recipe",
     food_id: null,
     recipe_id: recipe.id,
+    meal_plan_entry_id: null,
     portions,
     grams: null,
     label: cleanLabel(label),
@@ -119,6 +123,7 @@ export function entryFromQuick(
     source: "quick",
     food_id: null,
     recipe_id: null,
+    meal_plan_entry_id: null,
     portions: null,
     grams: null,
     label: cleanLabel(values.label),
@@ -127,17 +132,54 @@ export function entryFromQuick(
 }
 
 /** A recent item logged again: same item, same amount, same snapshot. */
-export function entryFromRecent(entry: Omit<LogDraft, "slot">, slot: MealSlot): LogDraft {
+export function entryFromRecent(
+  entry: Omit<LogDraft, "slot" | "meal_plan_entry_id">,
+  slot: MealSlot,
+): LogDraft {
   return {
     slot,
     source: entry.source === "plan" ? (entry.recipe_id ? "recipe" : "food") : entry.source,
     food_id: entry.food_id,
     recipe_id: entry.recipe_id,
+    meal_plan_entry_id: null,
     portions: entry.portions,
     grams: entry.grams,
     label: entry.label,
     ...snapshot(entry),
   };
+}
+
+/** A meal planned for the day, with the nutrition of one portion. */
+export type PlannedMeal = {
+  id: string;
+  slot: MealSlot;
+  recipe_id: string | null;
+  food_id: string | null;
+  portions: number;
+  perPortion: Nutrition;
+};
+
+/**
+ * "Ate as planned": `portions` of a planned recipe or food. Foods store portions
+ * too (not grams): 20 portions of a large serving can exceed the grams limit.
+ */
+export function entryFromPlan(meal: PlannedMeal, portions: number, label: string): LogDraft {
+  return {
+    slot: meal.slot,
+    source: "plan",
+    food_id: meal.food_id,
+    recipe_id: meal.recipe_id,
+    meal_plan_entry_id: meal.id,
+    portions,
+    grams: null,
+    label: cleanLabel(label),
+    ...snapshot(scaleNutrition(meal.perPortion, portions)),
+  };
+}
+
+/** ½, 1, 1½, 2 plus the planned amount when it is something else. */
+export function portionChoices(planned: number): number[] {
+  return [...new Set([...PORTION_OPTIONS, planned])].sort((a, b) => a - b);
 }
 
 type Amount = { portions: number | null; grams: number | null };

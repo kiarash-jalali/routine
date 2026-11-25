@@ -7,7 +7,7 @@ import type { LogDraft, MealSlot } from "@/lib/nutrition/log";
 // Food log entries are health data (diet): never log them, put them in error
 // messages, push payloads or snapshots. Errors carry codes only.
 const entryColumns =
-  "id,eaten_on,slot,source,food_id,recipe_id,portions,grams,label,kcal,protein,fat,carbs,note,created_at";
+  "id,eaten_on,slot,source,food_id,recipe_id,meal_plan_entry_id,portions,grams,label,kcal,protein,fat,carbs,note,created_at";
 const profileColumns =
   "sex,birth_year,height_cm,activity_level,goal_mode,goal_weight_kg,goal_rate_kg_week,kcal_target_override,protein_mode,protein_grams,week_starts_on";
 
@@ -20,7 +20,7 @@ type Client = SupabaseClient<Database>;
 
 export type FoodLogEntry = Omit<
   Database["public"]["Tables"]["food_log_entries"]["Row"],
-  "user_id" | "updated_at" | "meal_plan_entry_id"
+  "user_id" | "updated_at"
 >;
 
 /**
@@ -93,6 +93,8 @@ export async function addLogEntry(userId: string, day: string, draft: LogDraft) 
     .insert({ ...draft, user_id: userId, eaten_on: day })
     .select("id")
     .single();
+  // One log per planned meal per day (food_log_entries_plan_day_key).
+  if (error?.code === "23505") throw new Error("food_log_already_logged");
   if (error || !data) throw new Error("food_log_save_failed");
   return data.id;
 }

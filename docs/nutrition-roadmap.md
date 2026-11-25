@@ -500,11 +500,15 @@ Built decisions (S5):
 - Targets: accepted `target_adjustments` (effective on or before the day) change only the
   calculated calorie target, never below the floor; a user-set target always wins.
 - Undo for 5 seconds is shown after every log from Today.
-- The Today card shows only to people with a body profile or at least one log entry,
+- The Today card shows only to people with a body profile, a log entry or a meal planned today,
   so people who don't track food get no new prompt. Others start from `/food` → Log.
-- Not built yet (waits for S4): the planned-meals list with "Ate as planned" and the
-  portion adjuster on Today, and the composite FK
-  `food_log_entries(meal_plan_entry_id, user_id) → meal_plan_entries(id, user_id)`.
+- Planned meals on Today: `PlannedMeals` inside `MealsSection` lists today's plan by slot.
+  "Ate as planned" logs `source='plan'` with portions (foods too) and the snapshot shown;
+  "Ate something else" opens quick add with that meal selected.
+- `20261125104757_food_log_plan_link.sql`: composite FK
+  `food_log_entries(meal_plan_entry_id, user_id) → meal_plan_entries(id, user_id)`,
+  `on delete set null (meal_plan_entry_id)`, so plan deletes keep the log. A unique index
+  allows one log per planned meal per day. Re-logging from Recent never sets the link.
 
 Acceptance:
 - [ ] Logging a planned meal is one tap; undo is available for 5 seconds.

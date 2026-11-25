@@ -55,6 +55,45 @@ test("food, recipe and quick entries round for storage", () => {
   );
 });
 
+test("a planned meal logs as a snapshot with its plan link and portions", () => {
+  const ingredients = [{ grams: 300, food: { ...chicken } }, { grams: 200, food: { ...rice } }];
+  const meal = {
+    id: "p1", slot: "dinner", recipe_id: "r1", food_id: null, portions: 1.5,
+    perPortion: recipe.perServing(ingredients, 2),
+  };
+  const entry = log.entryFromPlan(meal, meal.portions, " Chicken rice ");
+  const stored = structuredClone(entry);
+  // The recipe is edited after logging.
+  ingredients[0].grams = 900;
+  meal.perPortion = recipe.perServing(ingredients, 1);
+  assert.deepEqual(entry, stored);
+  assert.deepEqual(entry, {
+    slot: "dinner", source: "plan", food_id: null, recipe_id: "r1", meal_plan_entry_id: "p1",
+    portions: 1.5, grams: null, label: "Chicken rice", kcal: 465, protein: 53.6, fat: 7.2, carbs: 42,
+  });
+
+  // Foods store portions too, so a large planned amount stays inside the table's grams check.
+  const foodMeal = {
+    id: "p2", slot: "lunch", recipe_id: null, food_id: "f1", portions: 20,
+    perPortion: food.foodNutrition(rice, 400),
+  };
+  const big = log.entryFromPlan(foodMeal, 20, "Rice");
+  assert.deepEqual([big.portions, big.grams, big.food_id], [20, null, "f1"]);
+  assert.equal(big.kcal, 10000, "clamped to the table's range");
+
+  // Logging it again from Recent, or any other way, never claims the planned meal.
+  const again = log.entryFromRecent(entry, "lunch");
+  assert.equal(again.meal_plan_entry_id, null);
+  assert.equal(again.source, "recipe");
+  assert.equal(log.entryFromFood({ id: "f", per100: rice }, 100, "Rice", "lunch").meal_plan_entry_id, null);
+  assert.equal(log.entryFromQuick({ label: "x", kcal: 1, protein: null }, "lunch").meal_plan_entry_id, null);
+});
+
+test("portion choices include the planned amount once, in order", () => {
+  assert.deepEqual(log.portionChoices(1), [0.5, 1, 1.5, 2]);
+  assert.deepEqual(log.portionChoices(0.75), [0.5, 0.75, 1, 1.5, 2]);
+});
+
 test("editing the amount rescales the stored snapshot", () => {
   const entry = { portions: 1, grams: null, kcal: 400, protein: 20, fat: 10, carbs: 50 };
   assert.deepEqual(log.rescaleEntry(entry, { portions: 2 }), {

@@ -290,6 +290,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "food_log_entries_meal_plan_entry_fkey"
+            columns: ["meal_plan_entry_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "meal_plan_entries"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
             foreignKeyName: "food_log_entries_recipe_id_fkey"
             columns: ["recipe_id"]
             isOneToOne: false

@@ -8,6 +8,7 @@ import { listMedicationRemindersForDay } from "@/lib/db/health";
 import { listWorkoutSessionsForDay } from "@/lib/db/workouts";
 import { getWeighInState } from "@/lib/db/body";
 import { loadFoodDay } from "@/lib/db/foodLog";
+import { loadPlannedMeals } from "@/lib/db/mealPlan";
 import { listTasks } from "@/lib/db/tasks";
 import { listActiveRoutines } from "@/lib/db/today";
 import { getServerLocalDay } from "@/lib/server/localDay";
@@ -33,6 +34,7 @@ export default async function DashboardPage() {
     workoutsResult,
     weighInResult,
     foodResult,
+    plannedResult,
   ] = await Promise.allSettled([
     listTasks(supabase),
     listActiveRoutines(supabase),
@@ -54,6 +56,9 @@ export default async function DashboardPage() {
       : Promise.resolve(null),
     initialDayKey
       ? loadFoodDay(userId, initialDayKey, supabase)
+      : Promise.resolve(null),
+    initialDayKey
+      ? loadPlannedMeals(userId, initialDayKey, supabase)
       : Promise.resolve(null),
   ]);
 
@@ -80,6 +85,8 @@ export default async function DashboardPage() {
     weighInResult.status === "fulfilled" ? weighInResult.value : null;
   const initialFoodDay =
     foodResult.status === "fulfilled" ? foodResult.value : null;
+  const initialPlannedDay =
+    plannedResult.status === "fulfilled" ? plannedResult.value : null;
 
   return (
     <DashboardClient
@@ -94,6 +101,7 @@ export default async function DashboardPage() {
       initialWorkoutSessions={initialWorkoutSessions}
       initialWeighIn={initialWeighIn}
       initialFoodDay={initialFoodDay}
+      initialPlannedDay={initialPlannedDay}
       initialPartialError={[
         tasksResult,
         routinesResult,

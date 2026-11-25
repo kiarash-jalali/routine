@@ -47,6 +47,7 @@ export function QuickAddSheet({
   recent,
   busy,
   error,
+  initialSlot,
   onAdd,
 }: {
   open: boolean;
@@ -55,13 +56,22 @@ export function QuickAddSheet({
   recent: FoodLogEntry[];
   busy: boolean;
   error: boolean;
+  /** Preselected meal; the time of day decides without it. */
+  initialSlot?: MealSlot | null;
   onAdd: (draft: LogDraft) => Promise<boolean>;
 }) {
   const { t } = useLanguage();
   return (
     <Sheet open={open} onClose={onClose} busy={busy} title={t("foodLog.sheetTitle")}>
       {open && (
-        <QuickAddBody catalog={catalog} recent={recent} busy={busy} error={error} onAdd={onAdd} />
+        <QuickAddBody
+          catalog={catalog}
+          recent={recent}
+          busy={busy}
+          error={error}
+          initialSlot={initialSlot ?? null}
+          onAdd={onAdd}
+        />
       )}
     </Sheet>
   );
@@ -72,12 +82,14 @@ function QuickAddBody({
   recent,
   busy,
   error,
+  initialSlot,
   onAdd,
 }: {
   catalog: FoodCatalog | null;
   recent: FoodLogEntry[];
   busy: boolean;
   error: boolean;
+  initialSlot: MealSlot | null;
   onAdd: (draft: LogDraft) => Promise<boolean>;
 }) {
   const { t } = useLanguage();
@@ -85,7 +97,9 @@ function QuickAddBody({
   const id = useId();
   const recentList = useMemo(() => recentItems(recent), [recent]);
   const [tab, setTab] = useState<Tab>(recentList.length > 0 ? "recent" : "search");
-  const [slot, setSlot] = useState<MealSlot>(() => defaultSlot(new Date().getHours()));
+  const [slot, setSlot] = useState<MealSlot>(
+    () => initialSlot ?? defaultSlot(new Date().getHours()),
+  );
   const [loaded, setLoaded] = useState<FoodCatalog | null>(null);
   const [catalogFailed, setCatalogFailed] = useState(false);
   const catalog = givenCatalog ?? loaded;

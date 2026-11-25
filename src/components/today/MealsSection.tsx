@@ -6,16 +6,19 @@ import { LogTotals } from "@/components/food/LogTotals";
 import { QuickAddSheet } from "@/components/food/QuickAddSheet";
 import { useLanguage } from "@/components/preferences/LanguageProvider";
 import { Button, Card, ErrorNotice, SectionHeading } from "@/components/ui";
+import type { MealSlot } from "@/lib/nutrition/log";
+import { PlannedMeals } from "./PlannedMeals";
 import { useTodayContext } from "./TodayContext";
 
 /**
- * Today's food: calories and protein against targets, and quick add.
- * Planned meals ("Ate as planned") join this card once the meal plan (S4) ships.
+ * Today's food: calories and protein against targets, planned meals
+ * ("Ate as planned") and quick add.
  */
 export function MealsSection() {
   const { t } = useLanguage();
   const { food } = useTodayContext();
   const [adding, setAdding] = useState(false);
+  const [slot, setSlot] = useState<MealSlot | null>(null);
   if (!food.visible) return null;
 
   return (
@@ -32,8 +35,20 @@ export function MealsSection() {
       <div className="mt-4">
         <LogTotals targets={food.targets} totals={food.totals} />
       </div>
+      <PlannedMeals
+        onSomethingElse={(value) => {
+          setSlot(value);
+          setAdding(true);
+        }}
+      />
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <Button variant="primary" onClick={() => setAdding(true)}>
+        <Button
+          variant="primary"
+          onClick={() => {
+            setSlot(null);
+            setAdding(true);
+          }}
+        >
           <Icon name="plus" size={18} />
           {t("foodLog.add")}
         </Button>
@@ -58,6 +73,7 @@ export function MealsSection() {
         recent={food.recent}
         busy={food.busy}
         error={food.failed}
+        initialSlot={slot}
         onAdd={async (draft) => {
           const ok = await food.add(draft);
           if (ok) setAdding(false);
