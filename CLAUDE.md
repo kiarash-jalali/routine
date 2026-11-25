@@ -57,7 +57,8 @@ The developer works on Windows. In PowerShell, `npm.cmd` may be needed instead o
    offline snapshots or the planning-agent snapshot.
 5. **Server-first:** initial authenticated reads happen on the server. Don't move them into
    `useEffect` unless a browser-only API requires it.
-6. **Offline:** only routine/task titles and today's completion state are cached. Changes to
+6. **Offline:** only routine/task titles, today's completion state and the grocery list being
+   shopped for (docs/nutrition-roadmap.md §3) are cached. Changes to
    PWA/offline code must be checked online and offline → reconnect.
 7. **Production database:** this repo is connected to the live Supabase project. Ask before any
    write, DDL or destructive SQL. Read-only queries and advisors are fine.
