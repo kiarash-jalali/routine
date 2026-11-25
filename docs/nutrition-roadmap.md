@@ -564,10 +564,27 @@ S7b — adaptive reminders:
 - Never disable a category silently. Health (medication) reminders are exempt
   from frequency reduction; only the card is shown.
 
+Built decisions (S7b):
+- The window is the last 5 local days with a delivered reminder, not 5 pushes: check-in
+  can send 5 in one evening and medication repeats every 5 minutes. An open on any
+  device counts, and an open today clears quiet mode at once.
+- Categories follow the Settings switches. Only check-in and daily routine reminders
+  are thinned; tasks, workouts and weekly reminders show the card only.
+- Keep waits 30 days before asking again; Change time restarts the count.
+
 S7c — weekly review (`/review`, linked from Today on week start day):
 - Weight trend and observed rate (4.1), average daily kcal and protein logged,
   days logged, workouts completed, routines completed, average steps if a steps
   routine exists, and the adjustment suggestion (4.5) with Accept / Dismiss.
+
+Built decisions (S7c):
+- Covers the last completed week. Average steps is not built: routines store done or
+  not done and have no step count, so it needs its own feature first.
+- "Too slow" is the smaller of 0.3 kg/week and 80% of the chosen rate, so a 0.25 kg/week
+  goal that is on track is not told to eat less. "After the first 3 weeks" means
+  weigh-ins spanning 21+ days. No new suggestion within 14 days of an accepted one.
+- Never suggests eating less below the floor, at the goal weight or under BMI 18.5.
+- An accepted change can be undone from the review of that week.
 
 Acceptance:
 - [ ] Quiet mode turns on after 5 unopened deliveries and off after one open (tests with fixtures).

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Link } from "next-view-transitions";
 import { AnimatedList, AnimatedListItem } from "@/components/Motion";
 import {
   Button,
@@ -127,6 +128,9 @@ export function BodyClient({
         description={t("body.description")}
         actions={
           <>
+            <Link href="/review" className="btn btn-ghost btn-md">
+              {t("nav.review")}
+            </Link>
             <Button onClick={() => setEditingProfile(true)}>{t("body.editProfile")}</Button>
             <Button variant="primary" onClick={() => setEditor("new")}>
               {t("body.add")}

@@ -1033,6 +1033,24 @@ export type Database = {
         }
         Relationships: []
       }
+      review_dismissals: {
+        Row: {
+          created_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       routines: {
         Row: {
           created_at: string
@@ -1101,6 +1119,7 @@ export type Database = {
           effective_from: string
           id: string
           reason: string
+          review_week: string | null
           user_id: string
         }
         Insert: {
@@ -1110,6 +1129,7 @@ export type Database = {
           effective_from: string
           id?: string
           reason?: string
+          review_week?: string | null
           user_id: string
         }
         Update: {
@@ -1119,6 +1139,7 @@ export type Database = {
           effective_from?: string
           id?: string
           reason?: string
+          review_week?: string | null
           user_id?: string
         }
         Relationships: []

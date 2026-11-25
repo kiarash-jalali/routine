@@ -16,6 +16,7 @@ const appPaths = [
   "/workouts",
   "/body",
   "/food",
+  "/review",
   "/guide",
   "/design-lab",
 ];
